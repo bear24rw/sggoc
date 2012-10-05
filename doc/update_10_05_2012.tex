@@ -1,0 +1,43 @@
+\documentclass[12pt]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{titling}
+\usepackage[compact]{titlesec}
+\usepackage{url}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+
+\setlength{\droptitle}{-4em}
+\addtolength{\droptitle}{-4pt}
+
+\title{Sega Game Gear on a Chip \\ Weekly Update \#1}
+\author{ Max Thrun | Samir Silbak }
+
+\begin{document}
+\maketitle
+
+\section*{Accomplished}
+\begin{itemize}
+    \item Researched and gathered technical documents on the Game Gear hardware. The website 
+        smspower.org\cite{smspower} is a gold mine of information.
+    \item Found an example Altera core to interface with the flash memory chip\cite{altera}.
+    \item Began looking into VGA timing specs.
+    \item Started a project on github.com\cite{github}.
+\end{itemize}
+
+\section*{Planned}
+\begin{itemize}
+    \item Implement a simple UART ROM flasher to load game roms into the flash memory chip.
+    \item Look into the Sega Memory Mapper\cite{mapper} functionality and start writing a module to reimplement it.
+    \item Finish the VGA timing  module.
+\end{itemize}
+
+\section*{Outstanding Issues}
+None at this time
+
+\begin{thebibliography}{9}
+    \bibitem{smspower} \url{http://www.smspower.org/Development/Documents}
+    \bibitem{github} \url{https://github.com/bear24rw/sggoc/}
+    \bibitem{altera} \url{ftp://ftp.altera.com/up/pub/flash/altera_up_flash_memory.zip}
+    \bibitem{mapper} \url{http://www.smspower.org/Development/Mappers?from=Development.Mapper}
+\end{thebibliography}
+
+\end{document}
