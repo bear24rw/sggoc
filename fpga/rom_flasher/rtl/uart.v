@@ -1,213 +1,157 @@
-`timescale 1ns / 1ps
-// Documented Verilog UART
-// Copyright (C) 2010 Timothy Goddard (tim@goddard.net.nz)
-// Distributed under the MIT licence.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-// 
+/*
+ * Milkymist VJ SoC
+ * Copyright (C) 2007, 2008, 2009, 2010 Sebastien Bourdeauducq
+ * Copyright (C) 2007 Das Labor
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 module uart(
-    input clk, // The master clock for this module
-    input rst, // Synchronous reset.
-    input rx, // Incoming serial line
-    output tx, // Outgoing serial line
-    input transmit, // Signal to transmit
-    input [7:0] tx_byte, // Byte to transmit
-    output received, // Indicated that a byte has been received.
-    output [7:0] rx_byte, // Byte received
-    output is_receiving, // Low when receive line is idle.
-    output is_transmitting, // Low when transmit line is idle.
-    output recv_error // Indicates error in receiving packet.
-    );
+	input sys_rst,
+	input sys_clk,
 
-parameter CLOCK_DIVIDE = 1302; // clock rate (50Mhz) / (baud rate (9600) * 4)
+	input uart_rx,
+	output reg uart_tx,
 
-// States for the receiving state machine.
-// These are just constants, not parameters to override.
-parameter RX_IDLE = 0;
-parameter RX_CHECK_START = 1;
-parameter RX_READ_BITS = 2;
-parameter RX_CHECK_STOP = 3;
-parameter RX_DELAY_RESTART = 4;
-parameter RX_ERROR = 5;
-parameter RX_RECEIVED = 6;
+	input [15:0] divisor,
 
-// States for the transmitting state machine.
-// Constants - do not override.
-parameter TX_IDLE = 0;
-parameter TX_SENDING = 1;
-parameter TX_DELAY_RESTART = 2;
+	output reg [7:0] rx_data,
+	output reg rx_done,
 
-reg [10:0] rx_clk_divider = CLOCK_DIVIDE;
-reg [10:0] tx_clk_divider = CLOCK_DIVIDE;
+	input [7:0] tx_data,
+	input tx_wr,
+	output reg tx_done
+);
 
-reg [2:0] recv_state = RX_IDLE;
-reg [5:0] rx_countdown;
-reg [3:0] rx_bits_remaining;
-reg [7:0] rx_data;
+//-----------------------------------------------------------------
+// enable16 generator
+//-----------------------------------------------------------------
+reg [15:0] enable16_counter;
 
-reg tx_out = 1'b1;
-reg [1:0] tx_state = TX_IDLE;
-reg [5:0] tx_countdown;
-reg [3:0] tx_bits_remaining;
-reg [7:0] tx_data;
+wire enable16;
+assign enable16 = (enable16_counter == 16'd0);
 
-assign received = recv_state == RX_RECEIVED;
-assign recv_error = recv_state == RX_ERROR;
-assign is_receiving = recv_state != RX_IDLE;
-assign rx_byte = rx_data;
-
-assign tx = tx_out;
-assign is_transmitting = tx_state != TX_IDLE;
-
-always @(posedge clk) begin
-	if (rst) begin
-		recv_state = RX_IDLE;
-		tx_state = TX_IDLE;
+always @(posedge sys_clk) begin
+	if(sys_rst)
+		enable16_counter <= divisor - 16'b1;
+	else begin
+		enable16_counter <= enable16_counter - 16'd1;
+		if(enable16)
+			enable16_counter <= divisor - 16'b1;
 	end
-	
-	// The clk_divider counter counts down from
-	// the CLOCK_DIVIDE constant. Whenever it
-	// reaches 0, 1/16 of the bit period has elapsed.
-   // Countdown timers for the receiving and transmitting
-	// state machines are decremented.
-	rx_clk_divider = rx_clk_divider - 1;
-	if (!rx_clk_divider) begin
-		rx_clk_divider = CLOCK_DIVIDE;
-		rx_countdown = rx_countdown - 1;
-	end
-	tx_clk_divider = tx_clk_divider - 1;
-	if (!tx_clk_divider) begin
-		tx_clk_divider = CLOCK_DIVIDE;
-		tx_countdown = tx_countdown - 1;
-	end
-	
-	// Receive state machine
-	case (recv_state)
-		RX_IDLE: begin
-			// A low pulse on the receive line indicates the
-			// start of data.
-			if (!rx) begin
-				// Wait half the period - should resume in the
-				// middle of this first pulse.
-				rx_clk_divider = CLOCK_DIVIDE;
-				rx_countdown = 2;
-				recv_state = RX_CHECK_START;
-			end
-		end
-		RX_CHECK_START: begin
-			if (!rx_countdown) begin
-				// Check the pulse is still there
-				if (!rx) begin
-					// Pulse still there - good
-					// Wait the bit period to resume half-way
-					// through the first bit.
-					rx_countdown = 4;
-					rx_bits_remaining = 8;
-					recv_state = RX_READ_BITS;
-				end else begin
-					// Pulse lasted less than half the period -
-					// not a valid transmission.
-					recv_state = RX_ERROR;
+end
+
+//-----------------------------------------------------------------
+// Synchronize uart_rx
+//-----------------------------------------------------------------
+reg uart_rx1;
+reg uart_rx2;
+
+always @(posedge sys_clk) begin
+	uart_rx1 <= uart_rx;
+	uart_rx2 <= uart_rx1;
+end
+
+//-----------------------------------------------------------------
+// UART RX Logic
+//-----------------------------------------------------------------
+reg rx_busy;
+reg [3:0] rx_count16;
+reg [3:0] rx_bitcount;
+reg [7:0] rx_reg;
+
+always @(posedge sys_clk) begin
+	if(sys_rst) begin
+		rx_done <= 1'b0;
+		rx_busy <= 1'b0;
+		rx_count16  <= 4'd0;
+		rx_bitcount <= 4'd0;
+	end else begin
+		rx_done <= 1'b0;
+
+		if(enable16) begin
+			if(~rx_busy) begin // look for start bit
+				if(~uart_rx2) begin // start bit found
+					rx_busy <= 1'b1;
+					rx_count16 <= 4'd7;
+					rx_bitcount <= 4'd0;
+				end
+			end else begin
+				rx_count16 <= rx_count16 + 4'd1;
+
+				if(rx_count16 == 4'd0) begin // sample
+					rx_bitcount <= rx_bitcount + 4'd1;
+
+					if(rx_bitcount == 4'd0) begin // verify startbit
+						if(uart_rx2)
+							rx_busy <= 1'b0;
+					end else if(rx_bitcount == 4'd9) begin
+						rx_busy <= 1'b0;
+						if(uart_rx2) begin // stop bit ok
+							rx_data <= rx_reg;
+							rx_done <= 1'b1;
+						end // ignore RX error
+					end else
+						rx_reg <= {uart_rx2, rx_reg[7:1]};
 				end
 			end
 		end
-		RX_READ_BITS: begin
-			if (!rx_countdown) begin
-				// Should be half-way through a bit pulse here.
-				// Read this bit in, wait for the next if we
-				// have more to get.
-				rx_data = {rx, rx_data[7:1]};
-				rx_countdown = 4;
-				rx_bits_remaining = rx_bits_remaining - 1;
-				recv_state = rx_bits_remaining ? RX_READ_BITS : RX_CHECK_STOP;
-			end
-		end
-		RX_CHECK_STOP: begin
-			if (!rx_countdown) begin
-				// Should resume half-way through the stop bit
-				// This should be high - if not, reject the
-				// transmission and signal an error.
-				recv_state = rx ? RX_RECEIVED : RX_ERROR;
-			end
-		end
-		RX_DELAY_RESTART: begin
-			// Waits a set number of cycles before accepting
-			// another transmission.
-			recv_state = rx_countdown ? RX_DELAY_RESTART : RX_IDLE;
-		end
-		RX_ERROR: begin
-			// There was an error receiving.
-			// Raises the recv_error flag for one clock
-			// cycle while in this state and then waits
-			// 2 bit periods before accepting another
-			// transmission.
-			rx_countdown = 8;
-			recv_state = RX_DELAY_RESTART;
-		end
-		RX_RECEIVED: begin
-			// Successfully received a byte.
-			// Raises the received flag for one clock
-			// cycle while in this state.
-			recv_state = RX_IDLE;
-		end
-	endcase
-	
-	// Transmit state machine
-	case (tx_state)
-		TX_IDLE: begin
-			if (transmit) begin
-				// If the transmit flag is raised in the idle
-				// state, start transmitting the current content
-				// of the tx_byte input.
-				tx_data = tx_byte;
-				// Send the initial, low pulse of 1 bit period
-				// to signal the start, followed by the data
-				tx_clk_divider = CLOCK_DIVIDE;
-				tx_countdown = 4;
-				tx_out = 0;
-				tx_bits_remaining = 8;
-				tx_state = TX_SENDING;
-			end
-		end
-		TX_SENDING: begin
-			if (!tx_countdown) begin
-				if (tx_bits_remaining) begin
-					tx_bits_remaining = tx_bits_remaining - 1;
-					tx_out = tx_data[0];
-					tx_data = {1'b0, tx_data[7:1]};
-					tx_countdown = 4;
-					tx_state = TX_SENDING;
+	end
+end
+
+//-----------------------------------------------------------------
+// UART TX Logic
+//-----------------------------------------------------------------
+reg tx_busy;
+reg [3:0] tx_bitcount;
+reg [3:0] tx_count16;
+reg [7:0] tx_reg;
+
+always @(posedge sys_clk) begin
+	if(sys_rst) begin
+		tx_done <= 1'b0;
+		tx_busy <= 1'b0;
+		uart_tx <= 1'b1;
+	end else begin
+		tx_done <= 1'b0;
+		if(tx_wr) begin
+			tx_reg <= tx_data;
+			tx_bitcount <= 4'd0;
+			tx_count16 <= 4'd1;
+			tx_busy <= 1'b1;
+			uart_tx <= 1'b0;
+`ifdef SIMULATION
+			$display("UART: %c", tx_data);
+`endif
+		end else if(enable16 && tx_busy) begin
+			tx_count16  <= tx_count16 + 4'd1;
+
+			if(tx_count16 == 4'd0) begin
+				tx_bitcount <= tx_bitcount + 4'd1;
+				
+				if(tx_bitcount == 4'd8) begin
+					uart_tx <= 1'b1;
+				end else if(tx_bitcount == 4'd9) begin
+					uart_tx <= 1'b1;
+					tx_busy <= 1'b0;
+					tx_done <= 1'b1;
 				end else begin
-					// Set delay to send out 2 stop bits.
-					tx_out = 1;
-					tx_countdown = 8;
-					tx_state = TX_DELAY_RESTART;
+					uart_tx <= tx_reg[0];
+					tx_reg <= {1'b0, tx_reg[7:1]};
 				end
 			end
 		end
-		TX_DELAY_RESTART: begin
-			// Wait until tx_countdown reaches the end before
-			// we send another transmission. This covers the
-			// "stop bit" delay.
-			tx_state = tx_countdown ? TX_DELAY_RESTART : TX_IDLE;
-		end
-	endcase
+	end
 end
 
 endmodule
