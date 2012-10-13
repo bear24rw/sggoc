@@ -93,6 +93,7 @@ set_location_assignment PIN_V14 -to FL_ADDR[19]
 set_location_assignment PIN_U13 -to FL_ADDR[20]
 set_location_assignment PIN_R13 -to FL_ADDR[21]
 set_location_assignment PIN_AA15 -to FL_OE_N
+set_location_assignment PIN_AB15 -to FL_CE_N
 set_location_assignment PIN_AB16 -to FL_DQ[0]
 set_location_assignment PIN_AA16 -to FL_DQ[1]
 set_location_assignment PIN_AB17 -to FL_DQ[2]
