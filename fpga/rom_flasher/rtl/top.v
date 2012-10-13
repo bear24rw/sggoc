@@ -2,7 +2,7 @@
  *   Copyright (C) 2012 by Max Thrun                                       *
  *   Copyright (C) 2012 by Samir Silbak                                    *
  *                                                                         *
- *   (SSGoC) Sega Game Gear on a Chip                                              *
+ *   (SSGoC) Sega Game Gear on a Chip                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -30,34 +30,37 @@ module top(
     output UART_TXD
 );
     
+    wire clk = CLOCK_50;
     wire rst = ~KEY[0];
-    wire clk;
-    clk_div #(.COUNT(500000)) clk_div(CLOCK_50, clk);
    
     reg transmit;
-    wire received;
-    wire is_receiving;
-    wire is_transmitting;
-    wire recv_error;
-    wire [7:0] rx_byte;
-    reg [7:0] tx_byte = 0;
+    wire rx_done;
+    wire tx_done;
 
-    assign LEDG[0] = is_receiving;
-    assign LEDG[1] = is_transmitting;
-    assign LEDR[0] = recv_error;
+    wire [7:0] rx_data;
+    reg [7:0] tx_data = 0;
+
+    assign LEDG[0] = rx_done;
+    assign LEDG[1] = tx_done;
+    assign LEDG[2] = transmit;
+    assign LEDR = rx_data;
 
     uart uart(
-        .clk(CLOCK_50),
-        .rst(rst),
-        .rx(UART_RXD),
-        .tx(UART_TXD),
-        .transmit(transmit),
-        .received(received),
-        .rx_byte(rx_byte),
-        .tx_byte(tx_byte),
-        .is_receiving(is_receiving),
-        .is_transmitting(is_transmitting),
-        .recv_error(recv_error)
+        .sys_clk(clk),
+        .sys_rst(rst),
+
+        .uart_rx(UART_RXD),
+        .uart_tx(UART_TXD),
+
+        .divisor(50000000/9600/16),
+
+        .rx_data(rx_data),
+        .tx_data(tx_data),
+
+        .rx_done(rx_done),
+        .tx_done(tx_done),
+
+        .tx_wr(transmit)
     );
 
     // the receive line only goes high for one clock
@@ -66,7 +69,7 @@ module top(
 
     reg new_byte = 0;
 
-    always @(posedge rst, posedge transmit, posedge received) begin
+    always @(posedge rst, posedge transmit, posedge rx_done) begin
         if (rst)
             new_byte <= 0;
         else if (transmit)
@@ -75,7 +78,7 @@ module top(
             new_byte <= 1;
     end
 
-    assign LEDG[2] = new_byte;
+    assign LEDG[3] = new_byte;
 
 
     localparam S_REQUEST = 0;
@@ -87,11 +90,11 @@ module top(
     always @(posedge clk, posedge rst) begin
         if (rst) begin
             state <= S_REQUEST;
-            tx_byte <= 0; 
+            tx_data <= 0;
             transmit <= 0;
         end else begin
             case (state)
-                // we want to request the next byte
+                // we want to request the next byte.
                 // trigger the uart to transmit and
                 // then go to RECV state to wait for
                 // the data
@@ -100,16 +103,16 @@ module top(
                     state = S_RECV;
                 end
 
-                // wait for the new data byte
                 // clear the transmit flag so we only
-                // transmit one byte
+                // transmit one byte. check to see if
+                // we recieved a new byte
                 S_RECV: begin
                     transmit = 0;
 
                     // if we got a new byte, send it back to ACK
                     // go to REQUEST state to get another one
                     if (new_byte) begin
-                        tx_byte = rx_byte;
+                        tx_data = rx_data;
                         state = S_REQUEST;
                     end
                 end
