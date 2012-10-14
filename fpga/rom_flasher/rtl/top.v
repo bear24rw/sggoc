@@ -60,7 +60,7 @@ module top(
         .uart_rx(UART_RXD),
         .uart_tx(UART_TXD),
 
-        .divisor(50000000/9600/16),
+        .divisor(50000000/115200/16),
 
         .rx_data(rx_data),
         .tx_data(tx_data),
