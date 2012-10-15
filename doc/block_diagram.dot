@@ -1,0 +1,44 @@
+digraph G {
+    labelloc="t";
+    label="SGGoC Block Diagram\n\n";
+
+    graph [rankdir=LR, colorscheme=blues3];
+    node [label="\N", shape=record, style="rounded,filled", colorscheme=blues3, color=3, fillcolor=1, width="1.2", fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=blues3, color=3, fontsize=11, fontname="Arial narrow"];
+
+    z80[label="TV80", height=6.5, width=1];
+    mmu[label="{MMU}", height=3, width=1];
+    mapper[label="Memory Mapper"];
+    flash[label="Flash"];
+    v_ram[label="VRAM (16KB)"];
+    sys_ram[label="RAM (8KB)"];
+    io_ctl[label="IO\nController", height=3, width=1];
+    vdp[label="VDP"];
+    vga_ctl[label="VGA Controller"];
+    psg[label="PSG"];
+    joystick[label="Joystick"];
+    audio[label="Audio Codec"];
+
+    z80 -> mmu [dir="both"];
+    z80 -> io_ctl [dir="both"];
+
+    mmu -> v_ram [dir="both"];
+    mmu -> sys_ram [dir="both"];
+    mmu -> mapper [dir="back"];
+
+    mapper -> flash [dir="back"];
+
+    io_ctl -> mmu [weight=0];
+    io_ctl -> joystick [dir="back"];
+    io_ctl -> psg;
+    io_ctl -> vdp;
+
+    vdp -> vga_ctl;
+    vdp -> mmu [dir="both", weight=0];
+
+    psg -> audio;
+
+    {rank=same; mmu io_ctl};
+    {rank=same; joystick psg vdp};
+    {rank=same; flash sys_ram v_ram};
+}
