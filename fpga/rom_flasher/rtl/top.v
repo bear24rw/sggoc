@@ -40,7 +40,9 @@ module top(
     
     wire clk = CLOCK_50;
     wire rst = ~KEY[0];
+    wire start = ~KEY[3];
     wire skip_erase = SW[0];    // skips the erase cycle if sw[0] = 1
+    wire read_back = SW[1];     // reads out the entire rom if sw[1] = 1
 
     // ----------------------------------------------------
     //                      UART
@@ -86,12 +88,29 @@ module top(
             new_byte <= 1;
     end
 
+    // the tx_done line only goes high for one clock
+    // cycle so we need to latch it. if we are currently
+    // transmitting we obviously haven't finished sending it
+
+    reg tx_done_latched = 0;
+
+    always @(posedge rst, posedge transmit, posedge tx_done) begin
+        if (rst)
+            tx_done_latched <= 0;
+        else if (transmit)
+            tx_done_latched <= 0;
+        else
+            tx_done_latched <= 1;
+    end
+
     // ----------------------------------------------------
     //                     FLASH
     // ----------------------------------------------------
 
     reg [21:0] flash_addr = 0;
-    reg [7:0] flash_data = 0;
+    reg [7:0] flash_data_w = 0;
+    wire [7:0] flash_data_r;
+    reg flash_read = 0;
     reg flash_write = 0;
     reg flash_erase = 0;
     reg flash_done = 0;
@@ -100,11 +119,11 @@ module top(
         .i_clock(clk),
         .i_reset_n(~rst),
         .i_address(flash_addr),
-        .i_data(flash_data),
-        .i_read(0),
+        .i_data(flash_data_w),
+        .i_read(flash_read),
         .i_write(flash_write),
         .i_erase(flash_erase),
-        .o_data(),
+        .o_data(flash_data_r),
         .o_done(flash_done),
 
         .FL_ADDR(FL_ADDR),
@@ -120,6 +139,7 @@ module top(
     //                 STATE MACHINE
     // ----------------------------------------------------
 
+    // writing states
     localparam S_ERASE      = 0;    // erase flash chip
     localparam S_ERASE_WAIT = 1;    // wait for erase to finish
     localparam S_REQUEST    = 2;    // request next data byte from uart
@@ -127,32 +147,89 @@ module top(
     localparam S_WRITE      = 4;    // write data to flash chip
     localparam S_WRITE_WAIT = 5;    // wait for write to finish
 
-    reg [2:0] state = S_ERASE;
+    // read back states
+    localparam S_READ       = 6;    // read byte from flash
+    localparam S_READ_WAIT  = 7;    // wait for read to complete
+    localparam S_SEND       = 8;    // send byte out uart
+    localparam S_SEND_WAIT  = 9;    // wait for uart to finish
+
+    // initial state
+    localparam S_IDLE       = 10;   // don't do anything, wait for reset
+
+    reg [3:0] state = S_IDLE;
 
     always @(posedge clk, posedge rst) begin
         if (rst) begin
-            state <= S_ERASE;
             tx_data <= 0;
             transmit <= 0;
             flash_erase <= 0;
             flash_write <= 0;
-            flash_data <= 0;
+            flash_data_w <= 0;
             flash_addr <= 0;
+            state <= S_IDLE;
         end else begin
             case (state)
 
+                S_IDLE: begin
+                    if (start) begin
+                        state = read_back  ? S_READ :
+                                skip_erase ? S_REQUEST :
+                                S_ERASE;
+                    end
+                end
+
+                // -----------------------------------
+                //              READ BACK
+                // -----------------------------------
+
+                // trigger a read
+                S_READ: begin
+                    flash_read = 1;
+                    state = S_READ_WAIT;
+                end
+
+                // wait for the read to complete
+                // reset the read trigger since we are done
+                // increment the address for the next time
+                // load the read value into the uart 
+                S_READ_WAIT: begin
+                    if (flash_done) begin
+                        flash_read = 0;
+                        flash_addr = flash_addr + 1;
+                        tx_data = flash_data_r;
+                        state = S_SEND;
+                    end
+                end
+
+                // trigger the uart to transmit
+                S_SEND: begin
+                    transmit = 1;
+                    state = S_SEND_WAIT;
+                end
+
+                // deassert the trasmit line so we only send 1 byte
+                // if it finished sending go back and read another byte
+                S_SEND_WAIT: begin
+                    transmit = 0;
+                    if (tx_done_latched) begin
+                        state = S_READ;
+                    end
+                end
+
+                // -----------------------------------
+                //              WRITE
+                // -----------------------------------
+
                 S_ERASE: begin
-                    if (skip_erase)
-                        state = S_REQUEST;
-                    else
-                        flash_addr = ~(22'b0); // erase whole chip (all 1's)
-                        flash_erase = 1;
-                        state = S_ERASE_WAIT;
+                    flash_addr = ~(22'b0); // erase whole chip (all 1's)
+                    flash_erase = 1;
+                    state = S_ERASE_WAIT;
                 end
 
                 S_ERASE_WAIT: begin
                     if (flash_done) begin
                         flash_erase = 0;
+                        flash_addr = 0;
                         state = S_REQUEST;
                     end
                 end
@@ -181,7 +258,7 @@ module top(
                 end
 
                 S_WRITE: begin
-                    flash_data = rx_data;
+                    flash_data_w = rx_data;
                     flash_write = 1;
                     state = S_WRITE_WAIT;
                 end
