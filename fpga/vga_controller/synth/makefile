@@ -11,7 +11,7 @@ SIM_TB =
 
 SRC = \
 	../rtl/top.v \
-	../rtl/vga.v
+	../rtl/vga_timing.v
 
 SIM_SRC = 
 
