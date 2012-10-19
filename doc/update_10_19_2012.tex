@@ -1,0 +1,40 @@
+\documentclass[12pt]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{titling}
+\usepackage[compact]{titlesec}
+\usepackage{url}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+
+\setlength{\droptitle}{-4em}
+\addtolength{\droptitle}{-4pt}
+
+\title{Sega Game Gear on a Chip \\ Weekly Update \#3}
+\author{ Max Thrun | Samir Silbak }
+
+\begin{document}
+\maketitle
+
+\section*{Accomplished}
+\begin{itemize}
+    \item Finished UART ROM flasher. Flashed and read back multiple game ROMs. \cite{flasher}
+    \item Continued work on VGA timing module.
+    \item Worked on final design proposal and design history file documents.
+\end{itemize}
+
+\section*{Planned}
+\begin{itemize}
+    \item Add more documentation to the ROM flasher.
+    \item Look into the Sega Memory Mapper\cite{mapper} functionality and start writing a module to reimplement it.
+    \item Finish the VGA timing  module.
+\end{itemize}
+
+\section*{Outstanding Issues}
+None at this time.
+
+\vspace{.1in}
+\begin{thebibliography}{9}
+    \bibitem{flasher} \url{https://github.com/bear24rw/sggoc/tree/master/fpga/rom_flasher}
+    \bibitem{mapper} \url{http://www.smspower.org/Development/Mappers?from=Development.Mapper}
+\end{thebibliography}
+
+\end{document}
