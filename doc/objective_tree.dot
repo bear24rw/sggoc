@@ -1,0 +1,44 @@
+digraph G {
+    labelloc="t";
+    label="SGGoC Objective Tree\n\n";
+
+    graph [rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
+    node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=2, fillcolor=4, fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=rdbu9, color=2, fontsize=11, fontname="Arial narrow"];
+
+    sggoc[label="Sega Game Gear on a Chip"];
+    sggoc -> rom_loading;
+    sggoc -> modular;
+    sggoc -> accurate;
+
+    rom_loading[label="Run different ROMs"];
+    easy[label="Simple to use \ntool to load ROMs"];
+    pyth[label="Cross platform\nPython script"];
+    roms[label="Support most \nGame Gear ROMs"];
+    mapper[label="All Sega Mapper ROMs"];
+    rom_loading -> easy -> pyth;
+    rom_loading -> roms -> mapper;
+
+    modular[label="Modular Design"];
+    breakdown[label="Breakdown\nHardware"];
+    keep_simple[label="Easy to understand \nsmall modules"];
+    modular -> breakdown;
+    modular -> keep_simple;
+    cpu[label="CPU"];
+    mem[label="Memory"];
+    vid[label="Video"];
+    aud[label="Audio"];
+    breakdown -> cpu;
+    breakdown -> mem;
+    breakdown -> vid;
+    breakdown -> aud;
+
+    accurate[label="Implementation Accuracy"];
+    clk[label="Clock divider \nto get 3.58MHz"];
+    tv80[label="Use TV80 core \nfor cycle accuracy"];
+    vdp[label="Support all modes\nof video display unit"];
+    accurate -> clk;
+    accurate -> tv80;
+    accurate -> vdp;
+
+}
