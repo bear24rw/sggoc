@@ -31,3 +31,4 @@ sggoc.get_node('z80')[0].set_width(str(MIN*2+SEP+MIN*4+SEP*3+SEP))
 
 
 graph.write_png('block_diagram_internal.png')
+graph.write_pdf('block_diagram_internal.pdf')

@@ -14,3 +14,4 @@ graph.get_node('speakers')[0].set_width(str(MIN))
 graph.get_node('controller')[0].set_width(str(MIN))
 
 graph.write_png('block_diagram_external.png')
+graph.write_pdf('block_diagram_external.pdf')
