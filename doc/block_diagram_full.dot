@@ -1,0 +1,41 @@
+digraph G {
+
+    //graph [rankdir = LR];
+    //node[shape=record];
+    graph [rankdir=LR, colorscheme=paired12];
+    node [label="\N", shape=record, style="rounded,filled", colorscheme=paired12, color=8, fillcolor=9, width="1.2", fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=paired12, color=8, fontsize=11, fontname="Arial narrow"];
+
+
+
+    z80[label="TV80"];
+    mmu[label="{{<address>address|<enables>enables}|MMU}"];
+    mapper[label="Memory Mapper"];
+    io_ctl[label="{ IO Controller|{<x3E>x3E|<xBE>xBE|<xBF>xBF|<x7F>x7F|<x3F>x3F|<xDC>xDC|<xDD>xDD} }"];
+    vdp[label="{{<data>data|<control>control}|VDP}"];
+    vga_ctl[label="VGA Controller"];
+    psg[label="PSG"];
+    joystick[label="{{<control>control|<port_1>port_1|<port_2>port_2}|Joystick}"];
+    flash[label="Flash"];
+    v_ram[label="VRAM (16KB)"];
+    sys_ram[label="RAM (8KB)"];
+
+    z80 -> mmu:address;
+    z80 -> io_ctl;
+    mmu -> mapper;
+
+    vdp -> v_ram [dir="both"];
+    mmu -> sys_ram [dir="both"];
+    mapper -> flash [dir="back"];
+
+    io_ctl:x3E -> mmu:enables;
+    io_ctl:xBE -> vdp:data;
+    io_ctl:xBF -> vdp:control;
+    io_ctl:x7F -> psg;
+    io_ctl:x3F -> joystick:control;
+    io_ctl:xDC -> joystick:port_1;
+    io_ctl:xDD -> joystick:port_2;
+
+    vdp -> vga_ctl;
+
+}

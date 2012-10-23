@@ -1,0 +1,55 @@
+digraph G {
+    labelloc="t";
+    label="SGGoC Internal Block Diagram\n\n";
+
+    graph [splines=ortho, rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
+    node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=9, fillcolor=6, fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=rdbu9, color=9, fontsize=11, fontname="Arial narrow"];
+
+    subgraph clusterSGGoC{
+
+        label = "SGGoC";
+
+        z80[label="TV80"];
+        mmu[label="MMU"];
+        io_ctl[label="IO Controller"];
+        mapper[label="Memory Mapper"];
+        sys_ram[label="RAM (8KB)"];
+        flash[label="Flash (ROM)"];
+        vdp[label="VDP"];
+        v_ram[label="VRAM (16KB)"];
+        vga_ctl[label="VGA Controller"];
+        psg[label="PSG"];
+        joystick[label="Joystick"];
+        audio[label="Audio Codec"];
+
+        z80 -> mmu [dir="both"];
+        z80 -> io_ctl [dir="both"];
+
+        mmu -> mapper [dir="both"];
+        mmu -> sys_ram [dir="both"];
+
+        mapper -> flash [dir="back"];
+
+        io_ctl -> joystick [dir="back"];
+        io_ctl -> psg;
+        io_ctl -> vdp;
+
+        vdp -> vga_ctl;
+        vdp -> v_ram [dir="both"];
+
+        psg -> audio;
+
+    };
+
+    monitor[label="Computer Monitor", color=2, fillcolor=4];
+    speakers[label="Speakers", color=2, fillcolor=4];
+    controller[label="Sega Controller", color=2, fillcolor=4];
+
+    vga_ctl -> monitor[color=2, fillcolor=4];
+    audio -> speakers[color=2, fillcolor=4];
+    joystick -> controller [dir="back"color=2, fillcolor=4];
+
+    {rank=same; monitor speakers controller};
+
+}
