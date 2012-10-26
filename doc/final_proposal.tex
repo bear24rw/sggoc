@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{titling}
+\usepackage[compact]{titlesec}
+
+\setlength{\droptitle}{-5em}
+\addtolength{\droptitle}{-5pt}
+
+\title{Final Project Proposal}
+\author{ Max Thrun | Samir Silbak }
+
+\begin{document}
+\maketitle
+
+\section*{Project Title}
+Sega Game Gear on a Chip (SGGoC)
+
+\section*{Problem Statement}
+As computer systems age it is often impossible to keep physically maintaining them.
+For many old systems you cannot buy replacement parts and finding people who have the skill
+to repair the original hardware is difficult. Recently, with the advent of Field Programmable
+Gate Arrays (FPGAs) it is now possible to completely recreate all the original hardware and reimplement
+everything in a hardware description language (HDL). The advantages of doing this is that you can
+replace a huge multi chip solution with a single chip implementation. Doing so also helps future-proof
+the system as the HDL is portable and standardized. Our project is a case study in the process of
+reimplementing the Sega Game Gear gaming console which can be viewed as a specialized computer system. 
+From our project we hope to educate and provide people with a case study on the process and implementation 
+strategies that go into recreating these old computer systems.
+
+\section*{Project Requirements}
+The Game Gear hardware requirements can be easily broken down into submodules. Major components include the Zilog Z80 CPU, 
+the Video Display Processor (VDP) which is a modified Texas Instruments TMS9918, the Sega IO controller, and the
+game cartridge memory mappers. All of these components are considered archaic and are extremely hard to source which makes
+the Game Gear an ideal system for this project. The reimplementation of the Zilog Z80 is outside the scope of this project and as such
+we will be using the popular open source TV80 CPU. A memory management unit will need to be developed to coordinate the 
+addressing of system RAM and the cartridge ROM. The cartridge ROM will need to be initially preloaded on the flash memory chip on
+our development board. If time allows a proper bootloader may be developed to allow game ROMs to be selected off a
+SD card. We plan on implementing the submodules in this order of priority: TV80 CPU, MMU, Sega Cartridge Memory Mapper, VDP,
+Sega IO Controller, Audio (YM2413). The metric used to determine if our design satisfies these requirements will simply
+by the accuracy at which they reimplement the original functionality.
+
+\section*{Functional Description}
+Our final implementation will be a fully functioning Sega Game Gear running on an Altera DE-1 FPGA
+development board. Video output will be via VGA to a computer monitor and input will be through some type of retro
+gaming controller, such as the Sega Genesis controllers. Any Sega Game Gear ROM which uses the Sega mapper 
+(we do not plan on implementing less common mappers) will be playable. Functional diagrams showing the interaction of
+the submodules is shown on the next page.
+
+\section*{Team Participants}
+{\bf Max Thrun} - FPGAs / computer architecture / programming  
+\\
+{\bf Samir Silbak} - Linux / embedded systems / software development
+
+\section*{Advisor}
+Carla Purdy (carla.purdy@uc.edu)
+
+\end{document}

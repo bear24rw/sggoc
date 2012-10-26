@@ -1,6 +1,7 @@
 digraph G {
     labelloc="t";
-    label="SGGoC Objective Tree\n\n";
+    label="SGGoC Objective Tree\n\n\n\n";
+    fontsize=24;
 
     graph [rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
     node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=2, fillcolor=4, fontname="Arial narrow", fontsize=12];
