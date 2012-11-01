@@ -17,6 +17,11 @@ module vga_timing (
     output reg vga_clk = 0
 );
 
+    initial begin
+        h_sync_cnt = 1;
+        v_sync_cnt = 1;
+    end
+    
     always @(posedge clk_50)
         vga_clk = ~vga_clk;
 
@@ -30,8 +35,7 @@ module vga_timing (
 
         end else begin
 
-            if (h_sync_cnt >= (`h_sync_pulse_cnt + `h_fron_porch_cnt) && 
-                h_sync_cnt <= (`h_visible_cnt    + `h_back_porch_cnt))
+            if (h_sync_cnt > `h_sync_pulse_cnt)
                 vga_hs <= 1;
             else
                 vga_hs <= 0;
@@ -39,12 +43,10 @@ module vga_timing (
             if (h_sync_cnt == `h_line_cnt) begin
                 h_sync_cnt <= 0;
                 vga_hs     <= 0;
-
             end else
                 h_sync_cnt <= h_sync_cnt + 1;
                 
-            if (v_sync_cnt >= (`v_sync_pulse_cnt + `v_fron_porch_cnt) && 
-                v_sync_cnt <= (`v_visible_cnt    + `v_back_porch_cnt))
+            if (v_sync_cnt > `v_sync_pulse_cnt) 
                 vga_vs <= 1;
             else
                 vga_vs <= 0;
@@ -52,7 +54,6 @@ module vga_timing (
             if (v_sync_cnt == `v_fram_cnt) begin
                 v_sync_cnt <= 0;
                 vga_vs     <= 0;
-
             end else
                 v_sync_cnt <= v_sync_cnt + 1;
 
