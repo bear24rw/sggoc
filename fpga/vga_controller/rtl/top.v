@@ -17,8 +17,8 @@ module top (
     wire rst = ~(KEY[0]);
     wire clk = CLOCK_50;
 
-    wire [9:0] h_sync_cnt;
-    wire [9:0] v_sync_cnt;
+    wire [9:0] scan_y;
+    wire [9:0] scan_x;
 
     reg [3:0] vga_r = 0;
     reg [3:0] vga_g = 0;
@@ -30,9 +30,13 @@ module top (
     wire vga_vs;
 
     always @(posedge vga_clk) begin
-        if (h_sync_cnt >= `h_visible_cnt && h_sync_cnt < `h_back_porch_cnt &&
-            v_sync_cnt >= `v_visible_cnt && v_sync_cnt < `v_back_porch_cnt) begin
+        if (scan_y < `h_visible_cnt &&
+            scan_x < `v_visible_cnt) begin
             vga_r <= 4'd15;
+            vga_g <= 4'd00;
+            vga_b <= 4'd00;
+        end else begin
+            vga_r <= 4'd00;
             vga_g <= 4'd00;
             vga_b <= 4'd00;
         end
@@ -50,8 +54,8 @@ module top (
         .rst(rst),
         .vga_hs(VGA_HS),
         .vga_vs(VGA_VS),
-        .h_sync_cnt(h_sync_cnt),
-        .v_sync_cnt(v_sync_cnt),
+        .scan_y(scan_y),
+        .scan_x(scan_x),
         .vga_clk(vga_clk)
     );
 
