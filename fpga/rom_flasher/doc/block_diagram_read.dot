@@ -1,0 +1,39 @@
+digraph G {
+    labelloc="t";
+    label="ROM Flasher - Read\n\n";
+
+    graph [rankdir=TB, ordering="out", nodesep=0.2, colorscheme=rdbu9];
+    node [nodesep=0.2, label="\N", style="filled", colorscheme=rdbu9, color=9, fillcolor=6, fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=rdbu9, color=9, fontsize=11, fontname="Arial narrow"];
+
+    subgraph clusterComputer{
+
+        label = "Computer";
+
+        c_file[label="Read ROM File"];
+        c_recv[label="Recieve"];
+        c_check[label="Recv Byte\n==\nROM File Byte", shape=diamond];
+        c_exit[label="Error"];
+
+        c_file -> c_check[dir="back", label="Yes", weight=0];
+        c_file -> c_recv;
+        c_recv -> c_check;
+        //c_check -> c_file[label="Yes"];
+        c_check -> c_exit[label="No"];
+
+    };
+
+    subgraph clusterFPGA{
+
+        label = "FPGA";
+
+        s_read[label="Read Flash"];
+        s_send[label="Send Byte"];
+
+        s_read -> s_send;
+        s_send -> s_read;
+    };
+
+    c_recv -> s_send[dir="back", label="Byte", style="dashed", weight=0, constraint=false];
+
+}

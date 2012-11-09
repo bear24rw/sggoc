@@ -1,0 +1,43 @@
+digraph G {
+    labelloc="t";
+    label="ROM Flasher - Write\n\n";
+
+    graph [rankdir=TB, ordering="out", nodesep=0.2, colorscheme=rdbu9];
+    node [nodesep=0.2, label="\N", style="filled", colorscheme=rdbu9, color=9, fillcolor=6, fontname="Arial narrow", fontsize=12];
+    edge [colorscheme=rdbu9, color=9, fontsize=11, fontname="Arial narrow"];
+
+    subgraph clusterComputer{
+
+        label = "Computer";
+
+        c_file[label="Read ROM File"];
+        c_recv[label="Recieve"];
+        c_check[label="Recv\n==\nPrev Sent", shape=diamond];
+        c_send[label="Send"];
+        c_exit[label="Error"];
+
+        c_file -> c_send[dir="back", weight=0];
+        c_file -> c_recv -> c_check;
+        c_check -> c_send[label="Yes"];
+        c_check -> c_exit[label="No"];
+
+        {rank=same; c_check c_exit};
+    };
+
+    subgraph clusterFPGA{
+
+        label = "FPGA";
+
+        s_erase[label="Erase"];
+        s_request[label="Request"];
+        s_recv[label="Receive"];
+        s_write[label="Write"];
+
+        s_erase -> s_request -> s_recv -> s_write;
+        s_write -> s_request[constraint=false];
+    };
+
+    c_recv -> s_request[dir="back", label="Prev\nByte", style="dashed", weight=0, constraint=false];
+    c_send -> s_recv[label="New\nByte", style="dashed", weight=0, constraint=false];
+
+}
