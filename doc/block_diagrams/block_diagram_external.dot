@@ -1,13 +1,13 @@
 digraph G {
-    labelloc="t";
-    label="SGGoC External Block Diagram\n\n";
+    //labelloc="t";
+    //label="SGGoC External Block Diagram\n\n";
 
     graph [splines=ortho, rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
     node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=2, fillcolor=4, fontname="Arial narrow", fontsize=12];
     edge [colorscheme=rdbu9, color=2, fontsize=11, fontname="Arial narrow"];
 
     sggoc[label="SGGoC", color=9, fillcolor=6];
-    controller[label="Sega Controller"];
+    controller[label="Game Controller"];
     monitor[label="Computer Monitor"];
     speakers[label="Speakers"];
 

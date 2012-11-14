@@ -1,6 +1,6 @@
 digraph G {
-    labelloc="t";
-    label="SGGoC Internal Block Diagram\n\n";
+    //labelloc="t";
+    //label="SGGoC Internal Block Diagram\n\n";
 
     graph [splines=ortho, rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
     node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=9, fillcolor=6, fontname="Arial narrow", fontsize=12];
@@ -44,7 +44,7 @@ digraph G {
 
     monitor[label="Computer Monitor", color=2, fillcolor=4];
     speakers[label="Speakers", color=2, fillcolor=4];
-    controller[label="Sega Controller", color=2, fillcolor=4];
+    controller[label="Game Controller", color=2, fillcolor=4];
 
     vga_ctl -> monitor[color=2, fillcolor=4];
     audio -> speakers[color=2, fillcolor=4];

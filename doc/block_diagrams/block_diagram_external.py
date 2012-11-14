@@ -6,7 +6,7 @@ MIN = 1.7
 SEP = 0.2
 
 graph.get_node('sggoc')[0].set_width(str(MIN*3+SEP*2))
-graph.get_node('sggoc')[0].set_height(str(MIN*2))
+graph.get_node('sggoc')[0].set_height(str(MIN*1))
 
 
 graph.get_node('monitor')[0].set_width(str(MIN))
