@@ -1,1 +1,1 @@
-rm *.aux *.log *.out
+rm **/*.aux **/*.log **/*.out
