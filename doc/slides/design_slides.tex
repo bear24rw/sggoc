@@ -63,6 +63,20 @@
 {\includegraphics[width=\paperwidth,height=\paperheight]{slide_bg}}
 \setbeamertemplate{footline}[bunsentheme]
 
+\section{Agenda}
+\begin{frame}
+\frametitle{Agenda}
+    \begin{itemize}
+        \item Introduction / Problem Description
+        \item The Sega Game Gear
+        \item Prototyping Platform
+        \item Design Strategy \& Process
+        \item Component Descriptions
+        \item Testing Strategy / Assessment Metrics
+        \item Issues of Concern
+    \end{itemize}
+\end{frame}
+
 \section{Introduction}
 \begin{frame}
 \frametitle{Underlying Goal}
@@ -121,7 +135,6 @@
     \end{center}
 \end{frame}
 
-\section{System Diagrams}
 \begin{frame}
     \frametitle{Black Box Diagram}
     \begin{center}
@@ -161,6 +174,7 @@
     \end{columns}
 \end{frame}
 
+\section{Design Strategy}
 \begin{frame}
     \frametitle{Design Strategy}
     \begin{enumerate}
@@ -172,7 +186,7 @@
     \end{enumerate}
 \end{frame}
 
-\section{Game ROMs}
+\section{Component Descriptions}
 \begin{frame}
     \frametitle{Game Cartridge}
     \begin{center}
@@ -264,7 +278,6 @@
     \end{columns}
 \end{frame}
 
-\section{Zilog Z80}
 \begin{frame}
     \frametitle{Zilog Z80}
     \begin{center}
@@ -291,7 +304,6 @@
 
 \end{frame}
 
-\section{System and Video RAM}
 \begin{frame}
     \frametitle{System and Video RAM}
     \begin{center}
@@ -313,7 +325,6 @@
 
 \end{frame}
 
-\section{Video Display Processor}
 \begin{frame}
     \frametitle{Video Display Processor (VDP)}
     \begin{center}
@@ -335,6 +346,7 @@
 
 \end{frame}
 
+\section{Testing Strategy}
 \begin{frame}
     \frametitle{Testing Strategy}
     Game Gear is hard to test/verify
@@ -352,5 +364,23 @@
     \onslide<7->{Could replace emulator with logic analyzer on the real hardware}
 \end{frame}
 
+\section{Issues of Concern}
+\begin{frame}
+    \frametitle{Issues of Concern}
+    \begin{itemize}
+        \item Each component is tightly dependant on each other. Need to implement each one
+        correctly for whole system to function.
+        \item If something doesn't work we cannot simply change the design spec. We are working
+            against an established spec that cannot be changed.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+    \begin{center}
+        \Huge
+        Questions?
+    \end{center}
+\end{frame}
 
 \end{document}
