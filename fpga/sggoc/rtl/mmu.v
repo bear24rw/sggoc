@@ -24,8 +24,11 @@ module mmu(
     output  [7:0]   z80_di,
     input   [7:0]   z80_do,
     input   [15:0]  z80_addr,
+
     input           z80_mem_rd,
     input           z80_mem_wr,
+    input           z80_io_rd,
+    input           z80_io_wr,
 
     output          ram_we,
     output  [7:0]   ram_di,

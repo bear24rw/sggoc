@@ -97,8 +97,11 @@ module top(
         .z80_di(z80_di),
         .z80_do(z80_do),
         .z80_addr(z80_addr),
+
         .z80_mem_rd(z80_mem_rd),
         .z80_mem_wr(z80_mem_wr),
+        .z80_io_rd(z80_io_rd),
+        .z80_io_rd(z80_io_wr),
 
         .ram_we(ram_we),
         .ram_di(ram_di),
