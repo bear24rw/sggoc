@@ -402,6 +402,23 @@ void VDP::dumpVRAM(unsigned int sa, int nb_lines)
 
 /*------------------------------------------------------------*/
 /* This is a debugging purpose function.                       */
+/* Note that this method will dump all VDP VRAM to a file.    */
+/*------------------------------------------------------------*/
+void VDP::dumpAllVRAM(void)
+{
+    cout << "Dumping all VDP VRAM to /tmp/osmose.vram"<<endl;
+
+    ofstream vfile ("/tmp/osmose.vram", ios::out | ios::binary);
+    vfile.write(reinterpret_cast<const char*>(VRAM), 0x4000);
+
+    cout << "Dumping all VDP CRAM to /tmp/osmose.cram"<<endl;
+
+    ofstream cfile ("/tmp/osmose.cram", ios::out | ios::binary);
+    cfile.write(reinterpret_cast<const char*>(CRAM), 64);
+}
+
+/*------------------------------------------------------------*/
+/* This is a debugging purpose function.                       */
 /* Note that this method will dump VDP CRAM.                      */
 /*------------------------------------------------------------*/
 void VDP::dumpCRAM()

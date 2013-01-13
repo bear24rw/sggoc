@@ -99,6 +99,7 @@ void SmsDebugger::help()
     cout << "'vdpi'        -> VDP human readable info." << endl;
     cout << "'dcram'       -> Dump VDP Color RAM." << endl;
     cout << "'dvram XXXX'  -> Dump VDP RAM from XXXX."<< endl;
+    cout << "'davram'      -> Dump all VDP RAM to /tmp/osmose.vram"<< endl;
     cout << "'dsram XXXX'  -> Dump SRAM from XXXX."<< endl;
     cout << "'help'        -> This help."     << endl;
     cout << "'quit'        -> Exit emulator." << endl;
@@ -573,6 +574,12 @@ void SmsDebugger::exec_cmd(char *cmd, int param1, int  param2)
         v->dumpVRAM(param1, 16);
         return;
     }
+    if (strcmp(cmd,"davram")==0 )
+    {
+        v->dumpAllVRAM();
+        return;
+    }
+
     if (strcmp(cmd,"bp")==0 )
     {
         addBreakpoint(param1);

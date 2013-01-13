@@ -108,6 +108,7 @@ class VDP : public DebugEventThrower, public ImplementsSaveState
         unsigned char readStatusFlag();                 // Port 0xBF/0xBD read.
         void reset();                                   // reset VDP.
         void dumpVRAM(unsigned int, int nb_lines);      // Dump VDP VRAM.
+        void dumpAllVRAM(void);                         // Dump all VDP VRAM to /tmp/osmose.vram
         void dumpCRAM();                                // Dump VDP CRAM.
         void update(unsigned int *s, bool drawline);    // Update VDP.
         unsigned short getVRAMAddr();		            // Get VDP pointer.
