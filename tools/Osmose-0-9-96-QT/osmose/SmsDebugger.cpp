@@ -66,7 +66,6 @@ void SmsDebugger::enter()
     while (end_session == false)
     {
         dumpRegisters();
-        dasm->disasm(cpu->PC);
 
         cout << endl << "Cmd:";
         line = (char *) malloc(n_byte+1);
@@ -512,7 +511,6 @@ void SmsDebugger::exec_cmd(char *cmd, int param1)
         param1 = cpu->PC;
         for (int i=0;i<16;i++)
         {
-            param1 = dasm->disasm(param1);
         }
         printf("\n");
         return;
@@ -554,7 +552,6 @@ void SmsDebugger::exec_cmd(char *cmd, int param1, int  param2)
         /* unassemble 16 instructions */
         for (int i=0;i<16;i++)
         {
-            param1 = dasm->disasm(param1);
         }
         printf("\n");
         return;

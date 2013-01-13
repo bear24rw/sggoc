@@ -93,12 +93,10 @@ OsmoseCore::OsmoseCore(const char *rom_f,  unsigned int *output, OsmoseConfigura
     cpu->attachDebugEventListener(dbg);
     mem->attachDebugEventListener(dbg);
     iom->attachDebugEventListener(dbg);
-    dasm = new Z80Dasm(*env);
     dbg->setMemoryMapper(mem);
     dbg->setEnvironment(env);
     dbg->setVDP(v);
     dbg->setIOMapper(iom);
-    dbg->setDasm(dasm);
     dbg->setCPU(cpu);
     old_cycles = 0;
 #endif

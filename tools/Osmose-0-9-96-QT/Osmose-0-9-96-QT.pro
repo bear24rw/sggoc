@@ -47,7 +47,8 @@ HEADERS += EmulationThread.h \
            osmose/WaveWriter.h \
            unzip/crypt.h \
            unzip/ioapi.h \
-           unzip/unzip.h
+           unzip/unzip.h \
+           osmose/SmsDebugger.cpp
 FORMS += Configuration.ui LogWindow.ui
 SOURCES += EmulationThread.cpp \
            Joystick.cpp \
@@ -85,4 +86,5 @@ SOURCES += EmulationThread.cpp \
            osmose/VDP_GG.cpp \
            osmose/WaveWriter.cpp \
            unzip/ioapi.c \
-           unzip/unzip.c
+           unzip/unzip.c \
+           osmose/SmsDebugger.cpp

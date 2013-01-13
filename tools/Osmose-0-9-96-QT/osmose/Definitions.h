@@ -25,7 +25,7 @@
 	Uncomment and rebuild project for integrated debugger
    	Don't forget to uncomment OPT_OBJS line in Makefile before compiling.
 */
-//#define BUILT_IN_DEBUGGER
+#define BUILT_IN_DEBUGGER
 
 //#define AUTO_SCREENSHOT
 

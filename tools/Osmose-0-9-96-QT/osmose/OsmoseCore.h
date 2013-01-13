@@ -57,6 +57,7 @@
 #include "QLogWindow.h"
 #include "Pthreadcpp.h"
 #include "SoundThread.h"
+#include "SmsDebugger.h"
 
 using namespace std;
 
@@ -119,7 +120,6 @@ class OsmoseCore : public DebugEventThrower
 
 #ifdef BUILT_IN_DEBUGGER
         unsigned int   old_cycles;	    // Used for cycle count.
-        Z80Dasm        *dasm;	     	// Z80 disasembler object.
         SmsDebugger    *dbg;	     	// Sms Debugger.
         bool           exec_f;          // Continue cpu exec Flag.
 #endif

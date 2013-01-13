@@ -36,7 +36,7 @@
 #include "MemoryMapper.h"
 #include "IOMapper.h"
 #include "SmsEnvironment.h"
-#include "z80_disasm/Z80Dasm.h"
+#include "../cpu/Z80.h"
 #include "VDP.h"
 #include "DebugEventListener.h"
 
@@ -69,10 +69,6 @@ class SmsDebugger : public DebugEventListener
         {
             iom = im;
         }
-        void setDasm(Z80Dasm *d)
-        {
-            dasm = d;
-        }
         void enter();
 
         /* DebugEventListener interface implementation. */
@@ -84,7 +80,6 @@ class SmsDebugger : public DebugEventListener
         SmsEnvironment *env;
         VDP	           *v;
         IOMapper       *iom;
-        Z80Dasm 	   *dasm;
         Z80 	       *cpu;
 
     private:
