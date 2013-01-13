@@ -94,7 +94,7 @@ it's major components
 
 At a high level the Game Gear can be viewed simply as a system which
 takes input from a game controller and produces video and audio has an
-output. This description is shown in Figure ~\ref{fig:external}
+output. This description is shown in Figure~\ref{fig:external}.
 
 \begin{figure}[H]
 \centering
@@ -106,8 +106,8 @@ output. This description is shown in Figure ~\ref{fig:external}
 Internally the functionality can be easily modularized based on the
 actual physical components. Additional components will be needed such
 as an IO controller and a memory management unit (MMU) to account for 
-the lack of tri-state buses in our design (explained later). Figure
-~\ref{fig:internal} shows the major functional components in our
+the lack of tri-state buses in our design (explained later).
+Figure~\ref{fig:internal} shows the major functional components in our
 design and their interaction with each other.
 
 \begin{figure}[H]
@@ -120,10 +120,10 @@ design and their interaction with each other.
 \newpage
 \section{Cartridges and Memory Mapping}
 
-The Z80 CPU only has 64KB of address space and only 48KB of it is
+The Z80 CPU only has 64KB of address space and 48KB of it is
 dedicated to the game cartridge. A "mapper" is used to allow the use of
-larger ROMs (as well as on-catridge RAM). Figure ~\ref{fig:gg_cart}
-shows a standard GG cartridge and Figure ~\ref{fig:gg_cart_pcb} shows
+larger ROMs (as well as on-catridge RAM). Figure~\ref{fig:gg_cart}
+shows a standard GG cartridge and Figure~\ref{fig:gg_cart_pcb} shows
 the internal PCB. The top chip is the Memory Mapper and the bottom chip
 is the actual game ROM.
 
@@ -167,7 +167,7 @@ controlled by memory addresses 0xFFFC-0xFFFF.
 
 The ROM is viewed as an array of 16KB banks. The value written into 
 the control register determines which bank is selected for 
-that slot. Figure ~\ref{fig:mapping_diagram} shows an example of 
+that slot. Figure~\ref{fig:mapping_diagram} shows an example of
 how the address space gets mapped to different ROM banks.
 
 \begin{figure}[H]
@@ -198,7 +198,7 @@ that comes with our DE-1 development board.
 The technical requirements of interfacing with the flash chip on our board
 are outside the scope of our project and as such we will be using
 a core provided by Altera \cite{flash_core} to simplify the process.
-Figure ~\ref{fig:flash_core} shows the black box diagram of the flash core provided
+Figure~\ref{fig:flash_core} shows the black box diagram of the flash core provided
 by Altera.
 
 \begin{figure}[H]
@@ -214,7 +214,7 @@ On the computer a Python program will read a ROM file byte by byte
 and send it to the FPGA over the serial port. The FPGA will send back
 the byte it just recieved as an acknowledgement. Another
 Python program will be used to read back and verify that the flash contents
-match the ROM file. Figures ~\ref{fig:rom_write} and ~\ref{fig:rom_read} 
+match the ROM file. Figures~\ref{fig:rom_write} and~\ref{fig:rom_read}
 illustrate the process of writing and reading a ROM to and from the
 flash memory.
 
@@ -242,7 +242,7 @@ The re-implementation of the Z80 is completely outside the scope of
 this project and as such we will be using the popular TV80 \cite{tv80}
 CPU which is a proven, open source, implementation of the Z80
 written in Verilog. The interface of the TV80 exactly matches that of
-the original Z80, shown in Figure ~\ref{fig:z80}, with the only
+the original Z80, shown in Figure~\ref{fig:z80}, with the only
 exception being the data bus. The original Z80, as well as the whole
 Game Gear memory system, relies on tri-state buses where as the TV80 has
 a separate bus for data in and data out. 
