@@ -20,42 +20,36 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-// http://www.altera.com/support/examples/verilog/ver-single-port-ram.html
-
-module ram(
-    input clk,
-    input we_a,
-    input we_b,
-    input [ADDR_BITS-1:0] addr_a,
-    input [ADDR_BITS-1:0] addr_b,
-    input [7:0] di_a,
-    input [7:0] di_b,
-    output reg [7:0] do_a,
-    output reg [7:0] do_b
+module seven_seg(
+    input [3:0] value,
+    output reg [6:0] seg = 0
 );
 
-    parameter WIDTH     = 8;    // 8 bits wide
-    parameter ADDR_BITS = 14;   // 2**13 (8KB) deep
-    
-    reg [WIDTH-1:0] ram[(2**ADDR_BITS)-1:0];
+    // translate the bcd lookup value into the correct number, letter, or
+    // symbol if the display is not enabled just keep it blank default to
+    // a unused symbol to indicate an error
+
+    always @(value)
+        case (value)
+            4'h0: seg <= 7'b1000000;
+            4'h1: seg <= 7'b1111001;
+            4'h2: seg <= 7'b0100100;
+            4'h3: seg <= 7'b0110000;
+            4'h4: seg <= 7'b0011001;
+            4'h5: seg <= 7'b0010010;
+            4'h6: seg <= 7'b0000010;
+            4'h7: seg <= 7'b1111000;
+            4'h8: seg <= 7'b0000000;
+            4'h9: seg <= 7'b0010000;
+            4'hA: seg <= 7'b0001000;
+            4'hB: seg <= 7'b0000011;
+            4'hC: seg <= 7'b1000110;
+            4'hD: seg <= 7'b0100001;
+            4'hE: seg <= 7'b0000110;
+            4'hF: seg <= 7'b0001110;
+            default: seg <= 7'b1110110;
+        endcase
 
 
-    always @(posedge clk) begin
-        if (we_a) begin
-            ram[addr_a] <= di_a;
-            do_a <= di_a;
-        end else begin
-            do_a <= ram[addr_a];
-        end
-    end
-
-    always @(posedge clk) begin
-        if (we_b) begin
-            ram[addr_b] <= di_b;
-            do_b <= di_b;
-        end else begin
-            do_b <= ram[addr_b];
-        end
-    end
-    
 endmodule
+

@@ -4,7 +4,16 @@ module top (
     input CLOCK_50,
     input [3:0] KEY,
     input [9:0] SW,
+    output [7:0] LEDG,
     output [9:0] LEDR,
+
+    output [6:0] HEX0,
+    output [6:0] HEX1,
+    output [6:0] HEX2,
+    output [6:0] HEX3,
+
+    input UART_RXD,
+    output UART_TXD,
 
     output [3:0] VGA_R,
     output [3:0] VGA_G,
@@ -16,19 +25,172 @@ module top (
     output VGA_VS
 );
 
-    wire rst = ~(KEY[0]);
     wire clk = CLOCK_50;
+    wire rst = ~(KEY[0]);
+    wire start = ~KEY[3];
 
-    wire [13:0] vram_addr;
-    wire [7:0] vram_do;
+    // ----------------------------------------------------
+    //                      UART
+    // ----------------------------------------------------
+
+    reg transmit;
+    wire rx_done;
+    wire tx_done;
+
+    wire [7:0] rx_data;
+    reg [7:0] tx_data = 0;
+
+    uart uart(
+        .sys_clk(clk),
+        .sys_rst(rst),
+
+        .uart_rx(UART_RXD),
+        .uart_tx(UART_TXD),
+
+        .divisor(50000000/115200/16),
+
+        .rx_data(rx_data),
+        .tx_data(tx_data),
+
+        .rx_done(rx_done),
+        .tx_done(tx_done),
+
+        .tx_wr(transmit)
+    );
+
+    // the receive line only goes high for one clock
+    // cycle so we need to latch it. if we are currently
+    // transmitting we obviously don't have a new byte yet
+
+    reg new_byte = 0;
+
+    always @(posedge rst, posedge transmit, posedge rx_done) begin
+        if (rst)
+            new_byte <= 0;
+        else if (transmit)
+            new_byte <= 0;
+        else
+            new_byte <= 1;
+    end
+
+    // the tx_done line only goes high for one clock
+    // cycle so we need to latch it. if we are currently
+    // transmitting we obviously haven't finished sending it
+
+    reg tx_done_latched = 0;
+
+    always @(posedge rst, posedge transmit, posedge tx_done) begin
+        if (rst)
+            tx_done_latched <= 0;
+        else if (transmit)
+            tx_done_latched <= 0;
+        else
+            tx_done_latched <= 1;
+    end
+
+    // ----------------------------------------------------
+    //                      RAM
+    // ----------------------------------------------------
+
+    reg [13:0] vram_addr_a;
+    wire [13:0] vram_addr_b;
+    wire [7:0] vram_do_a;
+    wire [7:0] vram_do_b;
+    reg [7:0] vram_di_a;
+    reg [7:0] vram_di_b;
+    reg vram_we_a;
+    reg vram_we_b;
 
     ram vram( 
         .clk(vga_clk),
-        .we(1'b0),
-        .addr(vram_addr),
-        .do(vram_do),
-        .di()
+
+        // port a = uart side
+        .we_a(vram_we_a),
+        .addr_a(vram_addr_a),
+        .do_a(vram_do_a),
+        .di_a(vram_di_a),
+
+        // port a = vdp side
+        .we_b(1'b0),
+        .addr_b(vram_addr_b),
+        .do_b(vram_do_b),
+        .di_b(vram_di_b)
     );
+
+
+    // ----------------------------------------------------
+    //                 STATE MACHINE
+    // ----------------------------------------------------
+
+    localparam S_IDLE       = 0;    // don't do anything, wait for reset
+    localparam S_REQUEST    = 1;    // request next data byte from uart
+    localparam S_RECV       = 2;    // wait for data byte
+    localparam S_WRITE      = 3;    // write data to ram
+    localparam S_WRITE_WAIT = 5;    // wait for write to finish
+
+    reg [3:0] state = S_IDLE;
+
+    always @(posedge clk, posedge rst) begin
+        if (rst) begin
+            tx_data <= 0;
+            transmit <= 0;
+            vram_we_a = 0;
+            vram_addr_a = 0;
+            state <= S_IDLE;
+        end else begin
+            case (state)
+
+                S_IDLE: begin
+                    if (start) begin
+                        state = S_REQUEST;
+                    end
+                end
+
+                // we want to request the next byte.
+                // trigger the uart to transmit and
+                // then go to RECV state to wait for
+                // the data
+                S_REQUEST: begin
+                    transmit = 1;
+                    state = S_RECV;
+                end
+
+                // clear the transmit flag so we only
+                // transmit one byte. check to see if
+                // we recieved a new byte
+                S_RECV: begin
+                    transmit = 0;
+
+                    // if we got a new byte, send it back to ACK.
+                    // go to WRITE to put it in flash
+                    if (new_byte) begin
+                        tx_data = rx_data;
+                        state = S_WRITE;
+                    end
+                end
+
+                S_WRITE: begin
+                    vram_di_a = rx_data;
+                    vram_we_a = 1;
+                    state = S_REQUEST;
+                end
+
+                S_WRITE_WAIT: begin
+                    vram_we_a = 0;
+                    vram_addr_a = vram_addr_a + 1;
+
+                    state = S_REQUEST;
+                end
+
+            endcase
+        end
+    end
+
+
+
+    // ----------------------------------------------------
+    //                         VDP
+    // ----------------------------------------------------
 
     wire [4:0] bg_color;
 
@@ -38,8 +200,8 @@ module top (
         .x(pixel_x),
         .y(pixel_y),
         .name_table_addr(nt_base_addr),
-        .vram_a(vram_addr),
-        .vram_d(vram_do),
+        .vram_a(vram_addr_b),
+        .vram_d(vram_do_b),
         .color(bg_color)
     );
 
@@ -100,13 +262,13 @@ module top (
 
             if (pixel_x < 256 && pixel_y < 192) begin
                 if (bg_color == 5'b00000) begin
-                    vga_r <= 4'hF;
-                    vga_g <= 4'hF;
-                    vga_b <= 4'hF;
+                    vga_r <= 4'hC;
+                    vga_g <= 4'hC;
+                    vga_b <= 4'hC;
                 end else begin
                     vga_r <= CRAM[bg_color<<1][3:0];
                     vga_g <= CRAM[bg_color<<1][7:4];
-                    vga_b <= 4'hF; //CRAM[(bg_color<<1)+1][3:0];
+                    vga_b <= CRAM[(bg_color<<1)+1][3:0];
                 end
             end else begin
                vga_g <= 4'hF;
@@ -138,5 +300,20 @@ module top (
         .in_display_area(in_display_area),
         .vga_clk(vga_clk)
     );
+
+    // ----------------------------------------------------
+    //                  STATUS LEDS
+    // ----------------------------------------------------
+
+    assign LEDG[0] = rx_done;
+    assign LEDG[1] = tx_done;
+    assign LEDG[2] = transmit;
+    assign LEDG[3] = new_byte;
+    assign LEDR = vram_addr_a[9:0];
+
+    seven_seg ss0(state, HEX0);
+
+    seven_seg ss3(CRAM[bg_color][7:4], HEX3);
+    seven_seg ss2(CRAM[bg_color][3:0], HEX2);
 
 endmodule
