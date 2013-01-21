@@ -119,9 +119,19 @@ int main (int argc, char* argv[])
 {
     bitmap_t screen;
 
-    screen.width = 256;
-    screen.height = 256;
+    screen.width = 9*32;
+    screen.height = 9*16;
     screen.pixels = calloc(sizeof(pixel_t), screen.width * screen.height);
+
+    // clear image
+    for (int x = 0; x < screen.width; x++) {
+        for (int y = 0; y < screen.height; y++) {
+            pixel_t *pixel = pixel_at(&screen, x, y);
+            pixel->red   = 0xCC;
+            pixel->green = 0xCC;
+            pixel->blue  = 0xCC;
+        }
+    }
 
     uint8_t VRAM[0x4000];
     uint8_t CRAM[64];
@@ -156,9 +166,9 @@ int main (int argc, char* argv[])
     printf("VRAM: %ld\n", sizeof(VRAM));
     printf("CRAM: %ld\n", sizeof(CRAM));
 
-    for (row = 0; row < 28; row++) {
+    for (row = 0; row < 16; row++) {
         for (col = 0; col < 32; col++) {
-            printf("Drawing column: %d\n", col);
+            printf("Drawing tile: %d,%d\n", col, row);
 
             // default name table base address
             int name_table_idx = 0x3800;
@@ -172,9 +182,19 @@ int main (int argc, char* argv[])
             pattern_idx = VRAM[name_table_idx] | ((VRAM[name_table_idx+1] & 1) << 8);
             printf("Pattern idx: 0x%X\n", pattern_idx);
 
+            static int pat = -1;
+            pat++;
             // each pattern is 32 bytes long
-            int pattern_addr = (pattern_idx*32);
+            //int pattern_addr = (pattern_idx*32);
+            int pattern_addr = (pat*32);
             printf("Pattern addr: 0x%X\n", pattern_addr);
+
+            printf("Line bitplanes: %X %X %X %X\n",
+                    VRAM[pattern_addr + 0],
+                    VRAM[pattern_addr + 1],
+                    VRAM[pattern_addr + 2],
+                    VRAM[pattern_addr + 3]
+                  );
 
             for (y = 0; y < 8; y++) {
                 for (x = 0; x < 8; x++) {
@@ -184,7 +204,7 @@ int main (int argc, char* argv[])
                     color |= (VRAM[pattern_addr + y*4 + 2] & (0b10000000 >> x)) ? (1 << 2) : 0;
                     color |= (VRAM[pattern_addr + y*4 + 3] & (0b10000000 >> x)) ? (1 << 3) : 0;
     
-                    pixel_t *pixel = pixel_at(&screen, col*8+x, row*8+y);
+                    pixel_t *pixel = pixel_at(&screen, col*9+x, row*9+y);
                     pixel->red   = 16 *  (CRAM[color*2] & 0b00001111);
                     pixel->green = 16 * ((CRAM[color*2] >> 4) & 0b00001111);
                     pixel->blue  = 16 *  (CRAM[color*2+1] & 0b00001111);
@@ -194,7 +214,7 @@ int main (int argc, char* argv[])
         }
     }
 
-    save_png_to_file (&screen, "screen.png");
+    save_png_to_file (&screen, "tiles.png");
 
     return 0;
 }
