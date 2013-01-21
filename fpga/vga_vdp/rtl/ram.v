@@ -23,7 +23,8 @@
 // http://www.altera.com/support/examples/verilog/ver-single-port-ram.html
 
 module ram(
-    input clk,
+    input clk_a,
+    input clk_b,
     input we_a,
     input we_b,
     input [ADDR_BITS-1:0] addr_a,
@@ -40,7 +41,7 @@ module ram(
     reg [WIDTH-1:0] ram[(2**ADDR_BITS)-1:0];
 
 
-    always @(posedge clk) begin
+    always @(posedge clk_a) begin
         if (we_a) begin
             ram[addr_a] <= di_a;
             do_a <= di_a;
@@ -49,7 +50,7 @@ module ram(
         end
     end
 
-    always @(posedge clk) begin
+    always @(posedge clk_b) begin
         if (we_b) begin
             ram[addr_b] <= di_b;
             do_b <= di_b;

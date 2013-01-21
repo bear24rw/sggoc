@@ -19,7 +19,7 @@ module top (
     output [3:0] VGA_G,
     output [3:0] VGA_B,
 
-    output [1:0] GPIO_1,
+    output [35:0] GPIO_1,
     
     output VGA_HS,
     output VGA_VS
@@ -28,6 +28,7 @@ module top (
     wire clk = CLOCK_50;
     wire rst = ~(KEY[0]);
     wire start = ~KEY[3];
+
 
     // ----------------------------------------------------
     //                      UART
@@ -89,7 +90,7 @@ module top (
     end
 
     // ----------------------------------------------------
-    //                      RAM
+    //                      VDP VRAM
     // ----------------------------------------------------
 
     reg [13:0] vram_addr_a;
@@ -102,15 +103,15 @@ module top (
     reg vram_we_b;
 
     ram vram( 
-        .clk(vga_clk),
-
         // port a = uart side
+        .clk_a(vga_clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
         .di_a(vram_di_a),
 
-        // port a = vdp side
+        // port b = vdp side
+        .clk_b(~vga_clk),
         .we_b(1'b0),
         .addr_b(vram_addr_b),
         .do_b(vram_do_b),
@@ -130,19 +131,19 @@ module top (
 
     reg [3:0] state = S_IDLE;
 
-    always @(posedge clk, posedge rst) begin
+    always @(posedge vga_clk, posedge rst) begin
         if (rst) begin
             tx_data <= 0;
             transmit <= 0;
-            vram_we_a = 0;
-            vram_addr_a = 0;
+            vram_we_a <= 0;
+            vram_addr_a <= 0;
             state <= S_IDLE;
         end else begin
             case (state)
 
                 S_IDLE: begin
                     if (start) begin
-                        state = S_REQUEST;
+                        state <= S_REQUEST;
                     end
                 end
 
@@ -151,65 +152,43 @@ module top (
                 // then go to RECV state to wait for
                 // the data
                 S_REQUEST: begin
-                    transmit = 1;
-                    state = S_RECV;
+                    transmit <= 1;
+                    state <= S_RECV;
                 end
 
                 // clear the transmit flag so we only
                 // transmit one byte. check to see if
                 // we recieved a new byte
                 S_RECV: begin
-                    transmit = 0;
+                    transmit <= 0;
 
                     // if we got a new byte, send it back to ACK.
                     // go to WRITE to put it in flash
                     if (new_byte) begin
-                        tx_data = rx_data;
-                        state = S_WRITE;
+                        vram_we_a <= 1;
+                        tx_data <= rx_data;
+                        state <= S_WRITE;
                     end
                 end
 
                 S_WRITE: begin
-                    vram_di_a = rx_data;
-                    vram_we_a = 1;
-                    state = S_REQUEST;
+                    vram_di_a <= rx_data;
+                    state <= S_WRITE_WAIT;
                 end
 
                 S_WRITE_WAIT: begin
-                    vram_we_a = 0;
-                    vram_addr_a = vram_addr_a + 1;
-
-                    state = S_REQUEST;
+                    vram_we_a <= 0;
+                    vram_addr_a <= vram_addr_a + 1;
+                    state <= S_REQUEST;
                 end
 
             endcase
         end
     end
 
-
-
     // ----------------------------------------------------
-    //                         VDP
+    //                      VDP REGISTERS
     // ----------------------------------------------------
-
-    wire [4:0] bg_color;
-
-    vdp_background vdp_background(
-        .clk(vga_clk),
-        .rst(rst),
-        .x(pixel_x),
-        .y(pixel_y),
-        .name_table_addr(nt_base_addr),
-        .vram_a(vram_addr_b),
-        .vram_d(vram_do_b),
-        .color(bg_color)
-    );
-
-    reg [7:0] CRAM [0:63];
-
-    initial begin
-        $readmemh("osmose.cram.linear", CRAM);
-    end
 
     reg [7:0] r [0:10];
 
@@ -227,25 +206,41 @@ module top (
         r[10] <= 'hff;  // line counter
     end
 
-    // sprite attribute table base address
-    wire [13:0] sat_base_addr = {r[5][6:1], 8'd0};
-
     // name table base address
-    //wire [13:0] nt_base_addr = {r[2][3:1], 10'd0};
-    wire [13:0] nt_base_addr = 14'h3800;
+    wire [13:0] nt_base_addr = {r[2][3:1], 11'd0};
 
-    // overscan / backdrop color
-    wire [3:0] overscan_color = r[7][3:0];
+    // ----------------------------------------------------
+    //                      VDP BACKGROUND
+    // ----------------------------------------------------
 
-    // starting column/row
-    wire [4:0] starting_col = r[8][7:3];
-    wire [4:0] starting_row = r[9][7:3];
+    wire [4:0] bg_color;
+    wire priority;
 
-    // fine x/y scroll
-    wire [2:0] fine_x_scroll = r[8][2:0];
-    wire [2:0] fine_y_scroll = r[9][2:0];
+    vdp_background vdp_background(
+        .clk(vga_clk),
+        .rst(rst),
+        .x(pixel_x),
+        .y(pixel_y),
+        .name_table_addr(nt_base_addr),
+        .vram_a(vram_addr_b),
+        .vram_d(vram_do_b),
+        .color(bg_color),
+        .priority(priority)
+    );
 
-    reg [3:0] cram_idx = 0;
+    // ----------------------------------------------------
+    //                      VDP CRAM
+    // ----------------------------------------------------
+
+    reg [7:0] CRAM [0:63];
+
+    initial begin
+        $readmemh("osmose.cram.linear", CRAM);
+    end
+
+    // ----------------------------------------------------
+    //                  OUTPUT LOGIC
+    // ----------------------------------------------------
 
     wire [9:0] pixel_y;
     wire [9:0] pixel_x;
@@ -261,19 +256,27 @@ module top (
         if (in_display_area) begin
 
             if (pixel_x < 256 && pixel_y < 192) begin
-                if (bg_color == 5'b00000) begin
-                    vga_r <= 4'hC;
-                    vga_g <= 4'hC;
-                    vga_b <= 4'hC;
-                end else begin
-                    vga_r <= CRAM[bg_color<<1][3:0];
-                    vga_g <= CRAM[bg_color<<1][7:4];
-                    vga_b <= CRAM[(bg_color<<1)+1][3:0];
-                end
+                vga_r <= CRAM[bg_color][3:0];
+                vga_g <= CRAM[bg_color][7:4];
+                vga_b <= CRAM[bg_color+1][3:0];
             end else begin
-               vga_g <= 4'hF;
-               vga_r <= 4'h0;
-               vga_b <= 4'h0;
+                // color palette
+                if (pixel_y >= 256 && pixel_x < 256) begin
+                    vga_r <= CRAM[pixel_x[7:3]*2][3:0];
+                    vga_g <= CRAM[pixel_x[7:3]*2][7:4];
+                    vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
+                end else begin
+                    // grid lines
+                    if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
+                        vga_g <= 4'hC;
+                        vga_r <= 4'hC;
+                        vga_b <= 4'hC;
+                    end else begin
+                        vga_g <= 4'h0;
+                        vga_r <= 4'h0;
+                        vga_b <= 4'h0;
+                    end
+                end
            end 
 
         end else begin
@@ -282,6 +285,10 @@ module top (
             vga_b <= 4'd00;
         end
     end
+
+    // ----------------------------------------------------
+    //                      VGA TIMING
+    // ----------------------------------------------------
 
     assign VGA_R = vga_r;
     assign VGA_G = vga_g;
@@ -309,11 +316,56 @@ module top (
     assign LEDG[1] = tx_done;
     assign LEDG[2] = transmit;
     assign LEDG[3] = new_byte;
-    assign LEDR = vram_addr_a[9:0];
+    //assign LEDR = vram_addr_a[9:0];
 
-    seven_seg ss0(state, HEX0);
+    assign LEDR[0] = bg_color[0];
+    assign LEDR[1] = bg_color[1];
+    assign LEDR[2] = bg_color[2];
+    assign LEDR[3] = bg_color[3];
 
-    seven_seg ss3(CRAM[bg_color][7:4], HEX3);
-    seven_seg ss2(CRAM[bg_color][3:0], HEX2);
+    //seven_seg ss0(state, HEX0);
+    //seven_seg ss3(bg_color[3:0], HEX3);
+    //seven_seg ss2(CRAM[SW][3:0], HEX2);
+
+   /*
+   seven_seg ss0(vram_addr_b[3:0], HEX0);
+   seven_seg ss1(vram_addr_b[7:4], HEX1);
+   seven_seg ss2(vram_addr_b[11:8], HEX2);
+   seven_seg ss3(vram_addr_b[13:12], HEX3);
+   */
+
+   //seven_seg ss0(vram_do_b[3:0], HEX0);
+   //seven_seg ss1(vram_do_b[7:4], HEX1);
+
+   seven_seg ss0(bg_color[3:0], HEX0);
+   //seven_seg ss1(bg_color[4], HEX1);
+
+    wire [7:0] debug;
+
+    /*
+    assign debug[0] = SW[0];
+    assign debug[1] = SW[1];
+    assign debug[2] = SW[2];
+    assign debug[3] = SW[3];
+    assign debug[5] = SW[4];
+    */
+    assign debug[0] = vram_do_b[0];
+    assign debug[1] = vram_do_b[1];
+    assign debug[2] = vram_do_b[2];
+    assign debug[3] = vram_do_b[3];
+    assign debug[4] = vram_do_b[4];
+    assign debug[5] = vram_do_b[5];
+    assign debug[6] = vram_do_b[6];
+    assign debug[7] = vram_do_b[7];
+
+    assign GPIO_1[25] = debug[0];
+    assign GPIO_1[23] = debug[1];
+    assign GPIO_1[21] = debug[2];
+    assign GPIO_1[19] = debug[3];
+    assign GPIO_1[17] = debug[4];
+    assign GPIO_1[15] = debug[5];
+    assign GPIO_1[13] = debug[6];
+    assign GPIO_1[11] = debug[7];
+
 
 endmodule
