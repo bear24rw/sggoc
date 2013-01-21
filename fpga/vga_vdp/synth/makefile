@@ -7,15 +7,15 @@
 
 PROJECT = top
 ASSIGNMENT_FILES = top.qpf top.qsf
-SIM_TB = top_tb
+SIM_TB = vdp_background_tb
 
 SRC = \
 	../rtl/top.v \
-	../rtl/vga_timing.v
+	../rtl/vga_timing.v \
+	../rtl/vdp_background.v
 
 SIM_SRC = \
-		../sim/vga_timing_tb.v \
-		../sim/top_tb.v
+		../sim/vdp_background_tb.v
 
 VINCDIR = \
 	-I../rtl/
