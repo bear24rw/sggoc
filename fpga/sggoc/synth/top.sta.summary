@@ -3,74 +3,98 @@ TimeQuest Timing Analyzer Summary
 ------------------------------------------------------------
 
 Type  : Slow Model Setup 'clk_div:clk_div|clk_out'
-Slack : -14.277
-TNS   : -4623.086
+Slack : -15.061
+TNS   : -5232.278
 
 Type  : Slow Model Setup 'CLOCK_50'
-Slack : -5.974
-TNS   : -841.343
+Slack : -5.455
+TNS   : -346.442
+
+Type  : Slow Model Setup 'vdp:vdp|vga_timing:vga_timing|vga_clk'
+Slack : -2.692
+TNS   : -42.470
 
 Type  : Slow Model Setup 'tv80s:z80|mreq_n~_Duplicate_1'
-Slack : -1.978
-TNS   : -44.024
-
-Type  : Slow Model Hold 'clk_div:clk_div|clk_out'
-Slack : -1.752
-TNS   : -10.549
+Slack : 0.032
+TNS   : 0.000
 
 Type  : Slow Model Hold 'CLOCK_50'
-Slack : 0.114
-TNS   : 0.000
+Slack : -0.765
+TNS   : -0.765
+
+Type  : Slow Model Hold 'clk_div:clk_div|clk_out'
+Slack : -0.232
+TNS   : -0.432
 
 Type  : Slow Model Hold 'tv80s:z80|mreq_n~_Duplicate_1'
-Slack : 0.871
+Slack : 0.133
 TNS   : 0.000
 
-Type  : Slow Model Minimum Pulse Width 'CLOCK_50'
-Slack : -2.064
-TNS   : -1176.873
+Type  : Slow Model Hold 'vdp:vdp|vga_timing:vga_timing|vga_clk'
+Slack : 0.445
+TNS   : 0.000
 
 Type  : Slow Model Minimum Pulse Width 'clk_div:clk_div|clk_out'
-Slack : -0.611
-TNS   : -545.012
+Slack : -2.064
+TNS   : -1500.294
+
+Type  : Slow Model Minimum Pulse Width 'CLOCK_50'
+Slack : -1.631
+TNS   : -181.265
 
 Type  : Slow Model Minimum Pulse Width 'tv80s:z80|mreq_n~_Duplicate_1'
 Slack : -0.611
 TNS   : -29.328
 
+Type  : Slow Model Minimum Pulse Width 'vdp:vdp|vga_timing:vga_timing|vga_clk'
+Slack : -0.611
+TNS   : -29.328
+
 Type  : Fast Model Setup 'clk_div:clk_div|clk_out'
-Slack : -4.746
-TNS   : -1462.186
+Slack : -4.989
+TNS   : -1597.139
 
 Type  : Fast Model Setup 'CLOCK_50'
-Slack : -1.742
-TNS   : -115.100
+Slack : -1.578
+TNS   : -59.361
+
+Type  : Fast Model Setup 'vdp:vdp|vga_timing:vga_timing|vga_clk'
+Slack : -0.416
+TNS   : -3.632
 
 Type  : Fast Model Setup 'tv80s:z80|mreq_n~_Duplicate_1'
-Slack : -0.249
-TNS   : -4.660
-
-Type  : Fast Model Hold 'clk_div:clk_div|clk_out'
-Slack : -1.299
-TNS   : -15.623
-
-Type  : Fast Model Hold 'CLOCK_50'
-Slack : -0.700
-TNS   : -10.303
-
-Type  : Fast Model Hold 'tv80s:z80|mreq_n~_Duplicate_1'
-Slack : 0.394
+Slack : 0.380
 TNS   : 0.000
 
-Type  : Fast Model Minimum Pulse Width 'CLOCK_50'
-Slack : -2.000
-TNS   : -1112.380
+Type  : Fast Model Hold 'CLOCK_50'
+Slack : -1.060
+TNS   : -2.340
+
+Type  : Fast Model Hold 'clk_div:clk_div|clk_out'
+Slack : -0.776
+TNS   : -10.433
+
+Type  : Fast Model Hold 'tv80s:z80|mreq_n~_Duplicate_1'
+Slack : 0.166
+TNS   : 0.000
+
+Type  : Fast Model Hold 'vdp:vdp|vga_timing:vga_timing|vga_clk'
+Slack : 0.215
+TNS   : 0.000
 
 Type  : Fast Model Minimum Pulse Width 'clk_div:clk_div|clk_out'
-Slack : -0.500
-TNS   : -446.000
+Slack : -2.000
+TNS   : -1377.000
+
+Type  : Fast Model Minimum Pulse Width 'CLOCK_50'
+Slack : -1.380
+TNS   : -148.380
 
 Type  : Fast Model Minimum Pulse Width 'tv80s:z80|mreq_n~_Duplicate_1'
+Slack : -0.500
+TNS   : -24.000
+
+Type  : Fast Model Minimum Pulse Width 'vdp:vdp|vga_timing:vga_timing|vga_clk'
 Slack : -0.500
 TNS   : -24.000
 

@@ -1,3 +1,25 @@
+/***************************************************************************
+ *   Copyright (C) 2012 by Max Thrun                                       *
+ *   Copyright (C) 2012 by Samir Silbak                                    *
+ *                                                                         *
+ *   (SSGoC) Sega Game Gear on a Chip                                      *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
+ ***************************************************************************/
+
 module top(
     input CLOCK_50,
 
@@ -17,21 +39,29 @@ module top(
     output FL_OE_N,
     output FL_CE_N,
     output FL_WE_N,
-    output FL_RST_N
+    output FL_RST_N,
+
+    output [3:0] VGA_R,
+    output [3:0] VGA_G,
+    output [3:0] VGA_B,
+
+    output VGA_HS,
+    output VGA_VS
 );
+
     // ----------------------------------------------------
     //                  KEY MAPPING
     // ----------------------------------------------------
 
-    wire reset_n = KEY[0];
+    wire rst = ~KEY[0];
 
     // ----------------------------------------------------
     //                  CLOCK DIVIDER
     // ----------------------------------------------------
 
-    wire sys_clk;
-    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, sys_clk);
-    clk_div clk_div(CLOCK_50, sys_clk);
+    wire z80_clk;
+    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
+    clk_div clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
     //                      Z80
@@ -54,8 +84,8 @@ module top(
     wire z80_busrq_n = 1;
 
     tv80s z80(
-        .clk(sys_clk),
-        .reset_n(reset_n),
+        .clk(z80_clk),
+        .reset_n(~rst),
 
         .rd_n(z80_rd_n),
         .wr_n(z80_wr_n),
@@ -101,7 +131,7 @@ module top(
         .z80_mem_rd(z80_mem_rd),
         .z80_mem_wr(z80_mem_wr),
         .z80_io_rd(z80_io_rd),
-        .z80_io_rd(z80_io_wr),
+        .z80_io_wr(z80_io_wr),
 
         .ram_we(ram_we),
         .ram_di(ram_di),
@@ -110,7 +140,12 @@ module top(
 
         .cart_di(cart_di),
         .cart_do(cart_do),
-        .cart_addr(cart_addr)
+        .cart_addr(cart_addr),
+
+        .vdp_v_counter(vdp_v_counter),
+        .vdp_h_counter(vdp_h_counter),
+        .vdp_status(vdp_status),
+        .vdp_do(vdp_do)
     );
 
     // ----------------------------------------------------
@@ -118,7 +153,7 @@ module top(
     // ----------------------------------------------------
 
     ram sys_ram(
-        .clk(CLOCK_50),
+        .clk(z80_clk),
         .we(ram_we),
         .addr(ram_addr),
         .do(ram_do),
@@ -131,7 +166,7 @@ module top(
 
     cartridge cartridge(
         .clk(CLOCK_50),
-        .rst(~reset_n),
+        .rst(rst),
         .rd(z80_mem_rd),
         .wr(z80_mem_wr),
         .wait_n(z80_wait_n),
@@ -146,6 +181,31 @@ module top(
         .FL_CE_N(FL_CE_N),
         .FL_WE_N(FL_WE_N),
         .FL_RST_N(FL_RST_N)
+    );
+
+    // ----------------------------------------------------
+    //                          VDP
+    // ----------------------------------------------------
+
+    wire [7:0] vdp_v_counter;
+    wire [7:0] vdp_h_counter;
+    wire [7:0] vdp_status;
+    wire [7:0] vdp_do;
+
+    vdp vdp(
+        .clk(z80_clk),
+        .rst(rst),
+
+        .vdp_v_counter(),
+        .vdp_h_counter(),
+        .vdp_status(),
+        .vdp_do(),
+
+        .VGA_R(VGA_R),
+        .VGA_G(VGA_G),
+        .VGA_B(VGA_B),
+        .VGA_HS(VGA_HS),
+        .VGA_VS(VGA_VS)
     );
 
     // ----------------------------------------------------
