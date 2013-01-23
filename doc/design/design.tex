@@ -25,6 +25,9 @@
 % line spacing
 \linespread{1.1}
 
+% empty line between paragraphs
+\parskip = 0.5\baselineskip
+
 % setup header and footer
 \pagestyle{fancy}
 \lfoot{Sega Game Gear on a Chip}
@@ -164,12 +167,10 @@ controlled by memory addresses 0xFFFC-0xFFFF.
     \end{tabular}
     \caption{Mapper control registers \protect\cite{mapper}}
 \end{table}
-
 The ROM is viewed as an array of 16KB banks. The value written into 
 the control register determines which bank is selected for 
 that slot. Figure~\ref{fig:mapping_diagram} shows an example of
 how the address space gets mapped to different ROM banks.
-
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.4]{mapper.png}
@@ -619,6 +620,63 @@ documented:
 \section{VGA Controller}
 
 \newpage
+\section{Testing Strategies}
+\subsection{VDP Background Generation}
+
+In order to test the operation of the VDP background generator a separate test
+project is to be created which only consists of the background generator, VRAM,
+VGA timing generator, and a UART interface.
+
+A VRAM dump will be obtained from the open-source Osmose Sega Emulator
+\cite{osmose}. Programs, written in C and running on the computer, will read
+the VRAM dump and generate images of the color palette, all 512 background
+tiles, and the final screen rendering. These programs serve a dual purpose
+allowing us to both confirm our understanding of how the background image is
+generated and also that our VRAM dump is valid. The figures below show the three
+output images of these programs.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{palette.png}
+        \caption{Color Palette}
+        \label{fig:palette}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{screen.png}
+        \caption{Complete Screen Render}
+        \label{fig:screen}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.8\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{tiles.png}
+        \caption{All 512 Tiles}
+        \label{fig:tiles}
+    \end{minipage}
+\end{figure}
+
+After the VRAM dumps have been obtained they are loaded into the VRAM on the FPGA
+via the same `memsend' program introduced in the ROM section. The image displayed on
+the monitor is then verified to ensure it matches both the emulator and the output
+renderings of our C programs.
+
+In summary, the testing strategy is executed as follows:
+\begin{enumerate}
+    \item Obtain VRAM dump from the Osmose emulator
+    \item Verify dump integrity using C rendering programs
+    \item Transfer dump to FPGA VRAM via the `memsend' tool
+    \item Verify that resulting image on screen matches output original emulator image and output from C rendering tools.
+\end{enumerate}
+
+
+\newpage
 \begin{thebibliography}{9}
     \bibitem{gg} \url{http://mo5.com/musee-machines-gamegear.html}
     \bibitem{gg_cart} \url{http://www.magisterrex.com/prodimages/EccoDolphinGameGear-h450.png}
@@ -628,6 +686,7 @@ documented:
     \bibitem{tv80} \url{http://opencores.org/project,tv80}
     \bibitem{mem_map_table} \url{http://code.google.com/p/bizhawk/source/browse/trunk/BizHawk.Emulation/Consoles/Sega/SMS/MemoryMap.Sega.cs}
     \bibitem{VDP} \url{http://www.smspower.org/uploads/Development/msvdp-20021112.txt?sid=c8bdf72dd28a0a34eeedf5f7742ca62a}
+    \bibitem{osmose} \url{http://bcz.asterope.fr/osmose.htm}
 \end{thebibliography}
 
 \end{document}
