@@ -209,7 +209,7 @@ by Altera.
 \label{fig:flash_core}
 \end{figure}
 
-A "ROM Flasher" project, completely separate from the GG project,
+A ``MemSend" project, completely separate from the GG project,
 will be used to initially load a single ROM file into the flash chip.
 On the computer a Python program will read a ROM file byte by byte
 and send it to the FPGA over the serial port. The FPGA will send back
@@ -224,14 +224,14 @@ flash memory.
     \begin{minipage}[H]{0.45\linewidth}
         \centering
         \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_write.png}
-        \caption{ROM Flasher - Write}
+        \caption{MemSend - Write}
         \label{fig:rom_write}
     \end{minipage}
     \hspace{0.5cm}
     \begin{minipage}[H]{0.45\linewidth}
         \centering
         \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_read.png}
-        \caption{ROM Flasher - Read}
+        \caption{MemSend - Read}
         \label{fig:rom_read}
     \end{minipage}
 \end{figure}
@@ -663,7 +663,7 @@ output images of these programs.
 \end{figure}
 
 After the VRAM dumps have been obtained they are loaded into the VRAM on the FPGA
-via the same `memsend' program introduced in the ROM section. The image displayed on
+via the same `MemSend' program introduced in the ROM section. The image displayed on
 the monitor is then verified to ensure it matches both the emulator and the output
 renderings of our C programs.
 
@@ -671,7 +671,7 @@ In summary, the testing strategy is executed as follows:
 \begin{enumerate}
     \item Obtain VRAM dump from the Osmose emulator
     \item Verify dump integrity using C rendering programs
-    \item Transfer dump to FPGA VRAM via the `memsend' tool
+    \item Transfer dump to FPGA VRAM via the `MemSend' tool
     \item Verify that resulting image on screen matches output original emulator image and output from C rendering tools.
 \end{enumerate}
 
