@@ -13,6 +13,7 @@
 \usepackage[pdfborder={0 0 0}]{hyperref}
 \usepackage[table]{xcolor}
 \usepackage{microtype}
+\usepackage[font=bf]{caption}
 
 % margins
 \topmargin=-0.45in
@@ -27,6 +28,9 @@
 
 % empty line between paragraphs
 \parskip = 0.5\baselineskip
+
+% reduce spacing after figures
+\setlength{\belowcaptionskip}{-\baselineskip}
 
 % setup header and footer
 \pagestyle{fancy}
@@ -134,14 +138,14 @@ is the actual game ROM.
     \centering
     \begin{minipage}[H]{0.3\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{gg_cart.png}
-        \caption{GG Cartridge\protect\cite{gg_cart}}
+        \includegraphics[height=2in]{gg_cart.png}
+        \caption{GG Cartridge \protect\cite{gg_cart}}
         \label{fig:gg_cart}
     \end{minipage}
     \hspace{1.5cm}
     \begin{minipage}[H]{0.3\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{gg_cart_pcb.png}
+        \includegraphics[height=2in]{gg_cart_pcb.png}
         \caption{Cartridge PCB \protect\cite{gg_cart_pcb}}
         \label{fig:gg_cart_pcb}
     \end{minipage}
@@ -173,7 +177,7 @@ that slot. Figure~\ref{fig:mapping_diagram} shows an example of
 how the address space gets mapped to different ROM banks.
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.4]{mapper.png}
+\includegraphics[height=1.5in]{mapper.png}
 \caption{Mapping Diagram}
 \label{fig:mapping_diagram}
 \end{figure}
@@ -221,14 +225,14 @@ flash memory.
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}[H]{0.45\linewidth}
+    \begin{minipage}[b]{0.45\linewidth}
         \centering
         \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_write.png}
         \caption{MemSend - Write}
         \label{fig:rom_write}
     \end{minipage}
-    \hspace{0.5cm}
-    \begin{minipage}[H]{0.45\linewidth}
+    \hfill
+    \begin{minipage}[b]{0.45\linewidth}
         \centering
         \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_read.png}
         \caption{MemSend - Read}
@@ -288,7 +292,7 @@ Since the cartridge memory mapper handles the slot mapping itself we are
 really only multiplexing between the cartridge and the system RAM.
 The system RAM happens to start at a nice edge being that
 0xC000 = 0b1100000000000000. To see if we are accessing RAM
-we only need to check to see if bits 15 and 16 are high. If so
+we only need to check to see if bits 15 and 16 are high. If so,
 we can simply use the 13 LSBs of the Z80 address as the index into the RAM. 
 This method also accounts for the RAM mirror since the 13 LSBs repeat
 starting at 0xE000.
@@ -634,7 +638,7 @@ tiles, and the final screen rendering. These programs serve a dual purpose
 allowing us to both confirm our understanding of how the background image is
 generated and also that our VRAM dump is valid. The figures below show the three
 output images of these programs.
-
+\vfill
 \begin{figure}[H]
     \centering
     \begin{minipage}[H]{0.45\linewidth}
@@ -651,7 +655,7 @@ output images of these programs.
         \label{fig:screen}
     \end{minipage}
 \end{figure}
-
+\vfill
 \begin{figure}[H]
     \centering
     \begin{minipage}[H]{0.8\linewidth}
@@ -661,6 +665,8 @@ output images of these programs.
         \label{fig:tiles}
     \end{minipage}
 \end{figure}
+\vfill
+\newpage
 
 After the VRAM dumps have been obtained they are loaded into the VRAM on the FPGA
 via the same `MemSend' program introduced in the ROM section. The image displayed on
