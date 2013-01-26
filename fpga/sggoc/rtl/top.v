@@ -54,24 +54,24 @@ module top(
     wire z80_busrq_n = 1;
 
     tv80s z80(
-        .clk(sys_clk), 
-        .reset_n(reset_n), 
+        .clk(sys_clk),
+        .reset_n(reset_n),
 
-        .rd_n(z80_rd_n), 
-        .wr_n(z80_wr_n), 
-        .mreq_n(z80_mreq_n), 
-        .iorq_n(z80_iorq_n), 
-        .wait_n(z80_wait_n), 
+        .rd_n(z80_rd_n),
+        .wr_n(z80_wr_n),
+        .mreq_n(z80_mreq_n),
+        .iorq_n(z80_iorq_n),
+        .wait_n(z80_wait_n),
 
         .A(z80_addr),
         .di(z80_di),
         .dout(z80_do),
 
-        .m1_n(z80_m1_n), 
-        .halt_n(z80_halt_n), 
-        .int_n(z80_int_n), 
-        .nmi_n(z80_nmi_n), 
-        .busrq_n(z80_busrq_n), 
+        .m1_n(z80_m1_n),
+        .halt_n(z80_halt_n),
+        .int_n(z80_int_n),
+        .nmi_n(z80_nmi_n),
+        .busrq_n(z80_busrq_n),
         .busak_n(z80_busak_n)
     );
 
@@ -163,7 +163,7 @@ module top(
     assign LEDG[3] = z80_rd_n;
     assign LEDG[4] = z80_wr_n;
     assign LEDG[5] = z80_halt_n;
-    
+
     assign LEDR = z80_di;
 
 endmodule

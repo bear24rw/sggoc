@@ -35,7 +35,7 @@ module clk_div(
     reg [24:0] counter = 0;
 
     always @(posedge clk_in) begin
-        
+
         // increment the counter every pulse
         counter = counter + 1;
 
@@ -50,4 +50,3 @@ module clk_div(
     end
 
 endmodule
-        

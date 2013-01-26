@@ -30,7 +30,7 @@ module mem_mapper(
     input [15:0] addr,
 
     // biggest flash addr = 255 * 0x4000 + 0x3FFF = 4 194 303
-    output [21:0] flash_addr     
+    output [21:0] flash_addr
 );
 
     // Z80 Address Mapping
@@ -82,7 +82,7 @@ module mem_mapper(
 
     // calculate the flash address in flash
     // memory based on the mapping registers
-    assign flash_addr = 
+    assign flash_addr =
         (addr <= 'h03FF) ? addr :
         (addr <= 'h3FFF) ? (rom_bank_0 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
         (addr <= 'h7FFF) ? (rom_bank_1 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :

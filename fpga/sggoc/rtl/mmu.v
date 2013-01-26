@@ -54,7 +54,7 @@ module mmu(
     // $FFFF - Mapper slot 2 control
 
     // RAM starts at 0xC000 = 0b1100000000000000
-    wire ram_en = (z80_addr[15:14] == 2'b11) 
+    wire ram_en = (z80_addr[15:14] == 2'b11);
 
     // cartridge enable is mutually exclusive with ram enable
     wire cart_en = !ram_en;

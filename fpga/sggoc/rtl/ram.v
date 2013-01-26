@@ -32,7 +32,7 @@ module ram(
 
     parameter WIDTH     = 8;    // 8 bits wide
     parameter ADDR_BITS = 13;   // 2**13 (8KB) deep
-    
+
     reg [WIDTH-1:0] ram[(2**ADDR_BITS)-1:0];
 
     reg [ADDR_BITS-1:0] addr_reg = 0;
@@ -51,5 +51,5 @@ module ram(
     // this is the natural behavior of the TriMatrix memory
     // blocks in single port mode
     assign do = ram[addr_reg];
-    
+
 endmodule
