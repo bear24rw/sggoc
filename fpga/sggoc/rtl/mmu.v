@@ -39,10 +39,16 @@ module mmu(
     input   [7:0]   cart_do,
     output  [15:0]  cart_addr,
 
+    output          vdp_control_wr,
+    output          vdp_control_rd,
+    input   [7:0]   vdp_control_o,
+
+    output          vdp_data_wr,
+    output          vdp_data_rd,
+    input   [7:0]   vdp_data_o,
+
     input   [7:0]   vdp_v_counter,
-    input   [7:0]   vdp_h_counter,
-    input   [7:0]   vdp_status,
-    input   [7:0]   vdp_do
+    input   [7:0]   vdp_h_counter
 );
 
     // Z80 Address Mapping
@@ -75,11 +81,16 @@ module mmu(
 
     wire [2:0] port = {z80_addr[7], z80_addr[6], z80_addr[0]};
 
+    assign vdp_control_wr = z80_io_wr && port == 5;
+    assign vdp_control_rd = z80_io_rd && port == 5;
+    assign vdp_data_wr    = z80_io_wr && port == 4;
+    assign vdp_data_rd    = z80_io_rd && port == 4;
+
     assign z80_di = (z80_io_rd && port == 1) ? 'hFF :
                     (z80_io_rd && port == 2) ? vdp_v_counter :
                     (z80_io_rd && port == 3) ? vdp_h_counter :
-                    (z80_io_rd && port == 4) ? vdp_do :
-                    (z80_io_rd && port == 5) ? vdp_status :
+                    (z80_io_rd && port == 4) ? vdp_data_o :
+                    (z80_io_rd && port == 5) ? vdp_control_o :
                     (z80_mem_rd && cart_en) ? cart_do :
                     (z80_mem_rd && ram_en)  ? ram_do  :
                     'hAA;

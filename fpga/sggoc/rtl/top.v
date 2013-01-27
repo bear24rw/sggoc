@@ -60,8 +60,8 @@ module top(
     // ----------------------------------------------------
 
     wire z80_clk;
-    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
-    clk_div clk_div(CLOCK_50, z80_clk);
+    clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
+    //clk_div clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
     //                      Z80
@@ -142,10 +142,16 @@ module top(
         .cart_do(cart_do),
         .cart_addr(cart_addr),
 
+        .vdp_control_wr(vdp_control_wr),
+        .vdp_control_rd(vdp_control_rd),
+        .vdp_control_o(vdp_control_o),
+
+        .vdp_data_wr(vdp_data_wr),
+        .vdp_data_rd(vdp_data_rd),
+        .vdp_data_o(vdp_data_o),
+
         .vdp_v_counter(vdp_v_counter),
         .vdp_h_counter(vdp_h_counter),
-        .vdp_status(vdp_status),
-        .vdp_do(vdp_do)
     );
 
     // ----------------------------------------------------
@@ -189,17 +195,30 @@ module top(
 
     wire [7:0] vdp_v_counter;
     wire [7:0] vdp_h_counter;
-    wire [7:0] vdp_status;
-    wire [7:0] vdp_do;
+    wire       vdp_control_wr;
+    wire       vdp_control_rd;
+    wire [7:0] vdp_control_o;
+    wire       vdp_data_wr;
+    wire       vdp_data_rd;
+    wire [7:0] vdp_data_o;
 
     vdp vdp(
+        .clk_50(CLOCK_50),
         .clk(z80_clk),
         .rst(rst),
 
+        .control_wr(vdp_control_wr),
+        .control_rd(vdp_control_rd),
+        .control_o(vdp_control_o),
+        .control_i(z80_do),
+
+        .data_wr(vdp_data_wr),
+        .data_rd(vdp_data_rd),
+        .data_o(vdp_data_o),
+        .data_i(z80_do),
+
         .vdp_v_counter(),
         .vdp_h_counter(),
-        .vdp_status(),
-        .vdp_do(),
 
         .VGA_R(VGA_R),
         .VGA_G(VGA_G),
