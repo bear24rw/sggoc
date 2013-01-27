@@ -1,5 +1,3 @@
-`include "constants.vh"
-
 module top (
     input CLOCK_50,
     input [3:0] KEY,
@@ -102,7 +100,7 @@ module top (
     reg vram_we_a;
     reg vram_we_b;
 
-    ram vram(
+    vram vram(
         // port a = uart side
         .clk_a(vga_clk),
         .we_a(vram_we_a),
