@@ -20,7 +20,7 @@ module top (
     output [3:0] VGA_B,
 
     output [35:0] GPIO_1,
-    
+
     output VGA_HS,
     output VGA_VS
 );
@@ -102,7 +102,7 @@ module top (
     reg vram_we_a;
     reg vram_we_b;
 
-    ram vram( 
+    ram vram(
         // port a = uart side
         .clk_a(vga_clk),
         .we_a(vram_we_a),
@@ -277,7 +277,8 @@ module top (
                         vga_b <= 4'h0;
                     end
                 end
-           end 
+
+           end
 
         end else begin
             vga_r <= 4'd00;
@@ -349,8 +350,8 @@ module top (
     assign debug[3] = SW[3];
     assign debug[5] = SW[4];
     */
-    assign debug[0] = vram_do_b[0];
-    assign debug[1] = vram_do_b[1];
+    assign debug[0] = VGA_VS;
+    assign debug[1] = VGA_HS;
     assign debug[2] = vram_do_b[2];
     assign debug[3] = vram_do_b[3];
     assign debug[4] = vram_do_b[4];
