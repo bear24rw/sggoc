@@ -7,18 +7,20 @@
 
 PROJECT = top
 ASSIGNMENT_FILES = top.qpf top.qsf
-SIM_TB = vdp_background_tb
+SIM_TB = vga_timing_tb
 
 SRC = \
 	../rtl/top.v \
-	../rtl/vga_timing.v \
-	../rtl/vdp_background.v
+	../../sggoc/rtl/vga_timing.v \
+	../../sggoc/rtl/vdp_background.v
 
 SIM_SRC = \
-		../sim/vdp_background_tb.v
+		../../sggoc/sim/vdp_background_tb.v \
+		../../sggoc/sim/vga_timing_tb.v
 
 VINCDIR = \
-	-I../rtl/
+	-I../rtl/ \
+	-I../../sggoc/rtl/
 
 ###################################################################
 # Main Targets
