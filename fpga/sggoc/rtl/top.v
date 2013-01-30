@@ -46,7 +46,9 @@ module top(
     output [3:0] VGA_B,
 
     output VGA_HS,
-    output VGA_VS
+    output VGA_VS,
+
+    output [35:0] GPIO_1
 );
 
     // ----------------------------------------------------
@@ -244,5 +246,25 @@ module top(
     assign LEDG[5] = z80_halt_n;
 
     assign LEDR = z80_di;
+
+    wire [7:0] debug;
+
+    assign debug[0] = z80_clk;
+    assign debug[1] = z80_do;
+    assign debug[2] = vdp_control_rd;
+    assign debug[3] = vdp_control_wr;
+    assign debug[4] = vdp_control_o;
+    assign debug[5] = vdp_data_rd;
+    assign debug[6] = vdp_data_wr;
+    assign debug[7] = vdp_data_o;
+
+    assign GPIO_1[25] = debug[0];
+    assign GPIO_1[23] = debug[1];
+    assign GPIO_1[21] = debug[2];
+    assign GPIO_1[19] = debug[3];
+    assign GPIO_1[17] = debug[4];
+    assign GPIO_1[15] = debug[5];
+    assign GPIO_1[13] = debug[6];
+    assign GPIO_1[11] = debug[7];
 
 endmodule

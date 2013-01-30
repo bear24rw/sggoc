@@ -52,6 +52,23 @@ module vdp(
 
     reg [7:0] register [0:10];
 
+    initial begin
+        register[0] <= 'h26;   // mode control 1
+        register[1] <= 'he2;   // mode control 2
+        register[2] <= 'hff;   // name table base address
+        register[3] <= 'hff;   // color table base address
+        register[4] <= 'hff;   // background pattern generator base address
+        register[5] <= 'hff;   // sprite attribute table base address
+        register[6] <= 'hff;   // sprite pattern generator base address
+        register[7] <= 'h00;   // overscan/backdrop color
+        register[8] <= 'hf0;   // background X scroll
+        register[9] <= 'h00;   // background Y scroll
+        register[10] <= 'hff;  // line counter
+    end
+
+    // name table base address
+    wire [13:0] nt_base_addr = {register[2][3:1], 11'd0};
+
     // ----------------------------------------------------
     //                      VRAM
     // ----------------------------------------------------
@@ -118,8 +135,8 @@ module vdp(
     vga_timing vga_timing (
         .clk_50(clk_50),
         .rst(rst),
-        .h_sync(VGA_HS),
-        .v_sync(VGA_VS),
+        .vga_hs(VGA_HS),
+        .vga_vs(VGA_VS),
         .pixel_y(pixel_y),
         .pixel_x(pixel_x),
         .in_display_area(in_display_area),

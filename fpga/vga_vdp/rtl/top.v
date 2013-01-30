@@ -102,7 +102,7 @@ module top (
 
     vram vram(
         // port a = uart side
-        .clk_a(vga_clk),
+        .clk_a(clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
@@ -317,10 +317,12 @@ module top (
     assign LEDG[3] = new_byte;
     //assign LEDR = vram_addr_a[9:0];
 
+    /*
     assign LEDR[0] = bg_color[0];
     assign LEDR[1] = bg_color[1];
     assign LEDR[2] = bg_color[2];
     assign LEDR[3] = bg_color[3];
+    */
 
     //seven_seg ss0(state, HEX0);
     //seven_seg ss3(bg_color[3:0], HEX3);
@@ -366,5 +368,28 @@ module top (
     assign GPIO_1[13] = debug[6];
     assign GPIO_1[11] = debug[7];
 
+    // ----------------------------------------------------
+    //                      RAM
+    // ----------------------------------------------------
+    wire ram_we = 1;
+    wire [7:0] ram_di = SW[7:0];
+    wire [7:0] ram_do;
+    reg [12:0] ram_addr = 0;
 
+    always @(posedge vga_clk, posedge rst) begin
+        if (rst)
+            ram_addr <= 0;
+        else
+            ram_addr <= ram_addr + 1;
+    end
+
+    ram sys_ram(
+        .clk(vga_clk),
+        .we(ram_we),
+        .addr(ram_addr),
+        .do(ram_do),
+        .di(ram_di)
+    );
+
+    assign LEDR = ram_do;
 endmodule
