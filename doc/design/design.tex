@@ -673,12 +673,35 @@ via the same `MemSend' program introduced in the ROM section. The image displaye
 the monitor is then verified to ensure it matches both the emulator and the output
 renderings of our C programs.
 
-In summary, the testing strategy is executed as follows:
+The testing strategy is executed as follows:
 \begin{enumerate}
     \item Obtain VRAM dump from the Osmose emulator
+        \begin{enumerate}
+            \item Launch Osmose and open ROM file
+            \item Step the CPU in the debugger until desired frame is reached
+            \item Enter \texttt{davram 0} into the debugging console
+            \item Dump files are located at \texttt{/tmp/osmose.(vram,cram)}
+        \end{enumerate}
     \item Verify dump integrity using C rendering programs
-    \item Transfer dump to FPGA VRAM via the `MemSend' tool
-    \item Verify that resulting image on screen matches output original emulator image and output from C rendering tools.
+        \begin{enumerate}
+            \item Run \texttt{screen}, located in \texttt{./tools/vdp\_render/}, on the dump files
+            \item Ensure \texttt{screen.png} is generated
+            \item Inspect \texttt{screen.png} pixel by pixel to ensure it matches the frame displayed in Osmose
+            \item If image does not match another dump must be performed
+            \item If image still does not match then debugging needs to be performed on the \texttt{screen} rendering program
+        \end{enumerate}
+    \item Transfer dump to FPGA VRAM via the `MemSend' tools
+        \begin{enumerate}
+            \item Flash the FPGA with the Video Display Processor test project located in \texttt{./fpga/vdp\_test/}
+            \item Send a ROM file to the FPGA via the \texttt{send.py} program located in \texttt{./tools/mem\_send/}
+            \item Ensure the \texttt{send.py} program completes without errors
+        \end{enumerate}
+    \item Verify that resulting image on screen
+        \begin{enumerate}
+            \item Inspect resulting image on monitor pixel by pixel and verify it matches both the original Osmose frame as well as the output from the C rendering programs
+            \item If the image doe not match attempt to resend the rom
+            \item If the image still does not match then debugging needs to be performed on the image rendering core.
+        \end{enumerate}
 \end{enumerate}
 
 \newpage
