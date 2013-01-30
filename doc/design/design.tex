@@ -681,6 +681,29 @@ In summary, the testing strategy is executed as follows:
     \item Verify that resulting image on screen matches output original emulator image and output from C rendering tools.
 \end{enumerate}
 
+\newpage
+\section{Standards}
+\subsection{Verilog 2001}
+
+The core of this project is built using the Verilog Hardware Description
+Language defined by the IEEE standard 1364-2001 \cite{ieeeverilog}. This
+standard describes the specifics of the Verilog language in regards to its
+lexical structure, data types, expressions, hierarchical structures, and its
+many other language features.  Fortunately for us, we can depends on the Altera
+Quartus II compiler to ensure that all the requirements specified in the IEEE
+standard are met. While the full standard is rather large we only need to
+concern ourselves with a few sections, specifically the sections describing the
+syntax (2, 3, 4, 6) and overall structure of how components are modeled (5, 9,
+12, 14).
+
+\subsection{GNU General Public Licensing Standard}
+
+The GNU General Public License (GPL) \cite{gpl} is a standard, copyleft,
+license for software and other works.  It guarantees end users the freedoms to
+use, study, share, and modify the source code of the software so long as any
+derivatives of the work is distributed under the same license. We felt that
+this license was the best choice for our project given the fact that it is
+primarily an academic pursuit and to be used, shared, and learned from.
 
 \newpage
 \begin{thebibliography}{9}
@@ -693,6 +716,8 @@ In summary, the testing strategy is executed as follows:
     \bibitem{mem_map_table} \url{http://code.google.com/p/bizhawk/source/browse/trunk/BizHawk.Emulation/Consoles/Sega/SMS/MemoryMap.Sega.cs}
     \bibitem{VDP} \url{http://www.smspower.org/uploads/Development/msvdp-20021112.txt?sid=c8bdf72dd28a0a34eeedf5f7742ca62a}
     \bibitem{osmose} \url{http://bcz.asterope.fr/osmose.htm}
+    \bibitem{ieeeverilog} \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00954909}
+    \bibitem{gpl} \url{http://www.gnu.org/licenses/gpl.html}
 \end{thebibliography}
 
 \end{document}
