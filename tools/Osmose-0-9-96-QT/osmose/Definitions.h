@@ -43,7 +43,7 @@
 
 /* Uncomment this line for verbose information on PSG/VDP access */
 //#define PSG_VERBOSE
-//#define VDP_ACCESS
+#define VDP_ACCESS
 //#define AUTO_NAT_VERBOSE
 //#define PAD_VERBOSE
 //#define MEM_CTRL_VERBOSE

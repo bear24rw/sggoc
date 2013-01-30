@@ -71,7 +71,7 @@ extern EmulatorOptions emu_opt;
 #define REG10 regs [10]
 
 /*Uncomment this to have VDP access trace */
-//#define VDP_VERBOSE
+#define VDP_VERBOSE
 
 typedef struct
 {
