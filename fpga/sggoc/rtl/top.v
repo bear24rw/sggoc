@@ -80,8 +80,8 @@ module top(
 
     wire z80_m1_n;
     wire z80_halt_n;
-    wire z80_int_n;
-    wire z80_nmi_n;
+    wire z80_int_n = 1;
+    wire z80_nmi_n = 1;
     wire z80_busak_n;
     wire z80_busrq_n = 1;
 
