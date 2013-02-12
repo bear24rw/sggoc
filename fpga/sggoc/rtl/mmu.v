@@ -86,7 +86,7 @@ module mmu(
     assign vdp_data_wr    = z80_io_wr && port == 4;
     assign vdp_data_rd    = z80_io_rd && port == 4;
 
-    assign z80_di = (z80_io_rd && port == 1) ? 'hFF :
+    assign z80_di = (z80_io_rd && port == 1) ? 8'hFF :
                     (z80_io_rd && port == 2) ? vdp_v_counter :
                     (z80_io_rd && port == 3) ? vdp_h_counter :
                     (z80_io_rd && port == 4) ? vdp_data_o :
