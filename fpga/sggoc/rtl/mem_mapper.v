@@ -87,6 +87,6 @@ module mem_mapper(
         (addr <= 'h3FFF) ? (rom_bank_0 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
         (addr <= 'h7FFF) ? (rom_bank_1 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
         (addr <= 'hBFFF) ? (rom_bank_2 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
-        'hDEAD;
+        22'hDEAD;
 
 endmodule
