@@ -234,30 +234,39 @@ module top(
     //                  DEBUG DISPLAY
     // ----------------------------------------------------
 
+    reg [7:0] z80_debug;
+
+    always @(posedge z80_clk) begin
+        if (z80_addr[7:0] == 'h1 && z80_io_wr)
+            z80_debug <= z80_do;
+    end
+
+    assign LEDR = z80_debug;
+
     seven_seg s0(z80_addr[3:0], HEX0);
     seven_seg s1(z80_addr[7:4], HEX1);
     seven_seg s2(z80_addr[11:8], HEX2);
     seven_seg s3(z80_addr[15:12], HEX3);
 
-    assign LEDG[0] = z80_m1_n;
-    assign LEDG[1] = z80_mreq_n;
-    assign LEDG[2] = z80_iorq_n;
-    assign LEDG[3] = z80_rd_n;
-    assign LEDG[4] = z80_wr_n;
-    assign LEDG[5] = z80_halt_n;
+    //assign LEDG[0] = z80_m1_n;
+    //assign LEDG[1] = z80_mreq_n;
+    //assign LEDG[2] = z80_iorq_n;
+    //assign LEDG[3] = z80_rd_n;
+    //assign LEDG[4] = z80_wr_n;
+    //assign LEDG[5] = z80_halt_n;
 
-    assign LEDR = z80_di;
+    assign LEDG = z80_di;
 
     wire [7:0] debug;
 
-    assign debug[0] = z80_clk;
-    assign debug[1] = z80_do;
-    assign debug[2] = vdp_control_rd;
-    assign debug[3] = vdp_control_wr;
-    assign debug[4] = vdp_control_o;
-    assign debug[5] = vdp_data_rd;
-    assign debug[6] = vdp_data_wr;
-    assign debug[7] = vdp_data_o;
+    //assign debug[0] = z80_clk;
+    //assign debug[1] = z80_do;
+    //assign debug[2] = vdp_control_rd;
+    //assign debug[3] = vdp_control_wr;
+    //assign debug[4] = vdp_control_o;
+    //assign debug[5] = vdp_data_rd;
+    //assign debug[6] = vdp_data_wr;
+    //assign debug[7] = vdp_data_o;
 
     assign GPIO_1[25] = debug[0];
     assign GPIO_1[23] = debug[1];
