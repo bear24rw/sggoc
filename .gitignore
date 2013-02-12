@@ -16,6 +16,15 @@
 *.toc
 *.nav
 *.snm
+*.asm
+*.gg
+*.gg.linear
+*.ihx
+*.lnk
+*.lst
+*.map
+*.o
+*.sym
 bytefield*
 db/
 incremental_db/
