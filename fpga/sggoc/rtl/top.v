@@ -124,7 +124,7 @@ module top(
 
     wire [7:0] cart_di;
     wire [7:0] cart_do;
-    wire [21:0] cart_addr;
+    wire [15:0] cart_addr;
 
     mmu mmu(
         .z80_di(z80_di),
