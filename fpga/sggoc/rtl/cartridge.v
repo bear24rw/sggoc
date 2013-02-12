@@ -27,7 +27,7 @@ module cartridge(
     input wr,
     input [15:0] addr,
     input [7:0] di,
-    output [7:0] do,
+    output reg [7:0] do,
     output reg wait_n,
 
     // physical flash connections
@@ -42,30 +42,41 @@ module cartridge(
     //                 STATE MACHINE
     // ----------------------------------------------------
 
-    localparam S_IDLE       = 0;
-    localparam S_READ       = 1;
+    localparam S_WAIT_READ_START = 0;
+    localparam S_WAIT_FLASH      = 1;
+    localparam S_DEASSERT_WAIT   = 2;
+    localparam S_WAIT_READ_END   = 3;
 
-    reg [2:0] state = S_IDLE;
+    reg [2:0] state = S_WAIT_READ_START;
 
     always @(posedge clk, posedge rst) begin
         if (rst) begin
-            state <= S_IDLE;
+            state <= S_WAIT_READ_START;
             wait_n <= 1;
             flash_read <= 0;
         end else begin
             case (state)
-                S_IDLE: begin
-                    if (rd) begin               // is z80 requesting a read?
-                        wait_n = 0;             // tell z80 to wait
-                        flash_read = 1;         // tell flash to read
-                        state = S_READ;         // wait for read to complete
+                S_WAIT_READ_START: begin
+                    if (rd) begin                   // is z80 requesting a read?
+                        wait_n <= 0;                // tell z80 to wait
+                        flash_read <= 1;            // tell flash to read
+                        state <= S_WAIT_FLASH;      // wait for read to complete
                     end
                 end
-                S_READ: begin
-                    if (flash_done) begin       // did the flash finish reading?
-                        flash_read = 0;         // yes, deassert write line
-                        wait_n = 1;             // tell z80 were done
-                        state = S_IDLE;         // go back and wait for another read
+                S_WAIT_FLASH: begin
+                    if (flash_done) begin           // did the flash finish reading?
+                        flash_read <= 0;            // yes, deassert write line
+                        do <= flash_do;             // latch the flash output
+                        state <= S_DEASSERT_WAIT;   // tell z80 we are done
+                    end
+                end
+                S_DEASSERT_WAIT: begin
+                        wait_n <= 1;                // tell z80 were done
+                        state <= S_WAIT_READ_END;   // wait until the read cycle is over
+                end
+                S_WAIT_READ_END: begin
+                    if (!rd) begin                  // is the read cycle over?
+                        state <= S_WAIT_READ_START; // go back and wait for another read
                     end
                 end
             endcase
@@ -91,8 +102,9 @@ module cartridge(
     //                     FLASH
     // ----------------------------------------------------
 
-    reg flash_read = 0;
-    reg flash_done = 0;
+    reg [7:0] flash_do;
+    reg       flash_read = 0;
+    reg       flash_done = 0;
 
     Altera_UP_Flash_Memory_UP_Core_Standalone flash (
         .i_clock(clk),
@@ -100,7 +112,7 @@ module cartridge(
         .i_address(flash_addr),
         .i_read(flash_read),
         .o_done(flash_done),
-        .o_data(do),
+        .o_data(flash_do),
 
         .i_data(0),
         .i_write(0),
