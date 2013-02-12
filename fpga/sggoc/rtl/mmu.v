@@ -33,7 +33,7 @@ module mmu(
     output          ram_we,
     output  [7:0]   ram_di,
     input   [7:0]   ram_do,
-    output  [13:0]  ram_addr,
+    output  [12:0]  ram_addr,
 
     output  [7:0]   cart_di,
     input   [7:0]   cart_do,
