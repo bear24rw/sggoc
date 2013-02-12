@@ -47,23 +47,29 @@ module cartridge(
 
     reg [2:0] state = S_IDLE;
 
-    always @(posedge clk) begin
-        case (state)
-            S_IDLE: begin
-                if (rd) begin               // is z80 requesting a read?
-                    wait_n = 0;             // tell z80 to wait
-                    flash_read = 1;         // tell flash to read
-                    state = S_READ;         // wait for read to complete
+    always @(posedge clk, posedge rst) begin
+        if (rst) begin
+            state <= S_IDLE;
+            wait_n <= 1;
+            flash_read <= 0;
+        end else begin
+            case (state)
+                S_IDLE: begin
+                    if (rd) begin               // is z80 requesting a read?
+                        wait_n = 0;             // tell z80 to wait
+                        flash_read = 1;         // tell flash to read
+                        state = S_READ;         // wait for read to complete
+                    end
                 end
-            end
-            S_READ: begin
-                if (flash_done) begin       // did the flash finish reading?
-                    flash_read = 0;         // yes, deassert write line
-                    wait_n = 1;             // tell z80 were done
-                    state = S_IDLE;         // go back and wait for another read
+                S_READ: begin
+                    if (flash_done) begin       // did the flash finish reading?
+                        flash_read = 0;         // yes, deassert write line
+                        wait_n = 1;             // tell z80 were done
+                        state = S_IDLE;         // go back and wait for another read
+                    end
                 end
-            end
-        endcase
+            endcase
+        end
     end
 
     // ----------------------------------------------------
@@ -95,6 +101,10 @@ module cartridge(
         .i_read(flash_read),
         .o_done(flash_done),
         .o_data(do),
+
+        .i_data(0),
+        .i_write(0),
+        .i_erase(0),
 
         .FL_ADDR(FL_ADDR),
         .FL_DQ(FL_DQ),
