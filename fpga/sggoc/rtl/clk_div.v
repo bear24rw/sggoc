@@ -36,15 +36,12 @@ module clk_div(
 
     always @(posedge clk_in) begin
 
-        // increment the counter every pulse
-        counter = counter + 1;
-
         // if we have counted up to our desired value
         if (counter == COUNT) begin
-            // toggle the output clock
-            clk_out = ~clk_out;
-            // reset the counter
-            counter = 0;
+            clk_out <= ~clk_out;    // toggle the output clock
+            counter <= 0;           // reset the counter
+        end else begin
+            counter <= counter + 1; // increment the counter every pulse
         end
 
     end
