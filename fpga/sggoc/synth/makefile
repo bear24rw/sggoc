@@ -7,13 +7,21 @@
 
 PROJECT = top
 ASSIGNMENT_FILES = top.qpf top.qsf
-SIM_TB = mem_mapper_tb
+SIM_TB = z80_tb
 
 SRC = \
+	../rtl/tv80/rtl/core/tv80s.v \
+	../rtl/tv80/rtl/core/tv80_reg.v \
+	../rtl/tv80/rtl/core/tv80_mcode.v \
+	../rtl/tv80/rtl/core/tv80_core.v \
+	../rtl/tv80/rtl/core/tv80_alu.v \
+	../rtl/tv80/env/async_mem.v \
+	../rtl/tv80/env/op_decode.v \
 	../rtl/mem_mapper.v
 
 SIM_SRC = \
-	../sim/mem_mapper_tb.v
+	../sim/mem_mapper_tb.v \
+	../sim/z80_tb.v
 
 VINCDIR = \
 	-I../rtl/
@@ -67,7 +75,7 @@ $(SIM_TB).vvp: $(SRC) $(SIM_SRC)
 	@for i in `echo $^`; do \
 	    echo $$i >> $@.list; \
 	done
-	$(IVERILOG) -o $@ $(VINCDIR) -c $@.list -s $(@:.vvp=)
+	$(IVERILOG) -Wall -o $@ $(VINCDIR) -c $@.list -s $(@:.vvp=)
 
 %.vcd: %.vvp
 	$(VVP) $<
