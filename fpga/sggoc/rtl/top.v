@@ -154,7 +154,7 @@ module top(
         .vdp_data_o(vdp_data_o),
 
         .vdp_v_counter(vdp_v_counter),
-        .vdp_h_counter(vdp_h_counter),
+        .vdp_h_counter(vdp_h_counter)
     );
 
     // ----------------------------------------------------
