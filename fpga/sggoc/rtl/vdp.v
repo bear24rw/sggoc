@@ -108,7 +108,7 @@ module vdp(
     //                      VDP BACKGROUND
     // ----------------------------------------------------
 
-    wire [4:0] bg_color;
+    wire [5:0] bg_color;
     wire priority;
 
     vdp_background vdp_background(
