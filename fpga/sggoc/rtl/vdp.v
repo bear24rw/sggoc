@@ -189,8 +189,16 @@ module vdp(
     // vram write enable when we're not writing to cram
     assign vram_we_a = data_wr && (code != 3'h3);
 
+    // keep track of the last state so we can detect edges
+    reg last_control_rd = 0;
+    reg last_control_wr = 0;
+    reg last_data_rd = 0;
+    reg last_data_wr = 0;
+
     always @(posedge clk) begin
-        if (control_wr) begin
+
+        if (control_wr && !last_control_wr) begin
+
             if (second_byte == 0) begin
                 vram_addr_a[7:0] <= control_i;
                 second_byte <= 1;
@@ -203,35 +211,45 @@ module vdp(
                     register[control_i[3:0]] <= vram_addr_a[7:0];
                 end
             end
-        end else if (control_rd || data_wr || data_rd) begin
+
+        end else if (control_rd && !last_control_rd) begin
+
             second_byte <= 0;
-        end
-
-        if (control_rd) begin
-            read_buffer <= vram_do_a;
             vram_addr_a <= vram_addr_a + 1;
-        end
+            read_buffer <= vram_do_a;
 
-        if (data_rd) begin
+        end else if (data_rd && !last_data_rd) begin
+
+            second_byte <= 0;
+            vram_addr_a <= vram_addr_a + 1;
             data_o <= read_buffer;
             read_buffer <= vram_do_a;
-            vram_addr_a <= vram_addr_a + 1;
-        end
 
-        if (data_wr) begin
+        end else if (data_wr && !last_data_wr) begin
+
+            second_byte <= 0;
+            vram_addr_a <= vram_addr_a + 1;
+
             if (code == 3) begin
-                if (vram_addr_a[0]) begin
+                if (vram_addr_a[0] == 0) begin
                     cram_latch <= data_i;
                 end else begin
+                    $display("[VDP] Writing cram addr %x with %x %x", vram_addr_a[5:0]-1, data_i, cram_latch);
                     CRAM[vram_addr_a[5:0]-1] <= cram_latch;
-                    CRAM[vram_addr_a[5:0]] <= data_i;
+                    CRAM[vram_addr_a[5:0]]   <= data_i;
                 end
             end else begin
                 vram_di_a <= data_i;
                 read_buffer <= data_i;
-                vram_addr_a <= vram_addr_a + 1;
             end
+
         end
+
+        last_control_rd <= control_rd;
+        last_control_wr <= control_wr;
+        last_data_rd <= data_rd;
+        last_data_wr <= data_wr;
+
     end
 
 endmodule
