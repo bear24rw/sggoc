@@ -63,7 +63,7 @@ module top(
 
     wire z80_clk;
     //clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
-    clk_div #(.COUNT(25000000/10))clk_div(CLOCK_50, z80_clk);
+    clk_div #(.COUNT(25000000/25)) clk_div(CLOCK_50, z80_clk);
     //clk_div clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
@@ -248,14 +248,15 @@ module top(
     seven_seg s2(z80_addr[11:8], HEX2);
     seven_seg s3(z80_addr[15:12], HEX3);
 
-    //assign LEDG[0] = z80_m1_n;
-    //assign LEDG[1] = z80_mreq_n;
-    //assign LEDG[2] = z80_iorq_n;
-    //assign LEDG[3] = z80_rd_n;
-    //assign LEDG[4] = z80_wr_n;
-    //assign LEDG[5] = z80_halt_n;
+    assign LEDG[0] = z80_m1_n;
+    assign LEDG[1] = z80_mreq_n;
+    assign LEDG[2] = z80_iorq_n;
+    assign LEDG[3] = z80_rd_n;
+    assign LEDG[4] = z80_wr_n;
+    assign LEDG[5] = z80_halt_n;
+    assign LEDG[7] = z80_clk;
 
-    assign LEDG = z80_di;
+    //assign LEDG = z80_di;
 
     wire [7:0] debug;
 
