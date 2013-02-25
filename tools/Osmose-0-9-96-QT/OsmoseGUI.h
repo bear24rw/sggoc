@@ -66,6 +66,7 @@ public:
     void xAxisChanged(int value);
 	void yAxisChanged(int value);
 	void joystickError();
+    void loadROMStartup(QString filename);
 
 protected:
 	void closeEvent(QCloseEvent * );	

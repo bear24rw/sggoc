@@ -26,8 +26,9 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    OsmoseGUI window;				
+    OsmoseGUI window;
     window.resize(512, 384 + MENU_HEIGHT);
     window.show();
+    if (argc > 1) window.loadROMStartup(argv[1]);
     return app.exec();
 }

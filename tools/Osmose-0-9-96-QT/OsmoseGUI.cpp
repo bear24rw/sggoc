@@ -481,6 +481,12 @@ void OsmoseGUI::loadROM()
 	}
 }
 
+void OsmoseGUI::loadROMStartup(QString filename)
+{
+    QLogWindow::getInstance()->appendLog("Loading ROM immediately");
+    loadTheROM(filename);
+}
+
 /**
  * This method will load a ROM, instanciate emulator core and start it.
  * It also disconnect and reconnect emuThread QObject signals/slots. 
