@@ -42,6 +42,7 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <linux/joystick.h>
+#include <unistd.h>
 #include "Pthreadcpp.h"
 
 using namespace std;
