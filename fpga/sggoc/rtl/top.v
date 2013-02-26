@@ -62,8 +62,8 @@ module top(
     // ----------------------------------------------------
 
     wire z80_clk;
-    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
-    clk_div #(.COUNT(25000000/25)) clk_div(CLOCK_50, z80_clk);
+    clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
+    //clk_div #(.COUNT(25000000/25)) clk_div(CLOCK_50, z80_clk);
     //clk_div clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
