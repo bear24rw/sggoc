@@ -195,15 +195,20 @@ module vdp(
     reg last_data_rd = 0;
     reg last_data_wr = 0;
 
+    reg [13:0] next_vram_addr_a;
+    always @(posedge clk) begin
+        vram_addr_a <= next_vram_addr_a;
+    end
+
     always @(posedge clk) begin
 
         if (control_wr && !last_control_wr) begin
 
             if (second_byte == 0) begin
-                vram_addr_a[7:0] <= control_i;
+                next_vram_addr_a[7:0] <= control_i;
                 second_byte <= 1;
             end else begin
-                vram_addr_a[13:8] <= control_i[5:0];
+                next_vram_addr_a[13:8] <= control_i[5:0];
                 code <= control_i[7:6];
                 second_byte <= 0;
                 // check for register write instead
@@ -211,21 +216,21 @@ module vdp(
                     register[control_i[3:0]] <= vram_addr_a[7:0];
                     $display("[VDP] reg %d set to %b", control_i[3:0], vram_addr_a[7:0]);
                 end else begin
-                    #5 $display("[VDP] set vram addr to %x code %d", vram_addr_a, code);
+                    #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
                 end
             end
 
         end else if (control_rd && !last_control_rd) begin
 
             second_byte <= 0;
-            vram_addr_a <= vram_addr_a + 1;
+            next_vram_addr_a <= vram_addr_a + 1;
             read_buffer <= vram_do_a;
             $display("[VDP] reading control");
 
         end else if (data_rd && !last_data_rd) begin
 
             second_byte <= 0;
-            vram_addr_a <= vram_addr_a + 1;
+            next_vram_addr_a <= vram_addr_a + 1;
             data_o <= read_buffer;
             read_buffer <= vram_do_a;
             $display("[VDP] reading data");
@@ -233,7 +238,7 @@ module vdp(
         end else if (data_wr && !last_data_wr) begin
 
             second_byte <= 0;
-            vram_addr_a <= vram_addr_a + 1;
+            next_vram_addr_a <= vram_addr_a + 1;
 
             if (code == 3) begin
                 if (vram_addr_a[0] == 0) begin
