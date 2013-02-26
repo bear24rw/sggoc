@@ -211,7 +211,7 @@ module vdp(
                     register[control_i[3:0]] <= vram_addr_a[7:0];
                     $display("[VDP] reg %d set to %b", control_i[3:0], vram_addr_a[7:0]);
                 end else begin
-                    $display("[VDP] set vram addr to %x code %d", vram_addr_a, code);
+                    #5 $display("[VDP] set vram addr to %x code %d", vram_addr_a, code);
                 end
             end
 
