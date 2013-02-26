@@ -88,8 +88,8 @@ int main()
     // drawing starts at 7th tile?? (6 tiles) * (2 bytes / tile) = 12 bytes
     vdp_set_vram_addr(NT_ADDR + 192 + 12);
 
-    // set the first 8 tiles to the first 8 patterns
-    for (i=0; i<8; i++) {
+    // set the first 10 tiles to the first 10 patterns
+    for (i=0; i<10; i++) {
         vdp_data = i;
         vdp_data = 0;
     }
@@ -98,20 +98,20 @@ int main()
     // color is palette 1
     vdp_set_vram_addr(0);
     for (i=0; i<4; i++) {
-        vdp_data = ((1 >> 0) & 0x01) ? 0xAA : 0x00;
-        vdp_data = ((1 >> 1) & 0x01) ? 0xAA : 0x00;
-        vdp_data = ((1 >> 2) & 0x01) ? 0xAA : 0x00;
-        vdp_data = ((1 >> 3) & 0x01) ? 0xAA : 0x00;
+        vdp_data = 0xAA;
+        vdp_data = 0x00;
+        vdp_data = 0x00;
+        vdp_data = 0x00;
 
-        vdp_data = ((1 >> 0) & 0x01) ? 0x55 : 0x00;
-        vdp_data = ((1 >> 1) & 0x01) ? 0x55 : 0x00;
-        vdp_data = ((1 >> 2) & 0x01) ? 0x55 : 0x00;
-        vdp_data = ((1 >> 3) & 0x01) ? 0x55 : 0x00;
+        vdp_data = 0x55;
+        vdp_data = 0x00;
+        vdp_data = 0x00;
+        vdp_data = 0x00;
     }
 
-    // set the first 8 patterns to solid color
-    for (i=0; i<8; i++) {
-        set_pattern_fill(i+1, i+1);
+    // set the next 9 patterns to solid color
+    for (i=0; i<9; i++) {
+        set_pattern_fill(i+1, i);
     }
 
 
