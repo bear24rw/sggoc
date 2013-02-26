@@ -209,6 +209,9 @@ module vdp(
                 // check for register write instead
                 if (control_i[7:6] == 2'h2) begin
                     register[control_i[3:0]] <= vram_addr_a[7:0];
+                    $display("[VDP] reg %d set to %b", control_i[3:0], vram_addr_a[7:0]);
+                end else begin
+                    $display("[VDP] set vram addr to %x code %d", vram_addr_a, code);
                 end
             end
 
@@ -217,6 +220,7 @@ module vdp(
             second_byte <= 0;
             vram_addr_a <= vram_addr_a + 1;
             read_buffer <= vram_do_a;
+            $display("[VDP] reading control");
 
         end else if (data_rd && !last_data_rd) begin
 
@@ -224,6 +228,7 @@ module vdp(
             vram_addr_a <= vram_addr_a + 1;
             data_o <= read_buffer;
             read_buffer <= vram_do_a;
+            $display("[VDP] reading data");
 
         end else if (data_wr && !last_data_wr) begin
 
@@ -239,6 +244,7 @@ module vdp(
                     CRAM[vram_addr_a[5:0]]   <= data_i;
                 end
             end else begin
+                $display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
                 vram_di_a <= data_i;
                 read_buffer <= data_i;
             end
