@@ -28,3 +28,6 @@
 bytefield*
 db/
 incremental_db/
+*.vcd
+*.vvp
+*.vvp.list
