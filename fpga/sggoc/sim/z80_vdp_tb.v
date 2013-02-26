@@ -190,22 +190,27 @@ module z80_vdp_tb;
     //                      SIM
     // ----------------------------------------------------
 
+    integer idx;
     initial begin
         $dumpfile("z80_vdp_tb.vcd");
         $dumpvars(0, z80_vdp_tb);
+        //for (idx=0; idx<(2**14)-1; idx=idx+1) $dumpvars(0, vdp.vram.ram[idx]);
     end
 
     initial begin
+        /*
         $monitor("rst: %d | addr: %x | io r:%x w:%x | mem r:%x w:%x | di: %x | do: %d | debug: %d",
             z80_rst, z80_addr,
             z80_io_rd, z80_io_wr,
             z80_mem_rd, z80_mem_rd,
             z80_di, z80_do,
             z80_debug);
+        */
+        $monitor("second byte: %d", vdp.second_byte);
         #100 z80_rst = 0;
         #100 z80_rst = 1;
         #100 z80_rst = 0;
-        #10000;
+        #100000;
         $finish;
     end
 
@@ -214,7 +219,7 @@ module z80_vdp_tb;
         state = 0;
 
     op_decode op_d();
-
+/*
     always @(posedge z80_clk)
     begin : inst_decode
         if ((`TV80_CORE_PATH.mcycle[6:0] == 1) &&
@@ -225,6 +230,7 @@ module z80_vdp_tb;
         else if (`TV80_CORE_PATH.mcycle[6:0] != 1)
             state = 0;
     end
+*/
 
 
 endmodule
