@@ -100,7 +100,7 @@ unsigned char IOMapper_GG::in8(unsigned  port)
         if (port & BIT0)
         {
 #ifdef VDP_VERBOSE
-            cout << "VDP status read."<< endl;
+            printf("VDP status read: %x\n", vdp.readStatusFlag());
 #endif
             return vdp.readStatusFlag();
         }
