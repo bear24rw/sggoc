@@ -28,7 +28,7 @@ module vdp(
     input               control_wr,
     input               control_rd,
     input      [7:0]    control_i,
-    output reg [7:0]    control_o,
+    output     [7:0]    control_o,
 
     input               data_wr,
     input               data_rd,
@@ -45,6 +45,8 @@ module vdp(
     output              VGA_HS,
     output              VGA_VS
 );
+
+    assign control_o = 'h9f;
 
     // ----------------------------------------------------
     //                      REGISTERS

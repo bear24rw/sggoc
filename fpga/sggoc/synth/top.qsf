@@ -543,6 +543,8 @@ set_global_assignment -name VERILOG_FILE ../rtl/vdp.v
 set_global_assignment -name VERILOG_FILE ../rtl/vdp_background.v
 set_global_assignment -name VERILOG_FILE ../rtl/vram.v
 set_global_assignment -name VERILOG_FILE ../rtl/vga_timing.v
+set_global_assignment -name VERILOG_FILE ../rtl/debug.v
+set_global_assignment -name VERILOG_FILE ../rtl/uart.v
 
 set_parameter -name CYCLONEII_SAFE_WRITE VERIFIED_SAFE
 

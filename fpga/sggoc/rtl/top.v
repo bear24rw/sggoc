@@ -48,6 +48,9 @@ module top(
     output VGA_HS,
     output VGA_VS,
 
+    input UART_RXD,
+    output UART_TXD,
+
     output [35:0] GPIO_1
 );
 
@@ -55,16 +58,36 @@ module top(
     //                  KEY MAPPING
     // ----------------------------------------------------
 
-    wire rst = ~KEY[0];
+    wire rst = SW[9];
 
     // ----------------------------------------------------
     //                  CLOCK DIVIDER
     // ----------------------------------------------------
 
-    wire z80_clk;
-    clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
+    wire cpu_clk;
+
+    clk_div #(.COUNT(7)) clk_div(CLOCK_50, cpu_clk);
     //clk_div #(.COUNT(25000000/25)) clk_div(CLOCK_50, z80_clk);
     //clk_div clk_div(CLOCK_50, z80_clk);
+
+    // ----------------------------------------------------
+    //                      DEBUG
+    // ----------------------------------------------------
+
+    wire z80_clk;
+
+    debug debug(
+        .clk_50(CLOCK_50),
+        .clk(cpu_clk),
+        .rst(rst),
+        .z80_clk(z80_clk),
+        .z80_addr(z80_addr),
+        .z80_mem_rd(z80_mem_rd),
+        .z80_mem_wr(z80_mem_wr),
+        .z80_rst(),
+        .UART_RXD(UART_RXD),
+        .UART_TXD(UART_TXD)
+    );
 
     // ----------------------------------------------------
     //                      Z80
@@ -243,10 +266,15 @@ module top(
 
     assign LEDR = z80_debug;
 
-    seven_seg s0(z80_addr[3:0], HEX0);
-    seven_seg s1(z80_addr[7:4], HEX1);
-    seven_seg s2(z80_addr[11:8], HEX2);
-    seven_seg s3(z80_addr[15:12], HEX3);
+    wire [7:0] seg0 = rst ? 'hF : z80_addr[3:0];
+    wire [7:0] seg1 = rst ? 'hE : z80_addr[7:4];
+    wire [7:0] seg2 = rst ? 'hE : z80_addr[11:8];
+    wire [7:0] seg3 = rst ? 'hB : z80_addr[15:12];
+
+    seven_seg s0(seg0, HEX0);
+    seven_seg s1(seg1, HEX1);
+    seven_seg s2(seg2, HEX2);
+    seven_seg s3(seg3, HEX3);
 
     assign LEDG[0] = z80_m1_n;
     assign LEDG[1] = z80_mreq_n;
@@ -258,7 +286,7 @@ module top(
 
     //assign LEDG = z80_di;
 
-    wire [7:0] debug;
+    //wire [7:0] debug;
 
     //assign debug[0] = z80_clk;
     //assign debug[1] = z80_do;
@@ -269,13 +297,13 @@ module top(
     //assign debug[6] = vdp_data_wr;
     //assign debug[7] = vdp_data_o;
 
-    assign GPIO_1[25] = debug[0];
-    assign GPIO_1[23] = debug[1];
-    assign GPIO_1[21] = debug[2];
-    assign GPIO_1[19] = debug[3];
-    assign GPIO_1[17] = debug[4];
-    assign GPIO_1[15] = debug[5];
-    assign GPIO_1[13] = debug[6];
-    assign GPIO_1[11] = debug[7];
+    //assign GPIO_1[25] = debug[0];
+    //assign GPIO_1[23] = debug[1];
+    //assign GPIO_1[21] = debug[2];
+    //assign GPIO_1[19] = debug[3];
+    //assign GPIO_1[17] = debug[4];
+    //assign GPIO_1[15] = debug[5];
+    //assign GPIO_1[13] = debug[6];
+    //assign GPIO_1[11] = debug[7];
 
 endmodule
