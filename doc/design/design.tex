@@ -14,6 +14,7 @@
 \usepackage[table]{xcolor}
 \usepackage{microtype}
 \usepackage[font=bf]{caption}
+\usepackage{booktabs}
 
 % margins
 \topmargin=-0.45in
@@ -110,11 +111,11 @@ description is shown in Figure~\ref{fig:external}.
 \end{figure}
 
 Internally the functionality can be easily modularized based on the actual
-physical components. Additional components will be needed such as an IO
-controller and a memory management unit (MMU) to account for the lack of
-tri-state buses in our design (explained later). Figure~\ref{fig:internal}
-shows the major functional components in our design and their interaction with
-each other.
+physical components found in the original Game Gear. Additional components will
+be needed such as an IO controller and a memory management unit (MMU) to
+account for the lack of tri-state buses in our design (explained later).
+Figure~\ref{fig:internal} shows the interactions between the major functional
+components in our design.
 
 \begin{figure}[H]
 \centering
@@ -133,14 +134,14 @@ Mapper and the bottom chip is the actual game ROM.
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}[H]{0.3\linewidth}
+    \begin{minipage}[b]{0.3\linewidth}
         \centering
         \includegraphics[height=2in]{gg_cart.png}
         \caption{GG Cartridge \protect\cite{gg_cart}}
         \label{fig:gg_cart}
     \end{minipage}
     \hspace{1.5cm}
-    \begin{minipage}[H]{0.3\linewidth}
+    \begin{minipage}[b]{0.3\linewidth}
         \centering
         \includegraphics[height=2in]{gg_cart_pcb.png}
         \caption{Cartridge PCB \protect\cite{gg_cart_pcb}}
@@ -157,14 +158,15 @@ into any of these 3 slots. The mapping is controlled by memory addresses
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{|c|c|c|}
-        \hline
-        \textbf{Control Register} & \textbf{Slot} & \textbf{Maps to Z80 Address} \\ \hline
-        0xFFFC           & Control Bits & -              \\ \hline
-        0xFFFD           & 0            & 0x0000-0x3FFF  \\ \hline
-        0xFFFE           & 1            & 0x4000-0x7FFF  \\ \hline
-        0xFFFF           & 2            & 0x8000-0xBFFF  \\
-        \hline
+    \begin{tabular}{ccc}
+        \toprule
+        \textbf{Control Register} & \textbf{Slot} & \textbf{Maps to Z80 Address} \\
+        \midrule
+        \texttt{0xFFFC} & Control Bits & - \\
+        \texttt{0xFFFD} & 0            & \texttt{0x0000-0x3FFF} \\
+        \texttt{0xFFFE} & 1            & \texttt{0x4000-0x7FFF} \\
+        \texttt{0xFFFF} & 2            & \texttt{0x8000-0xBFFF} \\
+        \bottomrule
     \end{tabular}
     \caption{Mapper control registers \protect\cite{mapper}}
 \end{table}
@@ -262,21 +264,21 @@ the Game Gear is shown below
 
 \begin{table}[H]
     \centering
-    \fontfamily{pcr}\selectfont
-    \begin{tabular}{l|l}
-        Address     & Device                           \\
-        \hline
-        \hline
-        0x0000-0x03FF & ROM (unpaged)                    \\
-        0x0400-0x3FFF & ROM mapper slot 0                \\
-        0x4000-0x7FFF & ROM mapper slot 1                \\
-        0x8000-0xBFFF & ROM mapper slot 2 - OR - SaveRAM \\
-        0xC000-0xDFFF & System RAM                       \\
-        0xE000-0xFFFF & System RAM (mirror)              \\
-        0xFFFC       & SaveRAM mapper control           \\
-        0xFFFD       & Mapper slot 0 control            \\
-        0xFFFE       & Mapper slot 1 control            \\
-        0xFFFF       & Mapper slot 2 control            \\
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Address} & \textbf{Device} \\
+        \midrule
+        \texttt{0x0000-0x03FF} & ROM (unpaged)                    \\
+        \texttt{0x0400-0x3FFF} & ROM mapper slot 0                \\
+        \texttt{0x4000-0x7FFF} & ROM mapper slot 1                \\
+        \texttt{0x8000-0xBFFF} & ROM mapper slot 2 - OR - SaveRAM \\
+        \texttt{0xC000-0xDFFF} & System RAM                       \\
+        \texttt{0xE000-0xFFFF} & System RAM (mirror)              \\
+        \texttt{0xFFFC}       & SaveRAM mapper control           \\
+        \texttt{0xFFFD}       & Mapper slot 0 control            \\
+        \texttt{0xFFFE}       & Mapper slot 1 control            \\
+        \texttt{0xFFFF}       & Mapper slot 2 control            \\
+        \bottomrule
     \end{tabular}
     \fontfamily{}\selectfont
     \caption{Z80 Memory Map \protect\cite{mem_map_table}}
@@ -361,42 +363,30 @@ The control port has the following format:
 \begin{figure}[H]
     \centering
     \begin{bytefield}[bitwidth=2em, endianness=big]{8}
-        \bitheader{0-7} \\
         \begin{rightwordgroup}{First Byte Written}
             \bitbox{1}{\tiny A07} & \bitbox{1}{\tiny A06} & \bitbox{1}{\tiny A05} & \bitbox{1}{\tiny A04} &
             \bitbox{1}{\tiny A03} & \bitbox{1}{\tiny A02} & \bitbox{1}{\tiny A01} & \bitbox{1}{\tiny A00}
-        \end{rightwordgroup}\\
+        \end{rightwordgroup} \\
         \bitheader{0-7} \\
         \begin{rightwordgroup}{Second Byte Written}
             \bitbox{1}{\tiny CD1} & \bitbox{1}{\tiny CD0} & \bitbox{1}{\tiny A13} & \bitbox{1}{\tiny A12} &
             \bitbox{1}{\tiny A11} & \bitbox{1}{\tiny A10} & \bitbox{1}{\tiny A09} & \bitbox{1}{\tiny A08}
-        \end{rightwordgroup}
+        \end{rightwordgroup} \\
+        \bitheader{0-7}
     \end{bytefield}
     \caption{Caption Here}
     \label{fig:figure1234}
 \end{figure}
-
-%\begin{table}[H]
-%    \centering
-%    %\begin{tabular}{@{\extracolsep{\fill}}|l|l|}
-%    %\begin{tabular}{|@{}l@{}|@{}l@{}|}
-%    \begin{tabular}{|l|l|}
-%        \hline
-%        %MSB \multicolumn{1}{|r|}{LSB} \\ \hline
-%        MSB LSB                                                 \\ \hline
-%        CD1 CD0 A13 A12 A11 A10 A09 A08 & Second byte written   \\ \hline
-%        A07 A06 A05 A04 A03 A02 A01 A00 & First byte written    \\
-%        \hline
-%    \end{tabular}
-%\end{table}
-
+Where,
 \begin{table}[H]
     \centering
-    \begin{tabular}{l|l}
-        \hline
-        \hline
-        CDX & Code register     \\
-        AXX & Address register  \\
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Bit} & \textbf{Definition} \\
+        \midrule
+        CDx & Code register     \\
+        Axx & Address register  \\
+        \bottomrule
     \end{tabular}
 \end{table}
 
@@ -407,19 +397,19 @@ additional processing based on the value of the code register:
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{c|p{5in}}
-        %\hline
-        Code value      & Actions taken                                                 \\
-        \hline
-        \hline
-            0           & A byte of VRAM is read from the location defined by
-                        the address register and is stored in the read buffer.
-                        The address register is incremented by one. Writes to
-                        the data port go to VRAM.                                     \\
-            1           & Writes to the data port go to VRAM                            \\
-            2           & This value signifies a VDP register write, explained below.
-                          Writes to the data port go to VRAM.                           \\
-            3           & Writes to the data port go to CRAM.                           \\
+    \begin{tabular}{cp{5in}}
+        \toprule
+        \textbf{Code} & \textbf{Actions Taken} \\
+        \midrule
+            0 & A byte of VRAM is read from the location defined by
+                the address register and is stored in the read buffer.
+                The address register is incremented by one. Writes to
+                the data port go to VRAM.                                     \\
+            1 & Writes to the data port go to VRAM                            \\
+            2 & This value signifies a VDP register write, explained below.
+                Writes to the data port go to VRAM.                           \\
+            3 & Writes to the data port go to CRAM.                           \\
+        \bottomrule
     \end{tabular}
 \end{table}
 
