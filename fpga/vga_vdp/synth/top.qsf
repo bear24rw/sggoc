@@ -524,7 +524,7 @@ set_global_assignment -name STRATIX_CONFIGURATION_DEVICE EPCS4
 
 
 set_global_assignment -name VERILOG_FILE ../rtl/top.v
-set_global_assignment -name VERILOG_FILE ../rtl/uart.v
+set_global_assignment -name VERILOG_FILE ../../sggoc/rtl/uart.v
 set_global_assignment -name VERILOG_FILE ../../sggoc/rtl/vga_timing.v
 set_global_assignment -name VERILOG_FILE ../../sggoc/rtl/vram.v
 set_global_assignment -name VERILOG_FILE ../../sggoc/rtl/ram.v

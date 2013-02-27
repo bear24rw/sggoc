@@ -11,7 +11,7 @@ SIM_TB =
 
 SRC = \
 	../rtl/top.v \
-	../rtl/uart.v
+	../../sggoc/rtl/uart.v
 
 SIM_SRC = 
 
