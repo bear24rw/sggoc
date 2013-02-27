@@ -95,4 +95,14 @@ module mmu(
                     (z80_mem_rd && ram_en)  ? ram_do  :
                     'hAA;
 
+    always @(posedge z80_io_rd) begin
+        case (port)
+            2: $display("[IO READ] vdp v counter: %d", vdp_v_counter);
+            3: $display("[IO READ] vdp h counter: %d", vdp_h_counter);
+            4: $display("[IO READ] vdp data");
+            5: $display("[IO READ] vdp control");
+            default: $display("[IO READ] port %d", port);
+        endcase
+    end
+
 endmodule

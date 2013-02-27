@@ -35,8 +35,8 @@ module vdp(
     input      [7:0]    data_i,
     output reg [7:0]    data_o,
 
-    output     [7:0]    vdp_v_counter,
-    output     [7:0]    vdp_h_counter,
+    output reg [7:0]    vdp_v_counter,
+    output reg [7:0]    vdp_h_counter,
 
     output reg [3:0]    VGA_R,
     output reg [3:0]    VGA_G,
@@ -178,6 +178,35 @@ module vdp(
     end
 
     // ----------------------------------------------------
+    //                    COUNTERS
+    // ----------------------------------------------------
+
+    // NTSC 256x192
+
+    initial vdp_v_counter = 0;
+    initial vdp_h_counter = 0;
+
+    wire line_complete = (pixel_x < 256) ? 0 : 1;
+
+    /*
+    always @(posedge vga_clk) begin
+        if (pixel_x < 256)
+            vdp_h_counter = pixel_x[7:0];
+        else
+            vdp_h_counter = 0;
+    end
+    */
+
+    always @(posedge line_complete) begin
+        if (pixel_y < 'hDA)
+            vdp_v_counter = pixel_y;
+        else if (pixel_y < 'hFF)
+            vdp_v_counter = 'hD5 + (pixel_y - 'hD5);
+        else
+            vdp_v_counter = 0;
+    end
+
+    // ----------------------------------------------------
     //                  CONTROL LOGIC
     // ----------------------------------------------------
 
@@ -214,7 +243,7 @@ module vdp(
                 // check for register write instead
                 if (control_i[7:6] == 2'h2) begin
                     register[control_i[3:0]] <= vram_addr_a[7:0];
-                    $display("[VDP] reg %d set to %b", control_i[3:0], vram_addr_a[7:0]);
+                    $display("[VDP] reg %d set to %x", control_i[3:0], vram_addr_a[7:0]);
                 end else begin
                     #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
                 end

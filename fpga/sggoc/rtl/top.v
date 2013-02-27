@@ -220,8 +220,8 @@ module top(
         .data_o(vdp_data_o),
         .data_i(z80_do),
 
-        .vdp_v_counter(),
-        .vdp_h_counter(),
+        .vdp_v_counter(vdp_v_counter),
+        .vdp_h_counter(vdp_h_counter),
 
         .VGA_R(VGA_R),
         .VGA_G(VGA_G),

@@ -7,7 +7,7 @@
 
 PROJECT = top
 ASSIGNMENT_FILES = top.qpf top.qsf
-SIM_TB = z80_vdp_tb
+SIM_TB = sggoc_tb
 
 SRC = \
 	../rtl/tv80/rtl/core/tv80s.v \
@@ -22,12 +22,14 @@ SRC = \
 	../rtl/vdp.v \
 	../rtl/vram.v \
 	../rtl/vdp_background.v \
-	../rtl/vga_timing.v
+	../rtl/vga_timing.v \
+	../rtl/clk_div.v \
 
 SIM_SRC = \
 	../sim/mem_mapper_tb.v \
 	../sim/z80_vdp_tb.v \
-	../sim/z80_tb.v
+	../sim/z80_tb.v \
+	../sim/sggoc_tb.v
 
 VINCDIR = \
 	-I../rtl/
