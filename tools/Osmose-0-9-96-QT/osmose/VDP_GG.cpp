@@ -63,6 +63,9 @@ void VDP_GG::writeDataPort(unsigned char data)        /* Port 0xBE written      
             unsigned short *cram_w = (unsigned short*) &CRAM[addr & 0x3e];
             *cram_w = col;
             colors[(addr>>1) & 0x1f] = colorGG12BitsToColor32Bits( col );
+#ifdef VDP_VERBOSE
+        cout << "CRAM written: at index " << ((addr>>1)&0x1f) << " with value 0x"<< hex << setw(4) << setfill('0') << col <<endl;
+#endif
         }
         addr++;
         addr &=0x3FFF;
@@ -159,6 +162,7 @@ void VDP_GG::traceBackGroundLine(unsigned int *s)
         	y /8 because a tile is made of 8 lines.
         */
         pos = ((current_line>>3)<<6) + o * 2;
+        //printf("vdp tile at addr %x (current line: %d xtile: %d pos: %d) is num %d\n", map_addr + pos, current_line, o, pos, VRAM[map_addr+pos]);
 
         /* get it's tile Index. */
         currentTile = VRAM[ map_addr + pos++];
@@ -171,6 +175,7 @@ void VDP_GG::traceBackGroundLine(unsigned int *s)
             currentTile |=0x100;        // 9th tile index bit.
         }
 
+
         //    line in tile converted to VRAM ind
         if (attrib & BIT2)
         {
@@ -181,6 +186,11 @@ void VDP_GG::traceBackGroundLine(unsigned int *s)
         {
             c = ((current_line & 7)<<2) + (currentTile<<5);
         }
+
+#ifdef VDP_VERBOSE
+        //cout << "vdp tile number 0x" << currentTile << endl;
+        //printf("vdp tile at addr 0x%x is num %d (c = 0x%x)\n", map_addr + pos - 2, currentTile, c);
+#endif
 
         // Four bytes are read into one 32bits variable. This avoid 3 memory access.
         // Bits plan are like this in the variable (intel architecture):
@@ -199,6 +209,7 @@ void VDP_GG::traceBackGroundLine(unsigned int *s)
                     col_index = ((p >>7)&1) | (((p >> 15)<<1)&2) | (((p >> 23)<<2)&4) | ((p >> 31)<<3);
                     if (attrib & BIT3) col_index|=0x10; // Then use sprite palete
                     dst[x] = colors[col_index];
+                    //printf("using color num: %d (0x%x) for dst %x\n", col_index, dst[x], x);
                     if ((attrib & BIT4) && (col_index != 0x10) && (col_index !=0x0))
                     {
                         tile_mask[x] = 1;

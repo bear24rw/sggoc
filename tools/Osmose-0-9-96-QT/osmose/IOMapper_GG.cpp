@@ -88,7 +88,8 @@ unsigned char IOMapper_GG::in8(unsigned  port)
         else 			// Read on VDP Vertical counter
         {
 #ifdef VDP_VERBOSE
-            cout << "VDP, port V COUTNER 0x7E read."<< endl;
+            //cout << "VDP, port V COUTNER 0x7E read: " << vdp.v_counter << endl;
+            printf("VDP, port V COUNTER 0x7E read: %d\n", vdp.v_counter);
 #endif
             return vdp.v_counter;
         }

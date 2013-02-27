@@ -91,6 +91,7 @@ VDP::VDP(Z80 *c, bool ntsc)
     // Select appropriate vcount array, depending on ntsc/pal option.
     if (ntsc == true)
     {
+        printf("ntsc\n");
         v_cnt = vcount_ntsc_192;
     }
     else

@@ -202,7 +202,7 @@ void IOMapper::out8(unsigned port, unsigned char value)
         if (port & BIT0) // Write on VDP Ctrl Port 0xBF
         {
 #ifdef VDP_ACCESS
-            cout << "VDP_CTRL port 0xBF written with value " << hex << setw(2) << setfill('0') << (int)value << endl;
+            //cout << "VDP_CTRL port 0xBF written with value " << hex << setw(2) << setfill('0') << (int)value << endl;
 #endif
             vdp.writeCtrlPort( value );
             return;
@@ -210,7 +210,7 @@ void IOMapper::out8(unsigned port, unsigned char value)
         else		// Write on VDP Data Port 0xBE
         {
 #ifdef VDP_VERBOSE
-            cout << "VDP_DATA port 0xBE written with value " << hex << setw(2) << setfill('0') << (int)value << endl;
+            //cout << "VDP_DATA port 0xBE written with value " << hex << setw(2) << setfill('0') << (int)value << endl;
 #endif
             vdp.writeDataPort( value );
             return;
@@ -251,7 +251,8 @@ unsigned char IOMapper::in8(unsigned port)
         else 			// Read on VDP Vertical counter
         {
 #ifdef VDP_VERBOSE
-            cout << "VDP, port V COUTNER 0x7E read."<< endl;
+            //cout << "VDP, port V COUTNER 0x7E read: " << vdp.v_counter << endl;
+            printf("VDP, port V COUNTER 0x7E read: %d\n", vdp.v_counter);
 #endif
             return vdp.v_counter;
         }
