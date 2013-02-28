@@ -339,10 +339,10 @@ void MemoryMapper::dump_smem(unsigned add, unsigned short nb_line)
 void MemoryMapper::wr8(unsigned address, unsigned char value)
 {
     if (address < 0xC000) {
-        print_log("car_w: %04x\n", address);
+        print_log("car_w: %04x <- %02x\n", address, value);
     }
     else
-        print_log("ram_w: %04x\n", address);
+        print_log("ram_w: %04x <- %02x\n", address, value);
 
     (this->*wr8_method)( address, value);
 }

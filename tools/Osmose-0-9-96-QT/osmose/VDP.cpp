@@ -463,7 +463,7 @@ void VDP::writeRegs(unsigned char r,unsigned char v)
             break;
     }
 
-    print_log("[VDP] reg %d set to %02x\n", r, v);
+    print_log("[VDP] reg %2d set to %02x\n", r, v);
 
 #ifdef VDP_VERBOSE
     if (r == 2 || r==5)
