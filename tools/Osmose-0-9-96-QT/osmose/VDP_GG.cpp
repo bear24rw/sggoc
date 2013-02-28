@@ -30,6 +30,7 @@
  */
  
 #include "VDP_GG.h"
+#include "../print_log.h"
 
 static unsigned color_latch = 0;
 
@@ -64,7 +65,9 @@ void VDP_GG::writeDataPort(unsigned char data)        /* Port 0xBE written      
             *cram_w = col;
             colors[(addr>>1) & 0x1f] = colorGG12BitsToColor32Bits( col );
 #ifdef VDP_VERBOSE
-        cout << "CRAM written: at index " << ((addr>>1)&0x1f) << " with value 0x"<< hex << setw(4) << setfill('0') << col <<endl;
+        //cout << "CRAM written: at index " << ((addr>>1)&0x1f) << " with value 0x"<< hex << setw(4) << setfill('0') << col <<endl;
+        print_log("CRAM written at index %x with value %04x\n", addr & 0x3e, col);
+        while (1){}
 #endif
         }
         addr++;
@@ -75,7 +78,8 @@ void VDP_GG::writeDataPort(unsigned char data)        /* Port 0xBE written      
         VRAM[addr] = data;
 
 #ifdef VDP_VERBOSE
-        cout << "VRAM written: at 0x" << hex << setw(4) << setfill('0')<< addr << " with value "<< setw(2) << setfill('0') <<(int)data <<endl;
+        //cout << "VRAM written: at 0x" << hex << setw(4) << setfill('0')<< addr << " with value "<< setw(2) << setfill('0') <<(int)data <<endl;
+        print_log("[VDP] Writing vram addr %04x with %02x\n", addr, data);
 #endif
         addr++;
         addr &=0x3FFF;

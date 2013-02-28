@@ -30,6 +30,7 @@
  */
  
 #include "VDP.h"
+#include "../print_log.h"
 
 extern Options opt;
 
@@ -91,7 +92,6 @@ VDP::VDP(Z80 *c, bool ntsc)
     // Select appropriate vcount array, depending on ntsc/pal option.
     if (ntsc == true)
     {
-        printf("ntsc\n");
         v_cnt = vcount_ntsc_192;
     }
     else
@@ -462,6 +462,8 @@ void VDP::writeRegs(unsigned char r,unsigned char v)
             sit_addr = (((REG5 >> 1) & 0x3F) << 8 );
             break;
     }
+
+    print_log("[VDP] reg %d set to %02x\n", r, v);
 
 #ifdef VDP_VERBOSE
     if (r == 2 || r==5)

@@ -31,6 +31,7 @@
  
 #include "IOMapper_GG.h"
 #include <stdlib.h>
+#include "../print_log.h"
 
 // Constructor.
 IOMapper_GG::IOMapper_GG(VDP &v, SN76489 &p) : IOMapper(v, p)
@@ -89,7 +90,7 @@ unsigned char IOMapper_GG::in8(unsigned  port)
         {
 #ifdef VDP_VERBOSE
             //cout << "VDP, port V COUTNER 0x7E read: " << vdp.v_counter << endl;
-            printf("VDP, port V COUNTER 0x7E read: %d\n", vdp.v_counter);
+            print_log("VDP, port V COUNTER 0x7E read: %d\n", vdp.v_counter);
 #endif
             return vdp.v_counter;
         }
@@ -100,7 +101,7 @@ unsigned char IOMapper_GG::in8(unsigned  port)
         if (port & BIT0)
         {
 #ifdef VDP_VERBOSE
-            printf("VDP status read: %x\n", vdp.readStatusFlag());
+            print_log("VDP status read: %x\n", vdp.readStatusFlag());
 #endif
             return vdp.readStatusFlag();
         }

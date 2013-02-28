@@ -37,6 +37,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "AnsiColorTerminal.h"
+#include "../print_log.h"
 
 extern Options opt;
 
@@ -337,6 +338,12 @@ void MemoryMapper::dump_smem(unsigned add, unsigned short nb_line)
 /*------------------------------------------------------------*/
 void MemoryMapper::wr8(unsigned address, unsigned char value)
 {
+    if (address < 0xC000) {
+        print_log("car_w: %04x\n", address);
+    }
+    else
+        print_log("ram_w: %04x\n", address);
+
     (this->*wr8_method)( address, value);
 }
 
@@ -430,6 +437,11 @@ unsigned char MemoryMapper::rd8(unsigned  address)
     unsigned char r=0;
     int bnk = address>> 13; 		// bnk is 0-7.
 
+    if (address < 0xC000)
+        print_log("car_r: %04x\n", address);
+    else
+        print_log("ram_r: %04x\n", address);
+
     if (address < 0x400)
     {
         r = cartridge[address & 0x1FFF];
@@ -438,6 +450,7 @@ unsigned char MemoryMapper::rd8(unsigned  address)
     {
         r = read_map[bnk][address & 0x1FFF];
     }
+
     return r;
 }
 
@@ -459,6 +472,7 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
         case 0:
             if (value & 8) // If true, An additionnal 32 Ko ram is mapped at 0x8000-BFFF
             {
+                print_log("[mem] Bank map ram at 0x8000-BFFF\n");
                 // If value & bit 4 is true, we map second 16 Bank.
                 // else, it's the first.
                 save_bbr = true;  // Save flag for BBR.
@@ -481,6 +495,7 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
             }
             else
             {
+                print_log("[mem] Bank map rom from 0xFFFF\n");
                 // We are mapping rom from 0xFFFF register.
                 int bloc = paging_regs[3] % bank16Ko_nbr;
 
@@ -505,7 +520,8 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
             // 0xFFFD is written, changing Page 0
         case 1:
 #ifdef P_VERBOSE
-            cout << "Mapping page0 on rom bank " << (unsigned int)(page) << endl;
+            print_log("[mem] Bank 0 set to %02x\n", value);
+
 #endif
             read_map[0] = &cartridge[(page<<14)];
             rd_area_type[0] = Cartridge;
@@ -520,7 +536,7 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
             // 0xFFFE is written.
         case 2:
 #ifdef P_VERBOSE
-            cout << "Mapping page1 on rom bank " << (unsigned int)(page) << endl;
+            print_log("[mem] Bank 1 set to %02x\n", value);
 #endif
             read_map[2] = &cartridge[(page<<14)];
             rd_area_type[2] = Cartridge;
@@ -538,7 +554,7 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
             if (!(paging_regs[0] & 0x08))
             {
 #ifdef P_VERBOSE
-                cout << "Mapping page2 on rom bank " << (unsigned int)(page) << endl;
+            print_log("[mem] Bank 2 set to %02x\n", value);
 #endif
                 read_map[4] = &cartridge[(page<<14)];
                 rd_area_type[4] = Cartridge;
@@ -547,6 +563,9 @@ void MemoryMapper::write_standard_paging_reg(int reg, unsigned char value)
                 read_map[5] = &cartridge[(page<<14)+0x2000];
                 rd_area_type[5] = Cartridge;
                 block_in_rd_area[5] = page *2 +1;
+            }
+            else {
+                print_log("[mem] Bank 2 OTHER\n");
             }
             break;
     }

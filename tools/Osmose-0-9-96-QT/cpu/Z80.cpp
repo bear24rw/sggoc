@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../print_log.h"
 
 // Precomputed parity, sign and zero flags table.
 u8 Z80::PF_SF_ZF_[256] =
@@ -590,6 +591,7 @@ void Z80::step()
 #ifdef OPCODES_STATS
         NO_Prefix[ instruction ]++;
 #endif
+        printf("ir: %x\n", instruction);
     }
 }
 
@@ -620,6 +622,7 @@ u32 Z80::run( u32 wanted_cycles )
 #ifdef OPCODES_STATS
             NO_Prefix[ instruction ]++;
 #endif
+            print_log("ir: %x\n", instruction);
         }
     }
     return cycleCount - tc; // overcycles !

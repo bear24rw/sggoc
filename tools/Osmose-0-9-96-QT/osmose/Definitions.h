@@ -46,8 +46,8 @@
 #define VDP_ACCESS
 //#define AUTO_NAT_VERBOSE
 //#define PAD_VERBOSE
-//#define MEM_CTRL_VERBOSE
+#define MEM_CTRL_VERBOSE
 /* Just uncomment this define to get trace of bank mapping operations */
-//#define P_VERBOSE
+#define P_VERBOSE
 
 #endif

@@ -22,9 +22,11 @@
  
 #include <QApplication>
 #include "OsmoseGUI.h"
+#include "print_log.h"
 
 int main(int argc, char *argv[])
 {
+    print_log_init();
     QApplication app(argc, argv);
     OsmoseGUI window;
     window.resize(512, 384 + MENU_HEIGHT);
