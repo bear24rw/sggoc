@@ -193,7 +193,7 @@ unsigned char VDP::readDataPort()                /* Port 0xBE read             *
     cmd_flag = false;
     r = rd_data_port_buffer;
 #ifdef VDP_VERBOSE
-    cout << "VRAM read: at 0x" << hex << setw(4) << setfill('0')<< addr << " value = "<< setw(2) << setfill('0') <<(int)r <<endl;
+    print_log("[vdp] reading data at %04x value %02x\n", addr, r);
 #endif
     rd_data_port_buffer = VRAM[addr];
     addr++;

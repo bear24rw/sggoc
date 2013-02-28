@@ -42,10 +42,10 @@
 #define SND_TOGGLE                 0.4026717557251908  // rest of 367.5/262.
 
 /* Uncomment this line for verbose information on PSG/VDP access */
-//#define PSG_VERBOSE
+#define PSG_VERBOSE
 #define VDP_ACCESS
-//#define AUTO_NAT_VERBOSE
-//#define PAD_VERBOSE
+#define AUTO_NAT_VERBOSE
+#define PAD_VERBOSE
 #define MEM_CTRL_VERBOSE
 /* Just uncomment this define to get trace of bank mapping operations */
 #define P_VERBOSE

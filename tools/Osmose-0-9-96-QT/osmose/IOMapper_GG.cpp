@@ -58,6 +58,8 @@ void IOMapper_GG::reset()
 /*----------------------------------------------------------------------*/
 unsigned char IOMapper_GG::in8(unsigned  port)
 {
+    if (port < 0x7) print_log("[io] port 0-6 read\n");
+
     if (port == 0x0) return port0x0;
     if (port == 0x1) return port0x1;
     if (port == 0x2) return port0x2;
@@ -69,11 +71,12 @@ unsigned char IOMapper_GG::in8(unsigned  port)
     if (port == 0x3E)
     {
         return port3E;
-        cout << "MEM CTRL Port 0x3E: Read, value is " << hex << setw(2) << setfill('0') << (int)port3E << endl;
+        print_log("[io] mem ctrl 0x3e read: %02x\n", port3E);
     }
     if (port <= 0x3F)
     {
         //cout << "NOT IMPLEMENTED / EXPERIMENTAL: Read port <=0x3f" << endl;
+        print_log("[io] 0x3F unimplemented\n");
         return (port & 0xff);
     }
 
@@ -100,15 +103,17 @@ unsigned char IOMapper_GG::in8(unsigned  port)
     {
         if (port & BIT0)
         {
+            unsigned char statusflag = vdp.readStatusFlag();
 #ifdef VDP_VERBOSE
-            print_log("VDP status read: %x\n", vdp.readStatusFlag());
+            print_log("VDP status read: %x\n", statusflag);
 #endif
-            return vdp.readStatusFlag();
+            return statusflag;
         }
         else			// Read VDP Data port
         {
 #ifdef VDP_VERBOSE
             cout << "CRAM/VRAM read."<< endl;
+            print_log("VDP CRAM/VRAM read\n");
 #endif
             return vdp.readDataPort();
         }
@@ -118,14 +123,14 @@ unsigned char IOMapper_GG::in8(unsigned  port)
     if (port & BIT0)
     {
 #ifdef PAD_VERBOSE
-        cout << "Port PAD2 0xDD read."<< endl;
+        print_log("[io] pad2 (0xDD) read\n");
 #endif
         return portPAD2;
     }
     else
     {
 #ifdef PAD_VERBOSE
-        cout << "Port PAD1 0xDC read."<< endl;
+        print_log("[io] pad1 (0xDC) read\n");
 #endif
         if (opt.inputType == PADDLE)
         {
