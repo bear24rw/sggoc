@@ -73,9 +73,9 @@ module mem_mapper(
             rom_bank_2 = 'h2;
         end else if (wr) begin
             case (addr)
-                'hFFFD: rom_bank_0 <= di;
-                'hFFFE: rom_bank_1 <= di;
-                'hFFFF: rom_bank_2 <= di;
+                'hFFFD: begin rom_bank_0 <= di; $display("[mem] Bank 0 set to %02x\n", di); end
+                'hFFFE: begin rom_bank_1 <= di; $display("[mem] Bank 1 set to %02x\n", di); end
+                'hFFFF: begin rom_bank_2 <= di; $display("[mem] Bank 2 set to %02x\n", di); end
             endcase
         end
     end
