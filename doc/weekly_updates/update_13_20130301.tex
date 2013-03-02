@@ -1,0 +1,41 @@
+\documentclass[12pt]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{titling}
+\usepackage[compact]{titlesec}
+\usepackage{url}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+
+\setlength{\droptitle}{-4em}
+\addtolength{\droptitle}{-4pt}
+
+\title{Sega Game Gear on a Chip \\ Weekly Update \#13}
+\author{ Max Thrun | Samir Silbak }
+
+\begin{document}
+\maketitle
+
+\section*{Accomplished}
+\begin{itemize}
+    \item Created main system testbench.
+    \item Debugged communication between z80 and vdp.
+    \item Wrote a test ROM to draw tiles to the screen.
+    \item Modified Osmose Emulator to obtain memory access traces.
+\end{itemize}
+
+\section*{Planned}
+\begin{itemize}
+    \item Continue adding documentation and testing strategies to design report.
+    \item Continue debugging the VDP and z80 communication
+\end{itemize}
+
+\section*{Outstanding Issues}
+None at this time.
+
+\vspace{.1in}
+%\begin{thebibliography}{9}
+    %\bibitem{rtl} \url{https://github.com/bear24rw/sggoc/commit/0fe9c8d7d902570128e66af6bbb956bbe84be481}
+    %\bibitem{dumps} \url{https://github.com/bear24rw/sggoc/commit/cb1e1d721d73dc726420307fff50322bc8164026}
+    %\bibitem{testing} \url{https://github.com/bear24rw/sggoc/commit/b472e8ccccd7e71a73cfd2519ff2a4bd0ab3399c}
+%\end{thebibliography}
+
+\end{document}
