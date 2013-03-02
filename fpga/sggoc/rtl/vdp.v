@@ -176,7 +176,7 @@ module vdp(
     initial vdp_v_counter = 0;
     initial vdp_h_counter = 0;
 
-    wire line_complete = (pixel_x < 256) ? 0 : 1;
+    wire line_complete = (pixel_x > 256) ? 1 : 0;
 
     /*
     always @(posedge vga_clk) begin
@@ -200,18 +200,16 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
-    always @(posedge line_complete, posedge control_rd, posedge rst) begin
-        if (rst) begin
-            status[7] <= 0;
-        end else begin
-            if (line_complete) begin
-                if (pixel_y == 8'hC1) begin
-                    $display("[vdp] Vsync IRQ");
-                    status[7] <= 1;
-                end
-            end else if (control_rd) begin
-                status[7] <= 0;
+    wire irq_event = line_complete | control_rd;
+
+    always @(posedge irq_event) begin
+        if (line_complete) begin
+            if (pixel_y == 8'hC1) begin
+                $display("[vdp] Vsync IRQ");
+                status[7] <= 1;
             end
+        end else if (control_rd) begin
+            status[7] <= 0;
         end
     end
 
