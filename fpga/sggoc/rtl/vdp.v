@@ -28,12 +28,14 @@ module vdp(
     input               control_wr,
     input               control_rd,
     input      [7:0]    control_i,
-    output     [7:0]    control_o,
+    output reg [7:0]    status,
 
     input               data_wr,
     input               data_rd,
     input      [7:0]    data_i,
     output reg [7:0]    data_o,
+
+    output              irq_n,
 
     output reg [7:0]    vdp_v_counter,
     output reg [7:0]    vdp_h_counter,
@@ -46,30 +48,16 @@ module vdp(
     output              VGA_VS
 );
 
-    assign control_o = 'h9f;
-
     // ----------------------------------------------------
     //                      REGISTERS
     // ----------------------------------------------------
 
     reg [7:0] register [0:10];
 
-    initial begin
-        register[0] <= 'h26;   // mode control 1
-        register[1] <= 'he2;   // mode control 2
-        register[2] <= 'hff;   // name table base address
-        register[3] <= 'hff;   // color table base address
-        register[4] <= 'hff;   // background pattern generator base address
-        register[5] <= 'hff;   // sprite attribute table base address
-        register[6] <= 'hff;   // sprite pattern generator base address
-        register[7] <= 'h00;   // overscan/backdrop color
-        register[8] <= 'hf0;   // background X scroll
-        register[9] <= 'h00;   // background Y scroll
-        register[10] <= 'hff;  // line counter
-    end
-
     // name table base address
     wire [13:0] nt_base_addr = {register[2][3:1], 11'd0};
+    wire        irq_vsync_en = register[1][5];
+    wire        irq_line_en  = register[0][4];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -209,13 +197,32 @@ module vdp(
     end
 
     // ----------------------------------------------------
+    //                       IRQ
+    // ----------------------------------------------------
+
+    always @(posedge line_complete, posedge control_rd, posedge rst) begin
+        if (rst) begin
+            status <= 8'h1f;
+        end if (line_complete) begin
+            if (pixel_y == 8'hC1) begin
+                $display("[vdp] Vsync IRQ");
+                status[7] = 1;
+            end
+        end else if (control_rd) begin
+            status[7] = 0;
+        end
+    end
+
+    assign irq_n = (status[7] && irq_vsync_en) ? 0 : 1;
+
+    // ----------------------------------------------------
     //                  CONTROL LOGIC
     // ----------------------------------------------------
 
     reg second_byte = 0;
     reg [1:0] code = 0;
     reg [7:0] read_buffer = 0;
-    reg [7:0] cram_latch;
+    reg [7:0] cram_latch = 0;
 
     // vram write enable when we're not writing to cram
     assign vram_we_a = data_wr && (code != 3'h3);
@@ -231,66 +238,87 @@ module vdp(
         vram_addr_a <= next_vram_addr_a;
     end
 
-    always @(posedge clk) begin
+    always @(posedge clk, posedge rst) begin
 
-        if (control_wr && !last_control_wr) begin
+        if (rst) begin
+            register[0] <= 'h00;    // mode control 1
+            register[1] <= 'h00;    // mode control 2
+            register[2] <= 'h0e;    // name table base address (0x3800)
+            register[3] <= 'h00;    // color table base address
+            register[4] <= 'h00;    // background pattern generator base address
+            register[5] <= 'h7e;    // sprite attribute table base address (0x3F00)
+            register[6] <= 'h00;    // sprite pattern generator base address
+            register[7] <= 'h00;    // overscan/backdrop color
+            register[8] <= 'h00;    // background X scroll
+            register[9] <= 'h00;    // background Y scroll
+            register[10] <= 'hff;   // line counter
+            second_byte <= 0;
+            data_o <= 8'h0;
+            last_control_wr <= 0;
+            last_control_rd <= 0;
+            last_data_wr <= 0;
+            last_data_rd <= 0;
+        end else begin
 
-            if (second_byte == 0) begin
-                next_vram_addr_a[7:0] <= control_i;
-                second_byte <= 1;
-            end else begin
-                next_vram_addr_a[13:8] <= control_i[5:0];
-                code <= control_i[7:6];
+            if (control_wr && !last_control_wr) begin
+
+                if (second_byte == 0) begin
+                    next_vram_addr_a[7:0] <= control_i;
+                    second_byte <= 1;
+                end else begin
+                    next_vram_addr_a[13:8] <= control_i[5:0];
+                    code <= control_i[7:6];
+                    second_byte <= 0;
+                    // check for register write instead
+                    if (control_i[7:6] == 2'h2) begin
+                        register[control_i[3:0]] <= vram_addr_a[7:0];
+                        $display("[VDP] reg %d set to %x", control_i[3:0], vram_addr_a[7:0]);
+                    end else begin
+                        #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
+                    end
+                end
+
+            end else if (control_rd && !last_control_rd) begin
+
                 second_byte <= 0;
-                // check for register write instead
-                if (control_i[7:6] == 2'h2) begin
-                    register[control_i[3:0]] <= vram_addr_a[7:0];
-                    $display("[VDP] reg %d set to %x", control_i[3:0], vram_addr_a[7:0]);
+                next_vram_addr_a <= vram_addr_a + 1;
+                read_buffer <= vram_do_a;
+                $display("[VDP] reading control");
+
+            end else if (data_rd && !last_data_rd) begin
+
+                second_byte <= 0;
+                next_vram_addr_a <= vram_addr_a + 1;
+                data_o <= read_buffer;
+                read_buffer <= vram_do_a;
+                $display("[VDP] reading data");
+
+            end else if (data_wr && !last_data_wr) begin
+
+                second_byte <= 0;
+                next_vram_addr_a <= vram_addr_a + 1;
+
+                if (code == 3) begin
+                    if (vram_addr_a[0] == 0) begin
+                        cram_latch <= data_i;
+                    end else begin
+                        $display("[VDP] Writing cram addr %x with %x %x", vram_addr_a[5:0]-1, data_i, cram_latch);
+                        CRAM[vram_addr_a[5:0]-1] <= cram_latch;
+                        CRAM[vram_addr_a[5:0]]   <= data_i;
+                    end
                 end else begin
-                    #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
+                    $display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
+                    vram_di_a <= data_i;
+                    read_buffer <= data_i;
                 end
+
             end
 
-        end else if (control_rd && !last_control_rd) begin
-
-            second_byte <= 0;
-            next_vram_addr_a <= vram_addr_a + 1;
-            read_buffer <= vram_do_a;
-            $display("[VDP] reading control");
-
-        end else if (data_rd && !last_data_rd) begin
-
-            second_byte <= 0;
-            next_vram_addr_a <= vram_addr_a + 1;
-            data_o <= read_buffer;
-            read_buffer <= vram_do_a;
-            $display("[VDP] reading data");
-
-        end else if (data_wr && !last_data_wr) begin
-
-            second_byte <= 0;
-            next_vram_addr_a <= vram_addr_a + 1;
-
-            if (code == 3) begin
-                if (vram_addr_a[0] == 0) begin
-                    cram_latch <= data_i;
-                end else begin
-                    $display("[VDP] Writing cram addr %x with %x %x", vram_addr_a[5:0]-1, data_i, cram_latch);
-                    CRAM[vram_addr_a[5:0]-1] <= cram_latch;
-                    CRAM[vram_addr_a[5:0]]   <= data_i;
-                end
-            end else begin
-                $display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
-                vram_di_a <= data_i;
-                read_buffer <= data_i;
-            end
-
+            last_control_rd <= control_rd;
+            last_control_wr <= control_wr;
+            last_data_rd <= data_rd;
+            last_data_wr <= data_wr;
         end
-
-        last_control_rd <= control_rd;
-        last_control_wr <= control_wr;
-        last_data_rd <= data_rd;
-        last_data_wr <= data_wr;
 
     end
 

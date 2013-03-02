@@ -67,8 +67,8 @@ module top(
     wire cpu_clk;
 
     clk_div #(.COUNT(7)) clk_div(CLOCK_50, cpu_clk);
-    //clk_div #(.COUNT(25000000/25)) clk_div(CLOCK_50, z80_clk);
-    //clk_div clk_div(CLOCK_50, z80_clk);
+    //clk_div #(.COUNT(25000000/2500)) clk_div(CLOCK_50, cpu_clk);
+    //clk_div clk_div(CLOCK_50, cpu_clk);
 
     // ----------------------------------------------------
     //                      DEBUG
@@ -104,7 +104,7 @@ module top(
 
     wire z80_m1_n;
     wire z80_halt_n;
-    wire z80_int_n = 1;
+    wire z80_int_n;
     wire z80_nmi_n = 1;
     wire z80_busak_n;
     wire z80_busrq_n = 1;
@@ -135,6 +135,7 @@ module top(
     wire z80_mem_wr = (!z80_mreq_n && !z80_wr_n);
     wire z80_io_rd = (!z80_iorq_n && !z80_rd_n);
     wire z80_io_wr = (!z80_iorq_n && !z80_wr_n);
+    wire z80_irq_rd = (!z80_iorq_n && z80_rd_n);
 
     // ----------------------------------------------------
     //                      MMU
@@ -158,6 +159,7 @@ module top(
         .z80_mem_wr(z80_mem_wr),
         .z80_io_rd(z80_io_rd),
         .z80_io_wr(z80_io_wr),
+        .z80_irq_rd(z80_irq_rd),
 
         .ram_we(ram_we),
         .ram_di(ram_di),
@@ -170,7 +172,7 @@ module top(
 
         .vdp_control_wr(vdp_control_wr),
         .vdp_control_rd(vdp_control_rd),
-        .vdp_control_o(vdp_control_o),
+        .vdp_status(vdp_status),
 
         .vdp_data_wr(vdp_data_wr),
         .vdp_data_rd(vdp_data_rd),
@@ -223,7 +225,7 @@ module top(
     wire [7:0] vdp_h_counter;
     wire       vdp_control_wr;
     wire       vdp_control_rd;
-    wire [7:0] vdp_control_o;
+    wire [7:0] vdp_status;
     wire       vdp_data_wr;
     wire       vdp_data_rd;
     wire [7:0] vdp_data_o;
@@ -235,7 +237,7 @@ module top(
 
         .control_wr(vdp_control_wr),
         .control_rd(vdp_control_rd),
-        .control_o(vdp_control_o),
+        .status(vdp_status),
         .control_i(z80_do),
 
         .data_wr(vdp_data_wr),
@@ -243,6 +245,7 @@ module top(
         .data_o(vdp_data_o),
         .data_i(z80_do),
 
+        .irq_n(z80_int_n),
         .vdp_v_counter(vdp_v_counter),
         .vdp_h_counter(vdp_h_counter),
 
@@ -292,7 +295,7 @@ module top(
     //assign debug[1] = z80_do;
     //assign debug[2] = vdp_control_rd;
     //assign debug[3] = vdp_control_wr;
-    //assign debug[4] = vdp_control_o;
+    //assign debug[4] = vdp_status;
     //assign debug[5] = vdp_data_rd;
     //assign debug[6] = vdp_data_wr;
     //assign debug[7] = vdp_data_o;
