@@ -202,14 +202,16 @@ module vdp(
 
     always @(posedge line_complete, posedge control_rd, posedge rst) begin
         if (rst) begin
-            status <= 8'h1f;
-        end if (line_complete) begin
-            if (pixel_y == 8'hC1) begin
-                $display("[vdp] Vsync IRQ");
-                status[7] = 1;
+            status[7] <= 0;
+        end else begin
+            if (line_complete) begin
+                if (pixel_y == 8'hC1) begin
+                    $display("[vdp] Vsync IRQ");
+                    status[7] <= 1;
+                end
+            end else if (control_rd) begin
+                status[7] <= 0;
             end
-        end else if (control_rd) begin
-            status[7] = 0;
         end
     end
 
