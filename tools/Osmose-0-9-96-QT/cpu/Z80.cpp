@@ -544,6 +544,7 @@ bool Z80::interrupt( u8 data )
 #ifdef BUILT_IN_DEBUGGER
         throwDebugEvent(DbgEvtCpuIrqAsserted, "CPU", "IRQ Asserted: CPU accepts it (DI).");
 #endif
+        print_log("[z80] IRQ asserted\n");
         /* Interrupts are enabled */
         cpuHalted = false; // UnHalt the CPU.
         IFF1 = IFF2 = false; // Disable Maskable interrupt

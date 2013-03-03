@@ -500,10 +500,11 @@ void VDP::update(unsigned int *s, bool drawline)
     }
 
     /* Line interrupt. */
+/*
     if (line < 193)
     {
         i_counter--;
-        /* Line counter overflow. */
+        // Line counter overflow.
         if (i_counter == 0xFF)
         {
             i_counter = REG10;
@@ -511,7 +512,7 @@ void VDP::update(unsigned int *s, bool drawline)
         }
     }
     else i_counter = REG10;
-
+*/
     updateIRQAssertion();
     v_counter = v_cnt[line];
 #ifdef BUILT_IN_DEBUGGER
@@ -533,11 +534,13 @@ void VDP::updateIRQAssertion()
     if (irq_line_pending && (REG0 & BIT4))
     {
         sms_irq = true;
+        print_log("[vdp] Line IRQ\n");
         //cout << "IRQ from Line IRQ " << dec <<line << endl;
     }
     if (vsynch_irq_pending && (REG1 & BIT5))
     {
         sms_irq = true;
+        print_log("[vdp] Vsync IRQ\n");
         //cout << "IRQ from Line VSYNCH " << dec <<line << endl;
     }
     if (sms_irq)
