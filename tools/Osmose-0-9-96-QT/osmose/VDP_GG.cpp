@@ -66,7 +66,7 @@ void VDP_GG::writeDataPort(unsigned char data)        /* Port 0xBE written      
             colors[(addr>>1) & 0x1f] = colorGG12BitsToColor32Bits( col );
 #ifdef VDP_VERBOSE
         //cout << "CRAM written: at index " << ((addr>>1)&0x1f) << " with value 0x"<< hex << setw(4) << setfill('0') << col <<endl;
-        print_log("[VDP] CRAM written at index %x with value %04x\n", addr & 0x3e, col);
+        print_log("[VDP] Writing cram addr %08x with %04x\n", addr & 0x3e, col);
 #endif
         }
         addr++;

@@ -302,7 +302,7 @@ module vdp(
                     if (vram_addr_a[0] == 0) begin
                         cram_latch <= data_i;
                     end else begin
-                        $display("[VDP] Writing cram addr %x with %x %x", vram_addr_a[5:0]-1, data_i, cram_latch);
+                        $display("[VDP] Writing cram addr %x with %x%x", vram_addr_a[5:0]-1, data_i, cram_latch);
                         CRAM[vram_addr_a[5:0]-1] <= cram_latch;
                         CRAM[vram_addr_a[5:0]]   <= data_i;
                     end

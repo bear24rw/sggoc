@@ -155,6 +155,8 @@ unsigned char IOMapper_GG::in8(unsigned  port)
 
 void IOMapper_GG::out8(unsigned  address, unsigned  char data)
 {
+    //print_log("[io] port %02x written with %02x\n");
+
     /* Call parent method. */
     if (address == 0)
     {
