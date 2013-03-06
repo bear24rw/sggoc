@@ -128,7 +128,8 @@ module top(
         .int_n(z80_int_n),
         .nmi_n(z80_nmi_n),
         .busrq_n(z80_busrq_n),
-        .busak_n(z80_busak_n)
+        .busak_n(z80_busak_n),
+        .rfsh_n()
     );
 
     wire z80_mem_rd = (!z80_mreq_n && !z80_rd_n);
