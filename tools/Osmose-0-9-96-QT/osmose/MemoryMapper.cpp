@@ -437,8 +437,10 @@ unsigned char MemoryMapper::rd8(unsigned  address)
     unsigned char r=0;
     int bnk = address>> 13; 		// bnk is 0-7.
 
+    int phy_addr = (read_map[bnk] - &cartridge[0])+(address&0x1FFF);
+
     if (address < 0xC000)
-        print_log("car_r: %04x\n", address);
+        print_log("car_r: %04x (%06x)\n", address, phy_addr);
     else
         print_log("ram_r: %04x\n", address);
 

@@ -623,7 +623,7 @@ u32 Z80::run( u32 wanted_cycles )
 #ifdef OPCODES_STATS
             NO_Prefix[ instruction ]++;
 #endif
-            print_log("ir: %02x\n", instruction);
+            //print_log("ir: %02x\n", instruction);
         }
     }
     return cycleCount - tc; // overcycles !
