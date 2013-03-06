@@ -27,7 +27,7 @@ module vga_timing (
     reg [9:0] scan_y = 0;
 
     always @(posedge clk_50)
-        vga_clk = ~vga_clk;
+        vga_clk <= ~vga_clk;
 
     always @(posedge vga_clk) begin
         if (rst) begin
