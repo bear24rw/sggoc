@@ -176,24 +176,26 @@ module vdp(
     initial vdp_v_counter = 0;
     initial vdp_h_counter = 0;
 
-    wire line_complete = (pixel_x > 256) ? 1 : 0;
+    reg line_complete = 0;
 
-    /*
+    always @(posedge vga_clk) begin
+        line_complete <= (pixel_x > 256) ? 1 : 0;
+     end
+
     always @(posedge vga_clk) begin
         if (pixel_x < 256)
-            vdp_h_counter = pixel_x[7:0];
+            vdp_h_counter <= pixel_x[7:0];
         else
-            vdp_h_counter = 0;
+            vdp_h_counter <= 0;
     end
-    */
 
     always @(posedge line_complete) begin
         if (pixel_y < 'hDA)
-            vdp_v_counter = pixel_y;
+            vdp_v_counter <= pixel_y;
         else if (pixel_y < 'hFF)
-            vdp_v_counter = 'hD5 + (pixel_y - 'hD5);
+            vdp_v_counter <= 'hD5 + (pixel_y - 'hD5);
         else
-            vdp_v_counter = 0;
+            vdp_v_counter <= 0;
     end
 
     // ----------------------------------------------------
