@@ -198,7 +198,7 @@ module vdp(
         if (pixel_y < 'hDA)
             vdp_v_counter <= pixel_y;
         else if (pixel_y < 'hFF)
-            vdp_v_counter <= 'hD5 + (pixel_y - 'hD5);
+            vdp_v_counter <= 'hD5 + (pixel_y - 'hDA);
         else
             vdp_v_counter <= 0;
     end
