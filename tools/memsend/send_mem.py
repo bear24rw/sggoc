@@ -2,7 +2,7 @@ import os
 import sys
 import serial
 
-s = serial.Serial('/dev/ttyS0', 115200)
+s = serial.Serial('/dev/ttyUSB0', 512000)
 
 rom_file = sys.argv[1]
 rom_size = os.path.getsize(rom_file)

@@ -4,6 +4,9 @@ module debug(
     input rst,
     input UART_RXD,
     output UART_TXD,
+
+    inout [9:0] GPIO_0,
+
     output reg z80_clk,
     output reg z80_rst,
     input z80_mem_rd,
@@ -26,10 +29,10 @@ module debug(
         .sys_clk(clk_50),
         .sys_rst(rst),
 
-        .uart_rx(UART_RXD),
+        .uart_rx(GPIO_0[9]),
         .uart_tx(UART_TXD),
 
-        .divisor(50000000/115200/16),
+        .divisor(50000000/512000/16),
 
         .rx_data(rx_data),
         .tx_data(tx_data),
@@ -40,11 +43,14 @@ module debug(
         .tx_wr(transmit)
     );
 
+    assign GPIO_0[7] = UART_TXD;
+
     // the receive line only goes high for one clock
     // cycle so we need to latch it. if we are currently
     // transmitting we obviously don't have a new byte yet
 
     reg new_byte = 0;
+
 
     always @(posedge rst, posedge transmit, posedge rx_done) begin
         if (rst)

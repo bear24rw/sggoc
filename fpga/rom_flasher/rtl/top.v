@@ -29,6 +29,7 @@ module top(
     output [6:0] HEX0,
     input UART_RXD,
     output UART_TXD,
+    inout [10:0] GPIO_0,
 
     inout [7:0] FL_DQ,
     output [21:0] FL_ADDR,
@@ -59,10 +60,10 @@ module top(
         .sys_clk(clk),
         .sys_rst(rst),
 
-        .uart_rx(UART_RXD),
+        .uart_rx(GPIO_0[9]),
         .uart_tx(UART_TXD),
 
-        .divisor(50000000/115200/16),
+        .divisor(50000000/512000/16),
 
         .rx_data(rx_data),
         .tx_data(tx_data),
@@ -72,6 +73,8 @@ module top(
 
         .tx_wr(transmit)
     );
+
+    assign GPIO_0[7] = UART_TXD;
 
     // the receive line only goes high for one clock
     // cycle so we need to latch it. if we are currently

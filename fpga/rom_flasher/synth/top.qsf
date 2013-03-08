@@ -530,4 +530,5 @@ set_global_assignment -name VHDL_FILE ../rtl/flash/Altera_UP_Flash_Memory_Contro
 set_global_assignment -name VERILOG_FILE ../../sggoc/rtl/uart.v
 set_global_assignment -name VERILOG_FILE ../rtl/top.v
 set_global_assignment -name POWER_DEFAULT_TOGGLE_RATE 12.5%
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
