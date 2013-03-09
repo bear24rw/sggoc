@@ -207,7 +207,11 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
-    wire irq_event = line_complete | control_rd;
+    reg irq_event = 0;
+
+    always @(posedge vga_clk) begin
+        irq_event = line_complete | control_rd;
+    end
 
     always @(posedge irq_event) begin
         if (line_complete) begin
