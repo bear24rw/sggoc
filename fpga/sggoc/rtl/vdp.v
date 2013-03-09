@@ -40,9 +40,9 @@ module vdp(
     output reg [7:0]    vdp_v_counter,
     output reg [7:0]    vdp_h_counter,
 
-    output reg [3:0]    VGA_R,
-    output reg [3:0]    VGA_G,
-    output reg [3:0]    VGA_B,
+    output [3:0]        VGA_R,
+    output [3:0]        VGA_G,
+    output [3:0]        VGA_B,
 
     output              VGA_HS,
     output              VGA_VS
@@ -133,39 +133,44 @@ module vdp(
         .vga_clk(vga_clk)
     );
 
+    reg [3:0] vga_r = 0;
+    reg [3:0] vga_g = 0;
+    reg [3:0] vga_b = 0;
+
     always @(posedge vga_clk) begin
-        if (in_display_area) begin
-
-            if (pixel_x < 256 && pixel_y < 192) begin
-                VGA_R <= CRAM[bg_color][3:0];
-                VGA_G <= CRAM[bg_color][7:4];
-                VGA_B <= CRAM[bg_color+1][3:0];
-            end else begin
-                // color palette
-                if (pixel_y >= 256 && pixel_x < 256) begin
-                    VGA_R <= CRAM[pixel_x[7:3]*2][3:0];
-                    VGA_G <= CRAM[pixel_x[7:3]*2][7:4];
-                    VGA_B <= CRAM[pixel_x[7:3]*2+1][3:0];
-                end else begin
-                    // grid lines
-                    if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
-                        VGA_G <= 4'hC;
-                        VGA_R <= 4'hC;
-                        VGA_B <= 4'hC;
-                    end else begin
-                        VGA_G <= 4'h0;
-                        VGA_R <= 4'h0;
-                        VGA_B <= 4'h0;
-                    end
-                end
-           end
-
+        // screen
+        if (pixel_x < 256 && pixel_y < 192) begin
+            vga_r <= CRAM[bg_color][3:0];
+            vga_g <= CRAM[bg_color][7:4];
+            vga_b <= CRAM[bg_color+1][3:0];
+        // palette
+        end else if (pixel_y >= 256 && pixel_x < 256) begin
+            vga_r <= CRAM[pixel_x[7:3]*2][3:0];
+            vga_g <= CRAM[pixel_x[7:3]*2][7:4];
+            vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
+        // grid
+        end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
+            vga_g <= 4'hC;
+            vga_r <= 4'hC;
+            vga_b <= 4'hC;
+        end else if (data_wr && code != 3) begin
+            vga_g <= 4'hF;
+            vga_r <= 4'h0;
+            vga_b <= 4'h0;
+        end else if (data_wr && code == 3) begin
+            vga_g <= 4'h0;
+            vga_r <= 4'hF;
+            vga_b <= 4'h0;
         end else begin
-            VGA_R <= 4'd00;
-            VGA_G <= 4'd00;
-            VGA_B <= 4'd00;
+            vga_g <= 4'h0;
+            vga_r <= 4'h0;
+            vga_b <= 4'h0;
         end
     end
+
+    assign VGA_R = in_display_area ? vga_r : 4'd0;
+    assign VGA_G = in_display_area ? vga_g : 4'd0;
+    assign VGA_B = in_display_area ? vga_b : 4'd0;
 
     // ----------------------------------------------------
     //                    COUNTERS
