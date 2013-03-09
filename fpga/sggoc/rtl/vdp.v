@@ -207,13 +207,7 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
-    reg irq_event = 0;
-
-    always @(posedge vga_clk) begin
-        irq_event = line_complete | control_rd;
-    end
-
-    always @(posedge irq_event) begin
+    always @(posedge line_complete, posedge control_rd) begin
         if (line_complete) begin
             if (pixel_y == 8'hC1) begin
                 $display("[vdp] Vsync IRQ");
