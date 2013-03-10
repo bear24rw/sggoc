@@ -230,7 +230,7 @@ module vdp(
     reg [7:0] cram_latch = 0;
 
     // vram write enable when we're not writing to cram
-    assign vram_we_a = data_wr && (code != 3'h3);
+    assign vram_we_a = data_wr && (code != 2'h3);
 
     // keep track of the last state so we can detect edges
     reg last_control_rd = 0;
