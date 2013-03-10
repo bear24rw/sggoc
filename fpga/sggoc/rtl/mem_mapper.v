@@ -68,9 +68,9 @@ module mem_mapper(
     // mapping registers
     always @(posedge rst, posedge wr) begin
         if (rst) begin
-            rom_bank_0 = 'h0;
-            rom_bank_1 = 'h1;
-            rom_bank_2 = 'h2;
+            rom_bank_0 <= 'h0;
+            rom_bank_1 <= 'h1;
+            rom_bank_2 <= 'h2;
         end else if (wr) begin
             case (addr)
                 'hFFFD: begin rom_bank_0 <= di; $display("[mem] Bank 0 set to %02x", di); end
