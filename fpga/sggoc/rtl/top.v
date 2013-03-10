@@ -64,30 +64,10 @@ module top(
     //                  CLOCK DIVIDER
     // ----------------------------------------------------
 
-    wire cpu_clk;
-
-    clk_div #(.COUNT(7)) clk_div(CLOCK_50, cpu_clk);
-    //clk_div #(.COUNT(25000000/2500)) clk_div(CLOCK_50, cpu_clk);
-    //clk_div clk_div(CLOCK_50, cpu_clk);
-
-    // ----------------------------------------------------
-    //                      DEBUG
-    // ----------------------------------------------------
-
     wire z80_clk;
 
-    debug debug(
-        .clk_50(CLOCK_50),
-        .clk(cpu_clk),
-        .rst(rst),
-        .z80_clk(z80_clk),
-        .z80_addr(z80_addr),
-        .z80_mem_rd(z80_mem_rd),
-        .z80_mem_wr(z80_mem_wr),
-        .z80_rst(),
-        .UART_RXD(UART_RXD),
-        .UART_TXD(UART_TXD)
-    );
+    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, cpu_clk);
+    clk_div #(.COUNT(8)) clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
     //                      Z80
