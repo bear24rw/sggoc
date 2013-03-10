@@ -153,11 +153,11 @@ module vdp(
             vga_g <= 4'hC;
             vga_r <= 4'hC;
             vga_b <= 4'hC;
-        end else if (data_wr && code != 3) begin
+        end else if (data_wr && (code != 2'd3)) begin
             vga_g <= 4'hF;
             vga_r <= 4'h0;
             vga_b <= 4'h0;
-        end else if (data_wr && code == 3) begin
+        end else if (data_wr && (code == 2'd3)) begin
             vga_g <= 4'h0;
             vga_r <= 4'hF;
             vga_b <= 4'h0;
