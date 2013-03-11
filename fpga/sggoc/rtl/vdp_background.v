@@ -2,6 +2,7 @@ module vdp_background (
     input               clk,
     input               line_complete,
     input       [9:0]   y,
+    input       [9:0]   pixel_x,
     input       [7:0]   scroll_x,
     input               disable_x_scroll,
     input       [13:0]  name_table_addr,
@@ -12,7 +13,6 @@ module vdp_background (
 
 );
 
-    reg [7:0] x = 256;      // x pixel counter
     reg flip_x;             // flip tile horizontally
     reg palette;            // use upper half of palette
     reg palette_latch;      // hold it until we start outputting that tile
@@ -34,17 +34,7 @@ module vdp_background (
     reg [13:0] tile_addr = 0;
     reg [13:0] data_addr = 0;
 
-    always @(posedge clk) begin
-        if (line_complete) begin
-            if (disable_x_scroll && y < 16) begin
-                x <= 256;
-            end else begin
-                x <= 256 - scroll_x;
-            end
-        end else begin
-            x <= x + 1;
-        end
-    end
+    wire [7:0] x = (disable_x_scroll && y < 16) ? pixel_x : (256 - scroll_x) + pixel_x;
 
     always @(posedge clk) begin
 

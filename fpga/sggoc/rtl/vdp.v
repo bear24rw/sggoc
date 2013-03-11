@@ -120,6 +120,7 @@ module vdp(
     vdp_background vdp_background(
         .clk(vga_clk),
         .line_complete(line_complete),
+        .pixel_x(pixel_x),
         .scroll_x(scroll_x),
         .disable_x_scroll(disable_x_scroll),
         .y(pixel_y),

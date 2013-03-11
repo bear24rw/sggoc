@@ -499,7 +499,7 @@ set_global_assignment -name LAST_QUARTUS_VERSION 12.0
 set_global_assignment -name ALWAYS_ENABLE_INPUT_BUFFERS ON
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name OPTIMIZE_HOLD_TIMING "ALL PATHS"
+set_global_assignment -name OPTIMIZE_HOLD_TIMING "OFF"
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
 set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
 
@@ -547,6 +547,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/debug.v
 set_global_assignment -name VERILOG_FILE ../rtl/uart.v
 
 set_parameter -name CYCLONEII_SAFE_WRITE VERIFIED_SAFE
+set_global_assignment -name SDC_FILE top.sdc
 
 
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to FL_ADDR[21]
