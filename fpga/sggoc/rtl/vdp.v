@@ -210,10 +210,10 @@ module vdp(
 
     always @(posedge vga_clk) begin
         if (line_complete) begin
-            if (pixel_y < 'hDA)
+            if (pixel_y <= 'hDA)
                 vdp_v_counter <= pixel_y;
-            else if (pixel_y < 'hFF)
-                vdp_v_counter <= 'hD5 + (pixel_y - 'hDA);
+            else if (pixel_y < 'd262)
+                vdp_v_counter <= 'hD5 + (pixel_y - 'hDB);
             else
                 vdp_v_counter <= 0;
         end
