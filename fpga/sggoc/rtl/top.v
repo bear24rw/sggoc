@@ -116,7 +116,7 @@ module top(
     wire z80_mem_wr = (!z80_mreq_n && !z80_wr_n);
     wire z80_io_rd = (!z80_iorq_n && !z80_rd_n);
     wire z80_io_wr = (!z80_iorq_n && !z80_wr_n);
-    wire z80_irq_rd = (!z80_iorq_n && z80_rd_n);
+    wire z80_irq_rd = (!z80_iorq_n && !z80_m1_n);
 
     // ----------------------------------------------------
     //                      MMU
