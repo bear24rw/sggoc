@@ -1,6 +1,5 @@
 module vdp_background (
     input               clk,
-    input               line_complete,
     input       [9:0]   y,
     input       [9:0]   pixel_x,
     input       [7:0]   scroll_x,

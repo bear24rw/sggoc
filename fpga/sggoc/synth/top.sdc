@@ -5,3 +5,4 @@ create_clock -name {vga_clk} -period 40.000 -waveform { 0.000 20.000 } [get_regi
 
 # Automatically constrain PLL and other generated clocks
 derive_pll_clocks -create_base_clocks
+derive_clock_uncertainty

@@ -90,7 +90,7 @@ module vdp(
 
     vram vram(
         // port a = cpu side
-        .clk_a(z80_clk),
+        .clk_a(~vga_clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
@@ -119,7 +119,6 @@ module vdp(
 
     vdp_background vdp_background(
         .clk(vga_clk),
-        .line_complete(line_complete),
         .pixel_x(pixel_x),
         .scroll_x(scroll_x),
         .disable_x_scroll(disable_x_scroll),
@@ -248,7 +247,6 @@ module vdp(
     //                  CONTROL LOGIC
     // ----------------------------------------------------
 
-    reg second_byte = 0;
     reg [1:0] code = 0;
     reg [7:0] read_buffer = 0;
     reg [7:0] cram_latch = 0;
@@ -256,11 +254,57 @@ module vdp(
     // vram write enable when we're not writing to cram
     assign vram_we_a = data_wr && (code != 2'h3);
 
+    //
+    // CONTROL / DATA EDGE DETECTION
+    //
+
     // keep track of the last state so we can detect edges
     reg last_control_rd = 0;
     reg last_control_wr = 0;
     reg last_data_rd = 0;
     reg last_data_wr = 0;
+
+    always @(posedge z80_clk, posedge rst) begin
+        if (rst) begin
+            last_control_rd <= 0;
+            last_control_wr <= 0;
+            last_data_rd <= 0;
+            last_data_wr <= 0;
+        end else begin
+            last_control_rd <= control_rd;
+            last_control_wr <= control_wr;
+            last_data_rd <= data_rd;
+            last_data_wr <= data_wr;
+        end
+    end
+
+    assign control_rd_edge = control_rd && !last_control_rd;
+    assign control_wr_edge = control_wr && !last_control_wr;
+    assign data_rd_edge    = data_rd    && !last_data_rd;
+    assign data_wr_edge    = data_wr    && !last_data_wr;
+
+    //
+    // SECOND BYTE FLAG
+    //
+
+    // Flag to indicate if the control port is recieving the
+    // first or second byte. After first byte is recieved flag
+    // is set. After second byte is recieved or any other port
+    // is read/write the flag is cleared
+
+    reg second_byte = 0;
+
+    always @(posedge z80_clk, posedge rst) begin
+        if (rst) begin
+            second_byte <= 0;
+        end else begin
+            if (control_wr_edge) begin
+                second_byte <= !second_byte;
+            end else if (control_rd_edge || data_wr_edge || data_rd_edge) begin
+                second_byte <= 0;
+            end
+        end
+    end
 
     reg [13:0] next_vram_addr_a;
     always @(posedge z80_clk) begin
@@ -281,23 +325,16 @@ module vdp(
             register[8] <= 'h00;    // background X scroll
             register[9] <= 'h00;    // background Y scroll
             register[10] <= 'hff;   // line counter
-            second_byte <= 0;
             data_o <= 8'h0;
-            last_control_wr <= 0;
-            last_control_rd <= 0;
-            last_data_wr <= 0;
-            last_data_rd <= 0;
         end else begin
 
-            if (control_wr && !last_control_wr) begin
+            if (control_wr_edge) begin
 
                 if (second_byte == 0) begin
                     next_vram_addr_a[7:0] <= control_i;
-                    second_byte <= 1;
                 end else begin
                     next_vram_addr_a[13:8] <= control_i[5:0];
                     code <= control_i[7:6];
-                    second_byte <= 0;
                     // check for register write instead
                     if (control_i[7:6] == 2'h2) begin
                         register[control_i[3:0]] <= vram_addr_a[7:0];
@@ -307,24 +344,21 @@ module vdp(
                     end
                 end
 
-            end else if (control_rd && !last_control_rd) begin
+            end else if (control_rd_edge) begin
 
-                second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading control");
 
-            end else if (data_rd && !last_data_rd) begin
+            end else if (data_rd_edge) begin
 
-                second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
                 data_o <= read_buffer;
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading data");
 
-            end else if (data_wr && !last_data_wr) begin
+            end else if (data_wr_edge) begin
 
-                second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
 
                 if (code == 3) begin
@@ -342,11 +376,6 @@ module vdp(
                 end
 
             end
-
-            last_control_rd <= control_rd;
-            last_control_wr <= control_wr;
-            last_data_rd <= data_rd;
-            last_data_wr <= data_wr;
         end
 
     end
