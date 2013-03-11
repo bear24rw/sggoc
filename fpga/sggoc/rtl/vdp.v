@@ -69,9 +69,11 @@ module vdp(
     end
 
     // name table base address
-    wire [13:0] nt_base_addr = {register[2][3:1], 11'd0};
-    wire        irq_vsync_en = register[1][5];
-    wire        irq_line_en  = register[0][4];
+    wire [13:0] nt_base_addr     = {register[2][3:1], 11'd0};
+    wire        irq_vsync_en     = register[1][5];
+    wire        irq_line_en      = register[0][4];
+    wire [7:0]  scroll_x         = register[8];
+    wire        disable_x_scroll = register[0][6];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -117,8 +119,9 @@ module vdp(
 
     vdp_background vdp_background(
         .clk(vga_clk),
-        .rst(rst),
-        .x(pixel_x),
+        .line_complete(line_complete),
+        .scroll_x(scroll_x),
+        .disable_x_scroll(disable_x_scroll),
         .y(pixel_y),
         .name_table_addr(nt_base_addr),
         .vram_a(vram_addr_b),
