@@ -266,6 +266,7 @@ module top(
     assign LEDG[3] = z80_rd_n;
     assign LEDG[4] = z80_wr_n;
     assign LEDG[5] = z80_halt_n;
+    assign LEDG[6] = z80_wait_n;
     assign LEDG[7] = z80_clk;
 
     //assign LEDG = z80_di;
