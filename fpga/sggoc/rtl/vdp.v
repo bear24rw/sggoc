@@ -179,6 +179,14 @@ module vdp(
             vga_g <= 4'h0;
             vga_r <= 4'hF;
             vga_b <= 4'h0;
+        end else if (control_rd) begin
+            vga_g <= 4'h0;
+            vga_r <= 4'h0;
+            vga_b <= 4'hF;
+        end else if (control_wr) begin
+            vga_g <= 4'hF;
+            vga_r <= 4'hF;
+            vga_b <= 4'h0;
         end else begin
             vga_g <= 4'h0;
             vga_r <= 4'h0;
@@ -210,10 +218,10 @@ module vdp(
 
     always @(posedge vga_clk) begin
         if (line_complete) begin
-            if (pixel_y < 'hDA)
+            if (pixel_y <= 'hDA)
                 vdp_v_counter <= pixel_y;
-            else if (pixel_y < 'hFF)
-                vdp_v_counter <= 'hD5 + (pixel_y - 'hDA);
+            else if (pixel_y < 'd262)
+                vdp_v_counter <= 'hD5 + (pixel_y - 'hDB);
             else
                 vdp_v_counter <= 0;
         end
@@ -222,6 +230,8 @@ module vdp(
     // ----------------------------------------------------
     //                       IRQ
     // ----------------------------------------------------
+
+    initial status = 0;
 
     always @(posedge vga_clk) begin
         if (line_complete && pixel_y == 8'hC1) begin
