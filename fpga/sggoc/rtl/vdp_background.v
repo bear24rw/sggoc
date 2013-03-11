@@ -12,7 +12,7 @@ module vdp_background (
 
 );
 
-    reg [7:0] x = 240;      // x pixel counter
+    reg [7:0] x = 256;      // x pixel counter
     reg flip_x;             // flip tile horizontally
     reg palette;            // use upper half of palette
     reg palette_latch;      // hold it until we start outputting that tile
@@ -36,10 +36,10 @@ module vdp_background (
 
     always @(posedge clk) begin
         if (line_complete) begin
-            if (disable_x_scroll || y >= 16) begin
-                x <= 240-scroll_x;
+            if (disable_x_scroll && y < 16) begin
+                x <= 256;
             end else begin
-                x <= 240;
+                x <= 256 - scroll_x;
             end
         end else begin
             x <= x + 1;
