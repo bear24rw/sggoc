@@ -253,7 +253,7 @@ module vdp(
         end
     end
 
-    assign irq_vsync_pending = (status[7] && irq_vsync_en);
+    wire irq_vsync_pending = (status[7] && irq_vsync_en);
 
     // line interrupt
 
@@ -277,7 +277,7 @@ module vdp(
         end
     end
 
-    assign irq_line_pending = (line_irq && irq_line_en);
+    wire irq_line_pending = (line_irq && irq_line_en);
 
     assign irq_n = (irq_vsync_pending || irq_line_pending) ? 0 : 1;
 
@@ -313,10 +313,10 @@ module vdp(
         end
     end
 
-    assign control_rd_edge = control_rd && !last_control_rd;
-    assign control_wr_edge = control_wr && !last_control_wr;
-    assign data_rd_edge    = data_rd    && !last_data_rd;
-    assign data_wr_edge    = data_wr    && !last_data_wr;
+    wire control_rd_edge = control_rd && !last_control_rd;
+    wire control_wr_edge = control_wr && !last_control_wr;
+    wire data_rd_edge    = data_rd    && !last_data_rd;
+    wire data_wr_edge    = data_wr    && !last_data_wr;
 
     //
     // SECOND BYTE FLAG
