@@ -216,8 +216,9 @@ module top (
 
     vdp_background vdp_background(
         .clk(vga_clk),
-        .rst(rst),
-        .x(pixel_x),
+        .pixel_x(pixel_x),
+        .scroll_x(0),
+        .disable_x_scroll(0),
         .y(pixel_y),
         .name_table_addr(nt_base_addr),
         .vram_a(vram_addr_b),
