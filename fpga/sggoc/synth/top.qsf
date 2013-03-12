@@ -515,7 +515,6 @@ set_global_assignment -name VERILOG_FILE ../rtl/uart.v
 
 
 set_global_assignment -name LAST_QUARTUS_VERSION 12.0
-set_parameter -name CYCLONEII_SAFE_WRITE VERIFIED_SAFE
 
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name TIMEQUEST_DO_CCPP_REMOVAL ON

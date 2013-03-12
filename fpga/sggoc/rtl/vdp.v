@@ -90,7 +90,7 @@ module vdp(
 
     vram vram(
         // port a = cpu side
-        .clk_a(z80_clk),
+        .clk_a(~vga_clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
