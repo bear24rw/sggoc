@@ -261,6 +261,20 @@ module vdp(
     reg last_data_rd = 0;
     reg last_data_wr = 0;
 
+    always @(posedge z80_clk, posedge rst) begin
+        if (rst) begin
+            last_control_rd <= 0;
+            last_control_wr <= 0;
+            last_data_rd <= 0;
+            last_data_wr <= 0;
+        end else begin
+            last_control_rd <= control_rd;
+            last_control_wr <= control_wr;
+            last_data_rd <= data_rd;
+            last_data_wr <= data_wr;
+        end
+    end
+
     reg [13:0] next_vram_addr_a;
     always @(posedge z80_clk) begin
         vram_addr_a <= next_vram_addr_a;
@@ -282,10 +296,6 @@ module vdp(
             register[10] <= 'hff;   // line counter
             second_byte <= 0;
             data_o <= 8'h0;
-            last_control_wr <= 0;
-            last_control_rd <= 0;
-            last_data_wr <= 0;
-            last_data_rd <= 0;
         end else begin
 
             if (control_wr && !last_control_wr) begin
@@ -341,11 +351,6 @@ module vdp(
                 end
 
             end
-
-            last_control_rd <= control_rd;
-            last_control_wr <= control_wr;
-            last_data_rd <= data_rd;
-            last_data_wr <= data_wr;
         end
 
     end
