@@ -68,20 +68,6 @@ module vdp(
         register[10] <= 'hff;   // line counter
     end
 
-    always @(posedge rst) begin
-        register[0] <= 'h00;
-        register[1] <= 'h00;
-        register[2] <= 'h0e;
-        register[3] <= 'h00;
-        register[4] <= 'h00;
-        register[5] <= 'h7e;
-        register[6] <= 'h00;
-        register[7] <= 'h00;
-        register[8] <= 'h00;
-        register[9] <= 'h00;
-        register[10] <= 'hff;
-    end
-
     // name table base address
     wire [13:0] nt_base_addr     = {register[2][3:1], 11'd0};
     wire        irq_vsync_en     = register[1][5];
@@ -283,6 +269,17 @@ module vdp(
     always @(posedge z80_clk, posedge rst) begin
 
         if (rst) begin
+            register[0] <= 'h00;    // mode control 1
+            register[1] <= 'h00;    // mode control 2
+            register[2] <= 'h0e;    // name table base address (0x3800)
+            register[3] <= 'h00;    // color table base address
+            register[4] <= 'h00;    // background pattern generator base address
+            register[5] <= 'h7e;    // sprite attribute table base address (0x3F00)
+            register[6] <= 'h00;    // sprite pattern generator base address
+            register[7] <= 'h00;    // overscan/backdrop color
+            register[8] <= 'h00;    // background X scroll
+            register[9] <= 'h00;    // background Y scroll
+            register[10] <= 'hff;   // line counter
             second_byte <= 0;
             data_o <= 8'h0;
             last_control_wr <= 0;
