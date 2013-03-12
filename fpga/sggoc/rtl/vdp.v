@@ -171,9 +171,9 @@ module vdp(
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
         // grid
         end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
-            vga_g <= 4'hC;
-            vga_r <= 4'hC;
-            vga_b <= 4'hC;
+            vga_g <= 4'h1;
+            vga_r <= 4'h1;
+            vga_b <= 4'h1;
         end else if (data_wr && (code != 2'd3)) begin
             vga_r <= 4'h0;
             vga_g <= 4'hF;
