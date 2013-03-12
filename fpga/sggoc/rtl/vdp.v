@@ -231,6 +231,8 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
+    initial status = 0;
+
     always @(posedge vga_clk) begin
         if (line_complete && pixel_y == 8'hC1) begin
             $display("[vdp] Vsync IRQ");
