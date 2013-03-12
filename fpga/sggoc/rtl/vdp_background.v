@@ -1,9 +1,11 @@
 module vdp_background (
     input               clk,
-    input       [9:0]   y,
     input       [9:0]   pixel_x,
+    input       [9:0]   pixel_y,
     input       [7:0]   scroll_x,
+    input       [7:0]   scroll_y,
     input               disable_x_scroll,
+    input               disable_y_scroll,
     input       [13:0]  name_table_addr,
     input       [7:0]   vram_d,
     output reg  [13:0]  vram_a,
@@ -33,7 +35,8 @@ module vdp_background (
     reg [13:0] tile_addr = 0;
     reg [13:0] data_addr = 0;
 
-    wire [7:0] x = (disable_x_scroll && y < 16) ? pixel_x : (256 - scroll_x) + pixel_x;
+    wire [7:0] x = (disable_x_scroll && y[7:3] < 2) ? pixel_x : (256 - scroll_x) + pixel_x;
+    wire [7:0] y = (disable_y_scroll && x[7:3] > 24) ? pixel_y : scroll_y + pixel_y;
 
     always @(posedge clk) begin
 

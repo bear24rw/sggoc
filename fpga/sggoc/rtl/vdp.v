@@ -73,7 +73,9 @@ module vdp(
     wire        irq_vsync_en     = register[1][5];
     wire        irq_line_en      = register[0][4];
     wire [7:0]  scroll_x         = register[8];
+    wire [7:0]  scroll_y         = register[9];
     wire        disable_x_scroll = register[0][6];
+    wire        disable_y_scroll = register[0][7];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -120,9 +122,11 @@ module vdp(
     vdp_background vdp_background(
         .clk(vga_clk),
         .pixel_x(pixel_x),
+        .pixel_y(pixel_y),
         .scroll_x(scroll_x),
+        .scroll_y(scroll_y),
         .disable_x_scroll(disable_x_scroll),
-        .y(pixel_y),
+        .disable_y_scroll(disable_y_scroll),
         .name_table_addr(nt_base_addr),
         .vram_a(vram_addr_b),
         .vram_d(vram_do_b),
@@ -251,9 +255,6 @@ module vdp(
     reg [7:0] read_buffer = 0;
     reg [7:0] cram_latch = 0;
 
-    // vram write enable when we're not writing to cram
-    assign vram_we_a = data_wr && (code != 2'h3);
-
     //
     // CONTROL / DATA EDGE DETECTION
     //
@@ -306,10 +307,32 @@ module vdp(
         end
     end
 
-    reg [13:0] next_vram_addr_a;
+    //
+    // VRAM ADDRESS
+    //
+
+    // vram address is set by two writes to the control port
+    // every other port just increments the address
+
+    reg [13:0] next_vram_addr_a = 0;
+
     always @(posedge z80_clk) begin
         vram_addr_a <= next_vram_addr_a;
+
+        if (control_wr_edge) begin
+            if (second_byte == 0) begin
+                next_vram_addr_a[7:0] <= control_i;
+            end else begin
+                next_vram_addr_a[13:8] <= control_i[5:0];
+            end
+        end else if (control_rd_edge || data_wr_edge || data_rd_edge) begin
+            next_vram_addr_a <= vram_addr_a + 1;
+        end
     end
+
+    // vram write enable when we're not writing to cram
+    assign vram_we_a = data_wr && (code != 2'h3);
+
 
     always @(posedge z80_clk, posedge rst) begin
 
@@ -330,10 +353,7 @@ module vdp(
 
             if (control_wr_edge) begin
 
-                if (second_byte == 0) begin
-                    next_vram_addr_a[7:0] <= control_i;
-                end else begin
-                    next_vram_addr_a[13:8] <= control_i[5:0];
+                if (second_byte) begin
                     code <= control_i[7:6];
                     // check for register write instead
                     if (control_i[7:6] == 2'h2) begin
@@ -346,20 +366,16 @@ module vdp(
 
             end else if (control_rd_edge) begin
 
-                next_vram_addr_a <= vram_addr_a + 1;
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading control");
 
             end else if (data_rd_edge) begin
 
-                next_vram_addr_a <= vram_addr_a + 1;
                 data_o <= read_buffer;
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading data");
 
             end else if (data_wr_edge) begin
-
-                next_vram_addr_a <= vram_addr_a + 1;
 
                 if (code == 3) begin
                     if (vram_addr_a[0] == 0) begin
