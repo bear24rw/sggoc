@@ -24,6 +24,7 @@
 // http://www.smspower.org/Development/Mappers?from=Development.Mapper
 
 module mem_mapper(
+    input clk,
     input rst,
     input wr,
     input [7:0] di,
@@ -66,7 +67,7 @@ module mem_mapper(
 
     // check if this memory write was to the
     // mapping registers
-    always @(posedge rst, posedge wr) begin
+    always @(posedge clk, posedge rst) begin
         if (rst) begin
             rom_bank_0 <= 'h0;
             rom_bank_1 <= 'h1;

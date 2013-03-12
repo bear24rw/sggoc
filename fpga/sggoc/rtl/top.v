@@ -181,6 +181,7 @@ module top(
 
     cartridge cartridge(
         .clk(CLOCK_50),
+        .z80_clk(z80_clk),
         .rst(rst),
         .rd(z80_mem_rd),
         .wr(z80_mem_wr),

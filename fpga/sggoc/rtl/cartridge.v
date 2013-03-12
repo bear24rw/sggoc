@@ -22,6 +22,7 @@
 
 module cartridge(
     input clk,
+    input z80_clk,
     input rst,
     input rd,
     input wr,
@@ -90,6 +91,7 @@ module cartridge(
     wire [21:0] flash_addr;
 
     mem_mapper mem_mapper (
+        .clk(z80_clk),
         .rst(rst),
         .wr(wr),
 
