@@ -175,21 +175,25 @@ module vdp(
             vga_r <= 4'hC;
             vga_b <= 4'hC;
         end else if (data_wr && (code != 2'd3)) begin
-            vga_g <= 4'hF;
             vga_r <= 4'h0;
+            vga_g <= 4'hF;
             vga_b <= 4'h0;
         end else if (data_wr && (code == 2'd3)) begin
-            vga_g <= 4'h0;
             vga_r <= 4'hF;
+            vga_g <= 4'h0;
             vga_b <= 4'h0;
         end else if (control_rd) begin
-            vga_g <= 4'h0;
             vga_r <= 4'h0;
+            vga_g <= 4'h0;
             vga_b <= 4'hF;
         end else if (control_wr) begin
+            vga_r <= 4'hF;  // yellow
             vga_g <= 4'hF;
-            vga_r <= 4'hF;
             vga_b <= 4'h0;
+        end else if (data_rd) begin
+            vga_r <= 4'hF;  // purple
+            vga_g <= 4'h0;
+            vga_b <= 4'hF;
         end else begin
             vga_g <= 4'h0;
             vga_r <= 4'h0;
