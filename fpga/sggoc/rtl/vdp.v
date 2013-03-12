@@ -179,6 +179,14 @@ module vdp(
             vga_g <= 4'h0;
             vga_r <= 4'hF;
             vga_b <= 4'h0;
+        end else if (control_rd) begin
+            vga_g <= 4'h0;
+            vga_r <= 4'h0;
+            vga_b <= 4'hF;
+        end else if (control_wr) begin
+            vga_g <= 4'hF;
+            vga_r <= 4'hF;
+            vga_b <= 4'h0;
         end else begin
             vga_g <= 4'h0;
             vga_r <= 4'h0;
