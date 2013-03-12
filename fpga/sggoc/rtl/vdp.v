@@ -22,7 +22,7 @@
 
 module vdp(
     input clk_50,
-    input clk,
+    input z80_clk,
     input rst,
 
     input               control_wr,
@@ -90,7 +90,7 @@ module vdp(
 
     vram vram(
         // port a = cpu side
-        .clk_a(clk),
+        .clk_a(z80_clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
@@ -263,11 +263,11 @@ module vdp(
     reg last_data_wr = 0;
 
     reg [13:0] next_vram_addr_a;
-    always @(posedge clk) begin
+    always @(posedge z80_clk) begin
         vram_addr_a <= next_vram_addr_a;
     end
 
-    always @(posedge clk, posedge rst) begin
+    always @(posedge z80_clk, posedge rst) begin
 
         if (rst) begin
             register[0] <= 'h00;    // mode control 1

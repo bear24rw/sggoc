@@ -213,7 +213,7 @@ module top(
 
     vdp vdp(
         .clk_50(CLOCK_50),
-        .clk(z80_clk),
+        .z80_clk(z80_clk),
         .rst(rst),
 
         .control_wr(vdp_control_wr),
