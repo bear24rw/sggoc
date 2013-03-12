@@ -62,7 +62,7 @@ module sggoc_tb;
     wire z80_mem_wr = (!z80_mreq_n && !z80_wr_n);
     wire z80_io_rd = (!z80_iorq_n && !z80_rd_n);
     wire z80_io_wr = (!z80_iorq_n && !z80_wr_n);
-    wire z80_irq_rd = (!z80_iorq_n && z80_rd_n);
+    wire z80_irq_rd = (!z80_iorq_n && !z80_m1_n);
 
     // ----------------------------------------------------
     //                      MMU
@@ -174,7 +174,7 @@ module sggoc_tb;
 
     vdp vdp(
         .clk_50(z80_clk),
-        .clk(z80_clk),
+        .z80_clk(z80_clk),
         .rst(z80_rst),
 
         .control_wr(vdp_control_wr),
