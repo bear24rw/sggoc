@@ -216,6 +216,7 @@ module vdp(
 
     wire line_complete = (pixel_x == 256);
 
+    // h counter
     always @(posedge vga_clk) begin
         if (pixel_x < 256)
             vdp_h_counter <= pixel_x[7:0];
@@ -223,6 +224,7 @@ module vdp(
             vdp_h_counter <= 0;
     end
 
+    // v counter
     always @(posedge vga_clk) begin
         if (line_complete) begin
             if (pixel_y <= 'hDA)
@@ -238,6 +240,8 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
+    // frame interrupt
+
     initial status = 0;
 
     always @(posedge vga_clk) begin
@@ -249,7 +253,33 @@ module vdp(
         end
     end
 
-    assign irq_n = (status[7] && irq_vsync_en) ? 0 : 1;
+    assign irq_vsync_pending = (status[7] && irq_vsync_en);
+
+    // line interrupt
+
+    reg [7:0] line_counter = 0;
+    reg       line_irq = 0;
+
+    always @(posedge vga_clk) begin
+        if (control_rd) begin
+            line_irq <= 0;
+        end else begin
+            if (pixel_y <= 192) begin
+                if (line_counter - 1 == 'hFF) begin
+                    line_counter <= register[10];
+                    line_irq <= 1;
+                end else begin
+                    line_counter <= line_counter - 1;
+                end
+            end else begin
+                line_counter <= register[10];
+            end
+        end
+    end
+
+    assign irq_line_pending = (line_irq && irq_line_en);
+
+    assign irq_n = (irq_vsync_pending || irq_line_pending) ? 0 : 1;
 
     // ----------------------------------------------------
     //                  CONTROL LOGIC
