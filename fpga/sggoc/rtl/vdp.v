@@ -169,11 +169,6 @@ module vdp(
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
             vga_g <= CRAM[pixel_x[7:3]*2][7:4];
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
-        // grid
-        end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
-            vga_g <= 4'h1;
-            vga_r <= 4'h1;
-            vga_b <= 4'h1;
         end else if (data_wr && (code != 2'd3)) begin
             vga_r <= 4'h0;
             vga_g <= 4'hF;
@@ -194,6 +189,11 @@ module vdp(
             vga_r <= 4'hF;  // purple
             vga_g <= 4'h0;
             vga_b <= 4'hF;
+        // grid
+        end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
+            vga_g <= 4'h1;
+            vga_r <= 4'h1;
+            vga_b <= 4'h1;
         end else begin
             vga_g <= 4'h0;
             vga_r <= 4'h0;
@@ -216,6 +216,7 @@ module vdp(
 
     wire line_complete = (pixel_x == 256);
 
+    // h counter
     always @(posedge vga_clk) begin
         if (pixel_x < 256)
             vdp_h_counter <= pixel_x[7:0];
@@ -223,6 +224,7 @@ module vdp(
             vdp_h_counter <= 0;
     end
 
+    // v counter
     always @(posedge vga_clk) begin
         if (line_complete) begin
             if (pixel_y <= 'hDA)
@@ -238,10 +240,12 @@ module vdp(
     //                       IRQ
     // ----------------------------------------------------
 
+    // frame interrupt
+
     initial status = 0;
 
     always @(posedge vga_clk) begin
-        if (line_complete && pixel_y == 8'hC1) begin
+        if (line_complete && pixel_y == 193) begin
             $display("[vdp] Vsync IRQ");
             status[7] <= 1;
         end else if (control_rd) begin
@@ -249,7 +253,33 @@ module vdp(
         end
     end
 
-    assign irq_n = (status[7] && irq_vsync_en) ? 0 : 1;
+    wire irq_vsync_pending = (status[7] && irq_vsync_en);
+
+    // line interrupt
+
+    reg [7:0] line_counter = 0;
+    reg       line_irq = 0;
+
+    always @(posedge vga_clk) begin
+        if (control_rd) begin
+            line_irq <= 0;
+        end else begin
+            if (pixel_y <= 192) begin
+                if (line_counter - 1 == 'hFF) begin
+                    line_counter <= register[10];
+                    line_irq <= 1;
+                end else begin
+                    line_counter <= line_counter - 1;
+                end
+            end else begin
+                line_counter <= register[10];
+            end
+        end
+    end
+
+    wire irq_line_pending = (line_irq && irq_line_en);
+
+    assign irq_n = (irq_vsync_pending || irq_line_pending) ? 0 : 1;
 
     // ----------------------------------------------------
     //                  CONTROL LOGIC
@@ -283,10 +313,10 @@ module vdp(
         end
     end
 
-    assign control_rd_edge = control_rd && !last_control_rd;
-    assign control_wr_edge = control_wr && !last_control_wr;
-    assign data_rd_edge    = data_rd    && !last_data_rd;
-    assign data_wr_edge    = data_wr    && !last_data_wr;
+    wire control_rd_edge = control_rd && !last_control_rd;
+    wire control_wr_edge = control_wr && !last_control_wr;
+    wire data_rd_edge    = data_rd    && !last_data_rd;
+    wire data_wr_edge    = data_wr    && !last_data_wr;
 
     //
     // SECOND BYTE FLAG

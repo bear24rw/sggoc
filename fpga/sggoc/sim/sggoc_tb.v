@@ -134,6 +134,7 @@ module sggoc_tb;
     wire [21:0] flash_addr;
 
     mem_mapper mem_mapper(
+        .clk(z80_clk),
         .rst(z80_rst),
         .wr(z80_mem_wr),
         .addr(cart_addr),
@@ -173,7 +174,7 @@ module sggoc_tb;
     wire [7:0] vdp_data_o;
 
     vdp vdp(
-        .clk_50(z80_clk),
+        .clk_50(CLOCK_50),
         .z80_clk(z80_clk),
         .rst(z80_rst),
 
@@ -215,8 +216,8 @@ module sggoc_tb;
 
     integer idx;
     initial begin
-        //$dumpfile("sggoc_tb.vcd");
-        //$dumpvars(0, sggoc_tb);
+        $dumpfile("sggoc_tb.vcd");
+        $dumpvars(0, sggoc_tb);
         //for (idx=0; idx<(2**14)-1; idx=idx+1) $dumpvars(0, vdp.vram.ram[idx]);
     end
 
@@ -233,7 +234,7 @@ module sggoc_tb;
         #100 z80_rst = 0;
         #100 z80_rst = 1;
         #100 z80_rst = 0;
-        #20000000;
+        #6500000;
         $finish;
     end
 
