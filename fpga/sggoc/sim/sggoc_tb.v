@@ -173,7 +173,7 @@ module sggoc_tb;
     wire [7:0] vdp_data_o;
 
     vdp vdp(
-        .clk_50(z80_clk),
+        .clk_50(CLOCK_50),
         .z80_clk(z80_clk),
         .rst(z80_rst),
 
