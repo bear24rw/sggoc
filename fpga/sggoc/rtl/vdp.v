@@ -73,7 +73,9 @@ module vdp(
     wire        irq_vsync_en     = register[1][5];
     wire        irq_line_en      = register[0][4];
     wire [7:0]  scroll_x         = register[8];
+    wire [7:0]  scroll_y         = register[9];
     wire        disable_x_scroll = register[0][6];
+    wire        disable_y_scroll = register[0][7];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -120,9 +122,11 @@ module vdp(
     vdp_background vdp_background(
         .clk(vga_clk),
         .pixel_x(pixel_x),
+        .pixel_y(pixel_y),
         .scroll_x(scroll_x),
+        .scroll_y(scroll_y),
         .disable_x_scroll(disable_x_scroll),
-        .y(pixel_y),
+        .disable_y_scroll(disable_y_scroll),
         .name_table_addr(nt_base_addr),
         .vram_a(vram_addr_b),
         .vram_d(vram_do_b),
