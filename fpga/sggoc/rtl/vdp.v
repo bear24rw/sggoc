@@ -255,6 +255,10 @@ module vdp(
     // vram write enable when we're not writing to cram
     assign vram_we_a = data_wr && (code != 2'h3);
 
+    //
+    // CONTROL / DATA EDGE DETECTION
+    //
+
     // keep track of the last state so we can detect edges
     reg last_control_rd = 0;
     reg last_control_wr = 0;
@@ -274,6 +278,11 @@ module vdp(
             last_data_wr <= data_wr;
         end
     end
+
+    assign control_rd_edge = control_rd && !last_control_rd;
+    assign control_wr_edge = control_wr && !last_control_wr;
+    assign data_rd_edge    = data_rd    && !last_data_rd;
+    assign data_wr_edge    = data_wr    && !last_data_wr;
 
     reg [13:0] next_vram_addr_a;
     always @(posedge z80_clk) begin
@@ -298,7 +307,7 @@ module vdp(
             data_o <= 8'h0;
         end else begin
 
-            if (control_wr && !last_control_wr) begin
+            if (control_wr_edge) begin
 
                 if (second_byte == 0) begin
                     next_vram_addr_a[7:0] <= control_i;
@@ -316,14 +325,14 @@ module vdp(
                     end
                 end
 
-            end else if (control_rd && !last_control_rd) begin
+            end else if (control_rd_edge) begin
 
                 second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading control");
 
-            end else if (data_rd && !last_data_rd) begin
+            end else if (data_rd_edge) begin
 
                 second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
@@ -331,7 +340,7 @@ module vdp(
                 read_buffer <= vram_do_a;
                 $display("[VDP] reading data");
 
-            end else if (data_wr && !last_data_wr) begin
+            end else if (data_wr_edge) begin
 
                 second_byte <= 0;
                 next_vram_addr_a <= vram_addr_a + 1;
