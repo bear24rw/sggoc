@@ -35,7 +35,7 @@ module vdp_background (
     reg [13:0] tile_addr = 0;
     reg [13:0] data_addr = 0;
 
-    wire [7:0] x = (disable_x_scroll && y[7:3] < 2) ? pixel_x : (256 - scroll_x) + pixel_x;
+    wire [7:0] x = (disable_x_scroll && y[7:3] < 2) ? pixel_x : pixel_x - scroll_x;
     wire [7:0] y = (disable_y_scroll && x[7:3] > 24) ? pixel_y : scroll_y + pixel_y;
 
     always @(posedge clk) begin
