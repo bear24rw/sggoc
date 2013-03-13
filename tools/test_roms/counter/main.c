@@ -1,14 +1,14 @@
 #include <stdint.h>
-
-__sfr __at (0x01) debug;
+#include <gg.h>
 
 int main()
 {
     uint8_t x = 0;
 
     while (1) {
-        debug = x;
         x++;
+        set_debug(x);
+        delay(1000);
     }
 
     return 0;
