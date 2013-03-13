@@ -349,15 +349,21 @@ module vdp(
     // every other port just increments the address
 
     reg [13:0] next_vram_addr_a = 0;
+    reg [ 7:0] addr_hold = 0;
 
     always @(posedge z80_clk) begin
         vram_addr_a <= next_vram_addr_a;
 
         if (control_wr_edge) begin
             if (second_byte == 0) begin
-                next_vram_addr_a[7:0] <= control_i;
+                addr_hold <= control_i;
             end else begin
-                next_vram_addr_a[13:8] <= control_i[5:0];
+                if (control_i[7:6] == 0) begin
+                    next_vram_addr_a <= {control_i[5:0], addr_hold} + 1;
+                end else begin
+                    next_vram_addr_a[7:0] <= addr_hold;
+                    next_vram_addr_a[13:8] <= control_i[5:0];
+                end
             end
         end else if (control_rd_edge || data_wr_edge || data_rd_edge) begin
             next_vram_addr_a <= vram_addr_a + 1;
@@ -391,8 +397,8 @@ module vdp(
                     code <= control_i[7:6];
                     // check for register write instead
                     if (control_i[7:6] == 2'h2) begin
-                        register[control_i[3:0]] <= vram_addr_a[7:0];
-                        $display("[VDP] reg %d set to %x", control_i[3:0], vram_addr_a[7:0]);
+                        register[control_i[3:0]] <= addr_hold;
+                        $display("[VDP] reg %d set to %x", control_i[3:0], addr_hold);
                     end else begin
                         #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
                     end
