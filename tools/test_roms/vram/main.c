@@ -29,9 +29,9 @@ void set_pattern_fill(int id, int color)
     }
 }
 
-void set_tile_to_pattern(uint16_t tile, uint16_t pattern)
+void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern)
 {
-    vdp_set_vram_addr(NT_ADDR + 2*tile);
+    vdp_set_vram_addr(NT_ADDR + 2*(y*32+x));
     vdp_data = pattern;
     vdp_data = 0;
 }
@@ -103,12 +103,19 @@ int main()
     }
 
     // osmose only draws 20x18 tiles starting at 6x3
+
+    // draw a border
+    for (y=0; y<18; y++) set_tile_to_pattern(6    , 3+y  , 1);  // left
+    for (y=0; y<18; y++) set_tile_to_pattern(6+19 , 3+y  , 2);  // right
+    for (x=0; x<20; x++) set_tile_to_pattern(6+x  , 3    , 3);  // top
+    for (x=0; x<20; x++) set_tile_to_pattern(6+x  , 3+17 , 4);  // bottom
+
     // loop through each tile and set it to every pattern
-    for (y=3; y<3+20; y++) {
-        for (x=6; x<6+20; x++) {
+    for (y=1; y<17; y++) {
+        for (x=1; x<19; x++) {
             for (ptrn=0; ptrn<9; ptrn++) {
-                set_tile_to_pattern(y*32+x, ptrn);
-                delay(15000);
+                set_tile_to_pattern(6+x, 3+y, ptrn);
+                delay(150);
             }
         }
     }
