@@ -36,12 +36,6 @@ void set_tile_to_pattern(uint16_t tile, uint16_t pattern)
     vdp_data = 0;
 }
 
-void delay(uint16_t x)
-{
-    uint16_t i;
-    for (i=0; i<1000*x; i++);
-}
-
 int main()
 {
     uint8_t x = 0;
