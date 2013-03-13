@@ -36,11 +36,17 @@ void set_tile_to_pattern(uint16_t tile, uint16_t pattern)
     vdp_data = 0;
 }
 
+void delay(uint16_t x)
+{
+    uint16_t i = 0;
+    for (i=0; i<x; i++) {}
+}
+
 int main()
 {
     uint8_t x = 0;
+    uint8_t y = 0;
     uint16_t i;
-    uint16_t tile = 0;
     uint16_t ptrn = 0;
     uint16_t color = 0;
 
@@ -91,20 +97,20 @@ int main()
     vdp_data = 0xFF;
     vdp_data = 0x0F;
 
-    // set all 512 patterns to solid colors
-    for (i=0; i<512; i++) {
-        set_pattern_fill(i, color);
-        if (color == 8) {
-            color = 0;
-        } else {
-            color++;
-        }
-
+    // set all 9 patterns to solid colors
+    for (i=0; i<9; i++) {
+        set_pattern_fill(i, i);
     }
 
+    // osmose only draws 20x18 tiles starting at 6x3
     // loop through each tile and set it to every pattern
-    for (tile=0; tile<32*28; tile++) {
-        set_tile_to_pattern(tile, 2);
+    for (y=3; y<3+20; y++) {
+        for (x=6; x<6+20; x++) {
+            for (ptrn=0; ptrn<9; ptrn++) {
+                set_tile_to_pattern(y*32+x, ptrn);
+                delay(15000);
+            }
+        }
     }
 
     while (1) {
