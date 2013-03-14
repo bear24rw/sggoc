@@ -76,6 +76,7 @@ module vdp(
     wire [7:0]  scroll_y         = register[9];
     wire        disable_x_scroll = register[0][6];
     wire        disable_y_scroll = register[0][7];
+    wire        mode_4           = register[0][2];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -175,6 +176,11 @@ module vdp(
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
             vga_g <= CRAM[pixel_x[7:3]*2][7:4];
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
+        // we only support mode 4, indicate an error if we're in a different mode
+        end else if (!mode_4) begin
+            vga_r <= 4'hF;
+            vga_g <= 4'h0;
+            vga_b <= 4'h0;
         end else if (data_wr && (code != 2'd3)) begin
             vga_r <= 4'h0;
             vga_g <= 4'hF;
