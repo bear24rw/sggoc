@@ -159,11 +159,17 @@ module vdp(
     reg [3:0] vga_b = 0;
 
     always @(posedge vga_clk) begin
-        // screen
-        if (pixel_x < 256 && pixel_y < 192) begin
+        // screen that isn't actually drawn
+        if ((pixel_x > 7*8 && pixel_x < (7+20)*8) &&
+            (pixel_y > 4*8 && pixel_y < (4+18)*8)) begin
             vga_r <= CRAM[bg_color][3:0];
             vga_g <= CRAM[bg_color][7:4];
             vga_b <= CRAM[bg_color+1][3:0];
+        // gray out screen that isn't supposed to be shown
+        end else if (pixel_x < 256 && pixel_y < 192) begin
+            vga_r <= CRAM[bg_color][3:0] >> 2;
+            vga_g <= CRAM[bg_color][7:4] >> 2;
+            vga_b <= CRAM[bg_color+1][3:0] >> 2;
         // palette
         end else if (pixel_y >= 256 && pixel_x < 256) begin
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
