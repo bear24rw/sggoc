@@ -169,9 +169,9 @@ module vdp(
             vga_b <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
         // gray out screen outside the crop area
         end else if (pixel_x < 256 && pixel_y < 192) begin
-            vga_r <= CRAM[bg_color][3:0] >> 2;
-            vga_g <= CRAM[bg_color][7:4] >> 2;
-            vga_b <= CRAM[bg_color+1][3:0] >> 2;
+            vga_r <= CRAM[bg_color][3:0] >> 3;
+            vga_g <= CRAM[bg_color][7:4] >> 3;
+            vga_b <= CRAM[bg_color+1][3:0] >> 3;
         // palette
         end else if (pixel_y >= 256 && pixel_x < 256) begin
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
