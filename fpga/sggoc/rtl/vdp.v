@@ -263,16 +263,16 @@ module vdp(
     always @(posedge vga_clk) begin
         if (control_rd) begin
             line_irq <= 0;
-        end else begin
-            if (pixel_y <= 192) begin
-                if (line_counter - 1 == 'hFF) begin
+        end else if (line_complete) begin
+            if (pixel_y > 193) begin
+                line_counter <= register[10];
+            end else begin
+                if (line_counter == 'h00) begin
                     line_counter <= register[10];
                     line_irq <= 1;
                 end else begin
                     line_counter <= line_counter - 1;
                 end
-            end else begin
-                line_counter <= register[10];
             end
         end
     end
