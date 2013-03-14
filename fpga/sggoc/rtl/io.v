@@ -97,7 +97,7 @@ module io(
     assign vdp_control_rd = z80_io_rd && port == 5;
 
     // ----------------------------------------------------
-    //                Z80 INPUT MUX
+    //                  OUTPUT MUX
     // ----------------------------------------------------
 
     assign io_do = (z80_addr == 0) ? gg_reg[0] :

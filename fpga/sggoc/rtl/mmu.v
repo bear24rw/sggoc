@@ -44,8 +44,10 @@ module mmu(
 
 );
 
-    // Z80 Address Mapping
-    //
+    // ----------------------------------------------------
+    //              Z80 ADDRESS MAPPING
+    // ----------------------------------------------------
+
     // $0000-$03FF - ROM (unpaged)
     // $0400-$3FFF - ROM mapper slot 0
     // $4000-$7FFF - ROM mapper slot 1
@@ -57,11 +59,12 @@ module mmu(
     // $FFFE - Mapper slot 1 control
     // $FFFF - Mapper slot 2 control
 
+    // ----------------------------------------------------
+    //                      RAM
+    // ----------------------------------------------------
+
     // RAM starts at 0xC000 = 0b1100000000000000
     wire ram_en = (z80_addr[15:14] == 2'b11);
-
-    // cartridge enable is mutually exclusive with ram enable
-    wire cart_en = !ram_en;
 
     // RAM data is from 0xC000 to 0xDFFF = 0x1FFF bytes
     // 0x1FFF = 0b1111111111111 = 13 bits
@@ -69,9 +72,18 @@ module mmu(
     assign ram_di = z80_do;
     assign ram_we = z80_mem_wr && ram_en;
 
+    // ----------------------------------------------------
+    //                  CARTRIDGE
+    // ----------------------------------------------------
+
+    // cartridge enable is mutually exclusive with ram enable
+    wire cart_en = !ram_en;
     assign cart_di = z80_do;
     assign cart_addr = z80_addr;
 
+    // ----------------------------------------------------
+    //                  OUTPUT MUX
+    // ----------------------------------------------------
 
     assign z80_di = (z80_irq_rd) ? 8'hFF :
                     (z80_io_rd) ? io_do :
