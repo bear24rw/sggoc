@@ -267,9 +267,7 @@ module vdp(
     reg       line_irq = 0;
 
     always @(posedge vga_clk) begin
-        if (control_rd) begin
-            line_irq <= 0;
-        end else if (line_complete) begin
+        if (line_complete) begin
             if (pixel_y > 193) begin
                 line_counter <= register[10];
             end else begin
@@ -280,10 +278,15 @@ module vdp(
                     line_counter <= line_counter - 1;
                 end
             end
+        end else if (control_rd) begin
+            line_irq <= 0;
         end
     end
 
-    wire irq_line_pending = (line_irq && irq_line_en);
+    // disable line counter irq for now since it causes corruption
+    // disabling it in osmose too seems to have no effect
+    //wire irq_line_pending = (line_irq && irq_line_en);
+    wire irq_line_pending = 0;
 
     assign irq_n = (irq_vsync_pending || irq_line_pending) ? 0 : 1;
 
