@@ -76,9 +76,18 @@ module vdp(
     wire [7:0]  scroll_y         = register[9];
     wire        disable_x_scroll = register[0][6];
     wire        disable_y_scroll = register[0][7];
-    wire        mode_4           = register[0][2];
+    wire        m1               = register[1][4];
+    wire        m2               = register[0][1];
+    wire        m3               = register[1][3];
+    wire        m4               = register[0][2];
     wire        blank            = !register[1][6];
 
+    // m4: 1 = use mode 4, 0 = use tms modes (selected with m1 m2 m3)
+    // m2: 1 = m1/m3 change screen height in mode 4
+    // m1: 1 = 224 lines if m2=1
+    // m3: 1 = 240 lines if m2=1
+
+    wire mode_4_192 = (m4 && !m2) || (m4 && m2 && !m1 && !m3);
     // ----------------------------------------------------
     //                      VRAM
     // ----------------------------------------------------
@@ -177,8 +186,9 @@ module vdp(
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
             vga_g <= CRAM[pixel_x[7:3]*2][7:4];
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
-        // we only support mode 4, indicate an error if we're in a different mode
-        end else if (!mode_4) begin
+        // we only support mode 4 with 192 lines
+        // indicate an error if we're in a different mode
+        end else if (!mode_4_192) begin
             vga_r <= 4'hF;
             vga_g <= 4'h0;
             vga_b <= 4'h0;
