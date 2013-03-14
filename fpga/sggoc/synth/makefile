@@ -24,6 +24,7 @@ SRC = \
 	../rtl/vdp_background.v \
 	../rtl/vga_timing.v \
 	../rtl/clk_div.v \
+	../rtl/io.v
 
 SIM_SRC = \
 	../sim/mem_mapper_tb.v \
