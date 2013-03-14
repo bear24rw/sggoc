@@ -186,12 +186,6 @@ module vdp(
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
             vga_g <= CRAM[pixel_x[7:3]*2][7:4];
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
-        // we only support mode 4 with 192 lines
-        // indicate an error if we're in a different mode
-        end else if (!mode_4_192) begin
-            vga_r <= 4'hF;
-            vga_g <= 4'h0;
-            vga_b <= 4'h0;
         end else if (data_wr && (code != 2'd3)) begin
             vga_r <= 4'h0;
             vga_g <= 4'hF;
@@ -217,6 +211,12 @@ module vdp(
             vga_g <= 4'h1;
             vga_r <= 4'h1;
             vga_b <= 4'h1;
+        // we only support mode 4 with 192 lines
+        // indicate an error if we're in a different mode
+        end else if (!mode_4_192) begin
+            vga_r <= 4'hF;
+            vga_g <= 4'h0;
+            vga_b <= 4'h0;
         end else begin
             vga_g <= 4'h0;
             vga_r <= 4'h0;
