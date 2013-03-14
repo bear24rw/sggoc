@@ -1,57 +1,5 @@
 #include <stdint.h>
-
-__sfr __at (0xBE) vdp_data;
-__sfr __at (0xBF) vdp_control;
-__sfr __at (0x01) debug;
-
-#define NT_ADDR     0x3800
-
-#define CODE_0  0b00000000
-#define CODE_1  0b01000000
-#define CODE_2  0b10000000
-#define CODE_3  0b11000000
-
-void vdp_set_register(uint8_t reg, uint8_t value)
-{
-    vdp_control = value;
-    vdp_control = CODE_2 | reg;
-}
-
-void vdp_set_vram_addr(uint16_t addr)
-{
-    vdp_control = addr;
-    vdp_control = (addr >> 8) | 0x40;
-}
-
-void set_pattern_fill(int id, int color)
-{
-    int i;
-
-    // set address to pattern id
-    // each pattern is 32 bytes
-    vdp_set_vram_addr(id*32);
-
-    // loop over 8 lines
-    for (i=0; i<8; i++) {
-        vdp_data = ((color >> 0) & 0x01) ? 0xFF : 0x00;
-        vdp_data = ((color >> 1) & 0x01) ? 0xFF : 0x00;
-        vdp_data = ((color >> 2) & 0x01) ? 0xFF : 0x00;
-        vdp_data = ((color >> 3) & 0x01) ? 0xFF : 0x00;
-    }
-}
-
-void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern)
-{
-    vdp_set_vram_addr(NT_ADDR + 2*(y*32+x));
-    vdp_data = pattern;
-    vdp_data = 0;
-}
-
-void delay(uint16_t x)
-{
-    uint16_t i = 0;
-    for (i=0; i<x; i++) {}
-}
+#include <gg.h>
 
 int main()
 {
@@ -62,51 +10,18 @@ int main()
     uint16_t color = 0;
 
     // set register 1 bit 6 to enable display
-    vdp_control = 1 << 6;
-    vdp_control = 0x80 | 0x01;
+    vdp_set_register(1, (1<<6));
 
-    // start at palette entry 0
-    vdp_control = 0x00;
-    vdp_control = 0xC0;
-
-    // MSB              LSB
-    // --------BBBBGGGGRRRR
-
-    // gray
-    vdp_data = 0xCC;
-    vdp_data = 0x0C;
-
-    // red
-    vdp_data = 0x0F;
-    vdp_data = 0x00;
-
-    // green
-    vdp_data = 0xF0;
-    vdp_data = 0x00;
-
-    // blue
-    vdp_data = 0x00;
-    vdp_data = 0x05;
-
-    // yellow
-    vdp_data = 0xFF;
-    vdp_data = 0x00;
-
-    // purple
-    vdp_data = 0x0F;
-    vdp_data = 0x0F;
-
-    // teal
-    vdp_data = 0xF0;
-    vdp_data = 0x0F;
-
-    // black
-    vdp_data = 0x00;
-    vdp_data = 0x00;
-
-    // white
-    vdp_data = 0xFF;
-    vdp_data = 0x0F;
+    // set color palette (0x0BGR)
+    vdp_set_palette(0, 0x0CCC);     // gray
+    vdp_set_palette(1, 0x000F);     // red
+    vdp_set_palette(2, 0x00F0);     // green
+    vdp_set_palette(3, 0x0F00);     // blue
+    vdp_set_palette(4, 0x00FF);     // yellow
+    vdp_set_palette(5, 0x0F0F);     // purple
+    vdp_set_palette(6, 0x0FF0);     // teal
+    vdp_set_palette(7, 0x0000);     // black
+    vdp_set_palette(8, 0x0FFF);     // white
 
     // set all 9 patterns to solid colors
     for (i=0; i<9; i++) {
@@ -121,7 +36,6 @@ int main()
     for (x=0; x<20; x++) set_tile_to_pattern(6+x  , 3    , 3);  // top
     for (x=0; x<20; x++) set_tile_to_pattern(6+x  , 3+17 , 4);  // bottom
 
-
     // scroll all the way right then back again
     delay(5000); for (x=0; x<255; x++) {delay(3000); vdp_set_register(8, x); }
     delay(5000); for (x=0; x<255; x++) {delay(3000); vdp_set_register(8, 255-x); }
@@ -131,10 +45,11 @@ int main()
     delay(5000); for (y=0; y<255; y++) {delay(3000); vdp_set_register(9, y); }
     delay(5000); for (y=0; y<255; y++) {delay(3000); vdp_set_register(9, 255-y); }
 
+    // update the debug leds
     while (1) {
-        // update the debug leds
-        debug = x;
         x++;
+        set_debug(x);
+        delay(1000);
     }
 
     return 0;

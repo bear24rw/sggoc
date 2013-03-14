@@ -1,8 +1,5 @@
 #include <stdint.h>
-
-__sfr __at (0xBE) vdp_data;
-__sfr __at (0xBF) vdp_control;
-__sfr __at (0x01) debug;
+#include <gg.h>
 
 int main()
 {
@@ -10,31 +7,21 @@ int main()
 
     while (1) {
         // set register 1 bit 6 to enable display
-        vdp_control = 1 << 6;
-        vdp_control = 0x80 | 0x01;
+        vdp_set_register(1, (1<<6));
 
-        // start at palette entry 0
-        vdp_control = 0x00;
-        vdp_control = 0xC0;
-
-        // red
-        vdp_data = 0x0F;
-        vdp_data = 0x00;
-
-        // green
-        vdp_data = 0xF0;
-        vdp_data = 0x00;
-
-        // blue
-        vdp_data = 0x00;
-        vdp_data = 0x0F;
-
-        // white
-        vdp_data = 0xFF;
-        vdp_data = 0x0F;
+        // set color palette (0x0BGR)
+        vdp_set_palette(0, 0x0CCC);     // gray
+        vdp_set_palette(1, 0x000F);     // red
+        vdp_set_palette(2, 0x00F0);     // green
+        vdp_set_palette(3, 0x0F00);     // blue
+        vdp_set_palette(4, 0x00FF);     // yellow
+        vdp_set_palette(5, 0x0F0F);     // purple
+        vdp_set_palette(6, 0x0FF0);     // teal
+        vdp_set_palette(7, 0x0000);     // black
+        vdp_set_palette(8, 0x0FFF);     // white
 
         // update the debug leds
-        debug = x;
+        set_debug(x);
         x++;
     }
 
