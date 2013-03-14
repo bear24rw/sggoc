@@ -108,7 +108,7 @@ module sggoc_tb;
 
     io io(
         .clk(z80_clk),
-        .rst(rst),
+        .rst(z80_rst),
 
         .io_do(io_do),
 
