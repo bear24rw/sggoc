@@ -232,7 +232,7 @@ module vdp(
             else if (pixel_y < 'd262)
                 vdp_v_counter <= 'hD5 + (pixel_y - 'hDB);
             else
-                vdp_v_counter <= 0;
+                vdp_v_counter <= 'hFF;
         end
     end
 
