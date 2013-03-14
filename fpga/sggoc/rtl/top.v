@@ -150,14 +150,33 @@ module top(
         .cart_do(cart_do),
         .cart_addr(cart_addr),
 
-        .vdp_control_wr(vdp_control_wr),
-        .vdp_control_rd(vdp_control_rd),
-        .vdp_status(vdp_status),
+        .io_do(io_do)
+    );
 
-        .vdp_data_wr(vdp_data_wr),
+    // ----------------------------------------------------
+    //                      IO
+    // ----------------------------------------------------
+
+    wire [7:0] io_do;
+
+    io io(
+        .clk(z80_clk),
+        .rst(rst),
+
+        .io_do(io_do),
+
+        .z80_do(z80_do),
+        .z80_addr(z80_addr),
+        .z80_io_rd(z80_io_rd),
+        .z80_io_wr(z80_io_wr),
+
         .vdp_data_rd(vdp_data_rd),
-        .vdp_data_o(vdp_data_o),
+        .vdp_data_wr(vdp_data_wr),
+        .vdp_control_rd(vdp_control_rd),
+        .vdp_control_wr(vdp_control_wr),
 
+        .vdp_data_o(vdp_data_o),
+        .vdp_status(vdp_status),
         .vdp_v_counter(vdp_v_counter),
         .vdp_h_counter(vdp_h_counter)
     );

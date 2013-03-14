@@ -512,6 +512,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/vram.v
 set_global_assignment -name VERILOG_FILE ../rtl/vga_timing.v
 set_global_assignment -name VERILOG_FILE ../rtl/debug.v
 set_global_assignment -name VERILOG_FILE ../rtl/uart.v
+set_global_assignment -name VERILOG_FILE ../rtl/io.v
 
 
 set_global_assignment -name LAST_QUARTUS_VERSION 12.0
