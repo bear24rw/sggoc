@@ -251,11 +251,11 @@ module vdp(
     initial status = 0;
 
     always @(posedge vga_clk) begin
-        if (control_rd) begin
-            status[7] <= 0;
-        end else if (line_complete && pixel_y == 193) begin
+        if (pixel_y == 193) begin
             $display("[vdp] Vsync IRQ");
             status[7] <= 1;
+        end else if (control_rd) begin
+            status[7] <= 0;
         end
     end
 
