@@ -77,6 +77,7 @@ module vdp(
     wire        disable_x_scroll = register[0][6];
     wire        disable_y_scroll = register[0][7];
     wire        mode_4           = register[0][2];
+    wire        blank            = !register[1][6];
 
     // ----------------------------------------------------
     //                      VRAM
@@ -160,13 +161,13 @@ module vdp(
     reg [3:0] vga_b = 0;
 
     always @(posedge vga_clk) begin
-        // screen that isn't actually drawn
+        // cropped screen that is actually drawn
         if ((pixel_x >=  8*8 && pixel_x < (8+20)*8) &&
             (pixel_y >= 3*8 && pixel_y < (3+18)*8)) begin
-            vga_r <= CRAM[bg_color][3:0];
-            vga_g <= CRAM[bg_color][7:4];
-            vga_b <= CRAM[bg_color+1][3:0];
-        // gray out screen that isn't supposed to be shown
+            vga_r <= blank ? 4'h0 : CRAM[bg_color][3:0];
+            vga_g <= blank ? 4'h0 : CRAM[bg_color][7:4];
+            vga_b <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
+        // gray out screen outside the crop area
         end else if (pixel_x < 256 && pixel_y < 192) begin
             vga_r <= CRAM[bg_color][3:0] >> 2;
             vga_g <= CRAM[bg_color][7:4] >> 2;
