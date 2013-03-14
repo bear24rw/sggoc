@@ -227,7 +227,7 @@ module vdp(
         if (pixel_x < 256)
             vdp_h_counter <= pixel_x[7:0];
         else
-            vdp_h_counter <= 0;
+            vdp_h_counter <= 256;
     end
 
     // v counter
