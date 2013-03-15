@@ -88,6 +88,7 @@ module vdp(
     // m3: 1 = 240 lines if m2=1
 
     wire mode_4_192 = (m4 && !m2) || (m4 && m2 && !m1 && !m3);
+
     // ----------------------------------------------------
     //                      VRAM
     // ----------------------------------------------------
@@ -214,7 +215,7 @@ module vdp(
         // we only support mode 4 with 192 lines
         // indicate an error if we're in a different mode
         end else if (!mode_4_192) begin
-            vga_r <= 4'hF;
+            vga_r <= 4'h3;
             vga_g <= 4'h0;
             vga_b <= 4'h0;
         end else begin
