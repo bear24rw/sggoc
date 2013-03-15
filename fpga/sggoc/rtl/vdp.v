@@ -22,7 +22,7 @@
 
 module vdp(
     input clk_50,
-    input z80_clk,
+    output z80_clk,
     input rst,
 
     input               control_wr,
@@ -47,6 +47,23 @@ module vdp(
     output              VGA_HS,
     output              VGA_VS
 );
+
+    reg [11:0] z80_clk_count = 0;
+    reg z80_clk_en = 0;
+
+    always @(posedge vga_clk) begin
+        if (pixel_x == 0) begin
+            z80_clk_count <= 0;
+        end else begin
+            z80_clk_count <= z80_clk_count + 1;
+        end
+    end
+
+    //assign z80_clk = (z80_clk_count < 1592 && pixel_y < 263) ? vga_clk : 0;
+    assign z80_clk = (pixel_y < 263) ? vga_clk : 0;
+
+    wire z80_clk_count_228 = z80_clk_count < 228;
+    wire pixel_y_263 = pixel_y < 273;
 
     // ----------------------------------------------------
     //                      REGISTERS
@@ -183,7 +200,7 @@ module vdp(
             vga_g <= CRAM[bg_color][7:4] >> 3;
             vga_b <= CRAM[bg_color+1][3:0] >> 3;
         // palette
-        end else if (pixel_y >= 256 && pixel_x < 256) begin
+        end else if (pixel_y >= 262 && pixel_x < 256) begin
             vga_r <= CRAM[pixel_x[7:3]*2][3:0];
             vga_g <= CRAM[pixel_x[7:3]*2][7:4];
             vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];

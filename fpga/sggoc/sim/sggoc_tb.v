@@ -14,7 +14,7 @@ module sggoc_tb;
         CLOCK_50 = #1 ~CLOCK_50;
 
     wire z80_clk;
-    clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
+    //clk_div #(.COUNT(7)) clk_div(CLOCK_50, z80_clk);
 
     // ----------------------------------------------------
     //                      Z80
