@@ -10,7 +10,7 @@ void print_log_init(void) {
 
 void print_log(char *format, ...) {
     va_list ap1, ap2;
-
+    /*
     va_start(ap1, format);
     va_copy(ap2, ap1);
 
@@ -21,4 +21,5 @@ void print_log(char *format, ...) {
     va_end(ap2);
 
     fflush(outfile);
+    */
 }
