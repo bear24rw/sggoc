@@ -47,9 +47,7 @@ module vdp_background (
         // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
 
         /*
-        y <= (disable_y_scroll && x[7:3] < 24) ? pixel_y : 
-             (((pixel_y + scroll_y) >= 224)    ? ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) >> 35)*224)) :
-             (pixel_y + scroll_y));
+        y <= (disable_y_scroll && x[7:3] < 24) ? pixel_y : ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) >> 35)*224));
         */
         x <= (disable_x_scroll && y[7:3] <  2) ?  pixel_x : (pixel_x - scroll_x);
         y <= (disable_y_scroll && x[7:3] < 24) ?  pixel_y : (pixel_y + scroll_y) % 224;
