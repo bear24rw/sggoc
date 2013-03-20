@@ -207,6 +207,11 @@ module vdp(
             vga_r <= 4'hF;  // purple
             vga_g <= 4'h0;
             vga_b <= 4'hF;
+        // ntsc size outline
+        end else if (pixel_x == 262 || pixel_y == 342) begin
+            vga_r <= 4'h8;
+            vga_g <= 4'h8;
+            vga_b <= 4'h8;
         // grid
         end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
             vga_g <= 4'h1;
