@@ -37,8 +37,8 @@ module vdp(
 
     output              irq_n,
 
-    output reg [7:0]    vdp_v_counter,
-    output reg [7:0]    vdp_h_counter,
+    output [7:0]        vdp_v_counter,
+    output [7:0]        vdp_h_counter,
 
     output [3:0]        VGA_R,
     output [3:0]        VGA_G,
@@ -242,8 +242,8 @@ module vdp(
     // each scanline = 342 pixels
     // each frame    = 262 scanlines
 
-    reg [7:0] = v_counter = 0;
-    reg [8:0] = h_counter = 0;
+    reg [7:0] v_counter = 0;
+    reg [8:0] h_counter = 0;
 
     wire line_complete = (pixel_x == 342);
 
