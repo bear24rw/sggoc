@@ -278,9 +278,9 @@ module vdp(
 
     initial status = 0;
 
+    // active area is 192 lines (0-191)
     always @(posedge vga_clk) begin
-        // vertical blanking happens at (192 + 24 + 3 + 3)?
-        if (pixel_y == 222 && pixel_x == 256) begin
+        if (pixel_y == 192 && pixel_x == 0) begin
             $display("[vdp] Vsync IRQ");
             status[7] <= 1;
         end else if (control_rd) begin
