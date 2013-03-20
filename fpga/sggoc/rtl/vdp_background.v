@@ -35,12 +35,22 @@ module vdp_background (
     reg [13:0] tile_addr = 0;
     reg [13:0] data_addr = 0;
 
-    // x scroll: increasing value moves screen left
-    // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
-    wire [7:0] x = (disable_x_scroll && pixel_y[7:3] < 2) ? pixel_x : pixel_x - scroll_x;
-    wire [7:0] y = (disable_y_scroll && pixel_x[7:3] > 24) ? pixel_y : (scroll_y + pixel_y) % 224;
+    reg [7:0] x = 0;
+    reg [7:0] y = 0;
+
+    // reciprocal: |_2**35 / 224_| + 1
+    // parameter rec = 153391689 + 1;
 
     always @(posedge clk) begin
+
+        // x scroll: increasing value moves screen left
+        // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
+
+        /*
+        y <= (disable_y_scroll && x[7:3] < 24) ? pixel_y : ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) >> 35)*224));
+        */
+        x <= (disable_x_scroll && y[7:3] <  2) ?  pixel_x : (pixel_x - scroll_x);
+        y <= (disable_y_scroll && x[7:3] < 24) ?  pixel_y : (pixel_y + scroll_y) % 224;
 
         // x[7:3] = current tile on x
         // y[7:3] = current tile on y

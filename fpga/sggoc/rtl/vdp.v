@@ -269,7 +269,8 @@ module vdp(
     initial status = 0;
 
     always @(posedge vga_clk) begin
-        if (pixel_y == 193) begin
+        // vertical blanking happens at (192 + 24 + 3 + 3)?
+        if (pixel_y == 222 && pixel_x == 256) begin
             $display("[vdp] Vsync IRQ");
             status[7] <= 1;
         end else if (control_rd) begin
@@ -286,7 +287,7 @@ module vdp(
 
     always @(posedge vga_clk) begin
         if (line_complete) begin
-            if (pixel_y > 193) begin
+            if (pixel_y >= 193) begin
                 line_counter <= register[10];
             end else begin
                 if (line_counter == 'h00) begin
