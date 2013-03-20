@@ -239,31 +239,36 @@ module vdp(
     // ----------------------------------------------------
 
     // NTSC 256x192
+    // each scanline = 342 pixels
+    // each frame    = 262 scanlines
 
-    initial vdp_v_counter = 0;
-    initial vdp_h_counter = 0;
+    reg [7:0] = v_counter = 0;
+    reg [8:0] = h_counter = 0;
 
-    wire line_complete = (pixel_x == 256);
+    wire line_complete = (pixel_x == 342);
 
     // h counter
     always @(posedge vga_clk) begin
-        if (pixel_x < 256)
-            vdp_h_counter <= pixel_x[7:0];
+        if (pixel_x < 342)
+            h_counter <= pixel_x[8:0];
         else
-            vdp_h_counter <= 256;
+            h_counter <= 342;
     end
 
     // v counter
     always @(posedge vga_clk) begin
         if (line_complete) begin
             if (pixel_y <= 'hDA)
-                vdp_v_counter <= pixel_y;
+                v_counter <= pixel_y;
             else if (pixel_y < 'd262)
-                vdp_v_counter <= 'hD5 + (pixel_y - 'hDB);
+                v_counter <= 'hD5 + (pixel_y - 'hDB);
             else
-                vdp_v_counter <= 'hFF;
+                v_counter <= 'hFF;
         end
     end
+
+    assign vdp_v_counter = v_counter;
+    assign vdp_h_counter = h_counter[8:1];
 
     // ----------------------------------------------------
     //                       IRQ
