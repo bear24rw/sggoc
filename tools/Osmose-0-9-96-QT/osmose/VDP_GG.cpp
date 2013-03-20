@@ -269,7 +269,7 @@ void VDP_GG::traceBackGroundLine(unsigned int *s)
         } // switch attrib flip x/y
     }
 #ifdef DISPLAY_SPRITES
-    displaySpritesLine();
+    //displaySpritesLine();
 #endif
     if (REG0 & BIT5) // Do not display (clear) leftmost column of the screen
     {
