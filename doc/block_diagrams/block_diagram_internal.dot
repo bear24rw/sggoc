@@ -2,7 +2,7 @@ digraph G {
     //labelloc="t";
     //label="SGGoC Internal Block Diagram\n\n";
 
-    graph [splines=ortho, rankdir=TB, nodesep=0.2, colorscheme=rdbu9];
+    graph [ordering="in", splines=ortho, rankdir=TB, nodesep=0.2, colorscheme=rdbu9, dpi=300];
     node [nodesep=0.2, label="\N", shape=record, style="filled", colorscheme=rdbu9, color=9, fillcolor=6, fontname="Arial narrow", fontsize=12];
     edge [colorscheme=rdbu9, color=9, fontsize=11, fontname="Arial narrow"];
 
@@ -10,13 +10,13 @@ digraph G {
 
         label = "SGGoC";
 
-        z80[label="TV80"];
-        mmu[label="MMU"];
+        z80[label="TV80", pos="0,0!"];
+        mmu[label="MMU", pos="0,0!"];
         io_ctl[label="IO Controller"];
         mapper[label="Memory Mapper"];
         sys_ram[label="RAM (8KB)"];
         flash[label="Flash (ROM)"];
-        vdp[label="VDP"];
+        vdp[label="VDP", pos="3,4!"];
         v_ram[label="VRAM (16KB)"];
         vga_ctl[label="VGA Controller"];
         psg[label="PSG"];
@@ -24,18 +24,18 @@ digraph G {
         audio[label="Audio Codec"];
 
         z80 -> mmu [dir="both"];
-        z80 -> io_ctl [dir="both"];
 
         mmu -> mapper [dir="both"];
         mmu -> sys_ram [dir="both"];
+        mmu -> io_ctl [dir="both"];
 
         mapper -> flash [dir="back"];
 
-        io_ctl -> joystick [dir="back"];
         io_ctl -> psg;
-        io_ctl -> vdp;
+        io_ctl -> vdp [dir="both"];
+        io_ctl -> joystick [dir="back"];
 
-        vdp -> vga_ctl;
+        vdp -> vga_ctl [dir="both"];
         vdp -> v_ram [dir="both"];
 
         psg -> audio;
