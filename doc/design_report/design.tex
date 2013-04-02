@@ -15,6 +15,7 @@
 \usepackage{microtype}
 \usepackage[font=bf]{caption}
 \usepackage{booktabs}
+\usepackage{listings}
 
 % margins
 \topmargin=-0.45in
@@ -31,7 +32,7 @@
 \parskip = 0.5\baselineskip
 
 % reduce spacing after figures
-\setlength{\belowcaptionskip}{-\baselineskip}
+%\setlength{\belowcaptionskip}{-\baselineskip}
 
 % setup header and footer
 \pagestyle{fancy}
@@ -46,6 +47,26 @@
 % remove indentation from paragraphs
 \setlength\parindent{0pt}
 
+% syntax highlighting
+\definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18}
+\definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}
+\definecolor{sh_string}{rgb}{0.06, 0.10, 0.98}
+
+\lstset{
+    language=C,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=tb,
+    showstringspaces=false,
+    captionpos=b,
+    stringstyle=\color{sh_string},
+    keywordstyle = \color{sh_keyword}\bfseries,
+    commentstyle=\color{sh_comment}\itshape,
+    basicstyle=\small\sffamily,
+    numbersep=-5pt,
+    belowskip=-\parskip,
+    aboveskip=\baselineskip
+}
 
 \title{
     \vspace{2in}
@@ -115,11 +136,12 @@ physical components found in the original Game Gear. Additional components will
 be needed such as an IO controller and a memory management unit (MMU) to
 account for the lack of tri-state buses in our design (explained later).
 Figure~\ref{fig:internal} shows the interactions between the major functional
-components in our design.
+components in Sega Game Gear. The colored components are those which we
+implemented in our project.
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.4]{../block_diagrams/block_diagram_internal.png}
+\includegraphics[scale=0.4]{../block_diagrams/block_diagram_internal_implemented.png}
 \caption{Internal Functional Diagram}
 \label{fig:internal}
 \end{figure}
@@ -286,7 +308,7 @@ the Game Gear is shown below
 
 Since the cartridge memory mapper handles the slot mapping itself we are really
 only multiplexing between the cartridge and the system RAM.  The system RAM
-happens to start at a nice edge being that 0xC000 = 0b1100000000000000. To see
+happens to start at a nice edge being that \texttt{0xC000 = 0b1100000000000000}. To see
 if we are accessing RAM we only need to check to see if bits 15 and 16 are
 high. If so, we can simply use the 13 LSBs of the Z80 address as the index into
 the RAM.  This method also accounts for the RAM mirror since the 13 LSBs repeat
@@ -296,7 +318,7 @@ starting at 0xE000.
 \section{Video Display Processor (VDP)}
 
 The Video Display Processor is a graphics chip which is derived from Texas
-Instruments (TMS9918). 
+Instruments (TMS9918).
 
 \subsection{Ports}
 
@@ -509,28 +531,22 @@ Reading the control port returns a byte containing status flags:
 %\end{table}
 
 \textbf{INT - Frame Interrupt Pending}
-\\
 
 This flag is set on the first line after the end of the active display period.
 It is cleared when the control port is read. (Please see the interrupts section
 for more details).
-\\
 
 \textbf{OVR - Sprite Overflow}
-\\
 
 This flag is set if there are more than eight sprites that are positioned on a
 single scanline. It is cleared when the control port is read.  (Please see the
 sprites section for more information).
-\\
 
 \textbf{COL - Sprite Collision}
-\\
 
 This flag is set if an opaque pixel from any two sprites overlap. It is cleared
 when the control port is read. (Please see the sprites section for more
 information).
-\\
 
 The remaining bits are not set by the VDP.
 
@@ -551,7 +567,6 @@ defined a single color as shown below:
 
 There are a total of 4096 (2\^{}12) possible colors that can be used, but only
 32 colors can be shown at any given time.
-\\
 
 The address register now wraps past address \$003F. Writing to an even CRAM
 address causes the data written to be stored in a latch, and writing to an odd
@@ -598,28 +613,102 @@ and M3. Note that in the TMS9918 manual, there are only four modes documented:
 \end{table}
 
 %\subsection{Tiles}
-%\subsection{CRAM}
 %\subsection{Layers}
 %\subsection{Interrupts}
 %\subsection{Display Timing}
-\section{Programmable Sound Generator (PSG)}
 \section{VGA Controller}
 
 \newpage
-\section{Testing Strategies}
+\section{Testing}
+\subsection{Custom Test ROMs}
+
+In order to test the operation of the z80, and basic functionality of the VDP,
+custom ROMs were developed. Using the Small Device C Compiler (SDCC)
+\cite{SDCC} we are able to write programs that exercises various functionality
+of the system.
+
+We found SDCC extremely easy to setup and get working. The only thing we needed
+to modify was the stack pointer location in the C Runtime file (crt0.s). The
+default stack pointer location is set to \texttt{0xFFFF} but the top most RAM
+address on the Game Gear is \texttt{0xDFFF}. Setting up IO is as easy as
+specifying a special function register at a given IO port. An example showing
+how to write data to the VDP data port (0xBE) is shown below.
+
+\begin{lstlisting}[caption=VDP Data Write]
+    __sfr __at (0xBE) vdp_data;
+    int main() {
+        vdp_data = 0x38;    // write 0x38 to VDP data port
+        while (1) {}
+        return 0;
+    }
+\end{lstlisting}
+
+We ended up building a small GG library with the following functions:
+
+\begin{lstlisting}[caption=Game Gear Library Functions]
+    void vdp_write_control(uint8_t value);
+    void vdp_write_data(uint8_t value);
+    void vdp_set_register(uint8_t reg, uint8_t value);
+    void vdp_set_vram_addr(uint16_t addr);
+    void vdp_set_palette(uint8_t id, uint16_t color);
+    void set_pattern_fill(uint16_t id, uint8_t color);
+    void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern);
+    void delay(uint16_t x);
+    void set_debug(uint8_t x);
+\end{lstlisting}
+
+With this library in place it is easy to to perform operations such as setting
+up the color palette:
+
+\begin{lstlisting}[caption=Color Palette Test ROM]
+    #include <gg.h>
+    int main() {
+        // set register 1 bit 6 to enable display
+        vdp_set_register(1, (1<<6));
+        // set first color palette entry to gray
+        vdp_set_palette(0, 0x0CCC);
+        while (1) {}
+        return 0;
+    }
+\end{lstlisting}
+
+A few different test ROMs were developed to test drawing tiles and scrolling.
+The ROMs were first run on an emulator to verify their functionality before
+being loaded into flash on the FPGA board. The output of the `tiles' test ROM
+is shown below:
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{../images/tiles_screen.png}
+        \caption{Tiles Screen}
+        \label{fig:tiles_screen}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{../images/tiles_palette.png}
+        \caption{Tiles Palette}
+        \label{fig:tile_palette}
+    \end{minipage}
+\end{figure}
+
+
 \subsection{VDP Background Generation}
 
 In order to test the operation of the VDP background generator a separate test
-project is to be created which only consists of the background generator, VRAM,
-VGA timing generator, and a UART interface.
+project used which only consists of the background generator, VRAM, VGA timing
+generator, and a UART interface.
 
-A VRAM dump will be obtained from the open-source Osmose Sega Emulator
-\cite{osmose}. Programs, written in C and running on the computer, will read
-the VRAM dump and generate images of the color palette, all 512 background
-tiles, and the final screen rendering. These programs serve a dual purpose
+Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
+the game reaches a screen that we want to test on the FPGA we dump the VRAM and
+CRAM using Osmoses built in debugger. We then use programs, written in C, that
+read the VRAM dump and generate images of the color palette, all 512 background
+tiles, and the final screen rendering.  These programs serve a dual purpose
 allowing us to both confirm our understanding of how the background image is
-generated and also that our VRAM dump is valid. The figures below show the
-three output images of these programs.
+generated and also that our VRAM dump is valid. The images below show example
+output from these three programs.
 \vfill
 \begin{figure}[H]
     \centering
@@ -660,8 +749,12 @@ The testing strategy is executed as follows:
     \item Obtain VRAM dump from the Osmose emulator
         \begin{enumerate}
             \item Launch Osmose and open ROM file
-            \item Step the CPU in the debugger until desired frame is reached
-            \item Enter \texttt{davram 0} into the debugging console
+                \begin{verbatim}$ ./Osmose-0-9-96-QT sonic.gg\end{verbatim}
+            \item Set a scanline breakpoint in the debug console
+                \begin{verbatim}Cmd: slbp 20\end{verbatim}
+            \item Continue execution by entering `c' until the desired frame is reached.
+            \item Dump the VRAM and CRAM
+                \begin{verbatim}Cmd: davram 0\end{verbatim}
             \item Dump files are located at \texttt{/tmp/osmose.(vram,cram)}
         \end{enumerate}
     \item Verify dump integrity using C rendering programs
@@ -723,6 +816,7 @@ primarily an academic pursuit and to be used, shared, and learned from.
     \bibitem{osmose} \url{http://bcz.asterope.fr/osmose.htm}
     \bibitem{ieeeverilog} \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00954909}
     \bibitem{gpl} \url{http://www.gnu.org/licenses/gpl.html}
+    \bibitem{SDCC} \url{http://sdcc.sourceforge.net/}
 \end{thebibliography}
 
 \end{document}
