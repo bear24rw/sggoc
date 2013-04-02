@@ -48,9 +48,10 @@ module vdp(
     output              VGA_VS
 );
 
-    reg [11:0] z80_clk_count = 0;
-    reg z80_clk_en = 0;
+    //reg [11:0] z80_clk_count = 0;
+    //reg z80_clk_en = 0;
 
+    /*
     always @(posedge vga_clk) begin
         if (pixel_x == 0) begin
             z80_clk_count <= 0;
@@ -58,12 +59,15 @@ module vdp(
             z80_clk_count <= z80_clk_count + 1;
         end
     end
+    */
 
+    // 228 CPU cycles per scanline
+    // 262 scanlines
+    assign z80_clk = (pixel_y < 262 && pixel_x < 228) ? vga_clk : 0;
     //assign z80_clk = (z80_clk_count < 1592 && pixel_y < 263) ? vga_clk : 0;
-    assign z80_clk = (pixel_y < 263) ? vga_clk : 0;
 
-    wire z80_clk_count_228 = z80_clk_count < 228;
-    wire pixel_y_263 = pixel_y < 273;
+    //wire z80_clk_count_228 = z80_clk_count < 228;
+    //wire pixel_y_263 = pixel_y < 273;
 
     // ----------------------------------------------------
     //                      REGISTERS
