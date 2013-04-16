@@ -172,17 +172,17 @@ Mapper and the bottom chip is the actual game ROM.
 \end{figure}
 
 \subsection{Sega Mapper}
-There are several different mappers in existence but we will only focus on
+There are several different mappers in existence but we only focused on
 implementing the "Sega Mapper" as it is the most popular.  The Sega mapper
 defines 3 16KB slots in the Z80 memory map. Any 16KB bank of ROM can be mapped
 into any of these 3 slots. The mapping is controlled by memory addresses
-0xFFFC-0xFFFF.
+\texttt{0xFFFC-0xFFFF}.
 
 \begin{table}[H]
     \centering
     \begin{tabular}{ccc}
         \toprule
-        \textbf{Control Register} & \textbf{Slot} & \textbf{Maps to Z80 Address} \\
+        \textbf{Memory Address} & \textbf{Slot} & \textbf{Maps to Z80 Address} \\
         \midrule
         \texttt{0xFFFC} & Control Bits & - \\
         \texttt{0xFFFD} & 0            & \texttt{0x0000-0x3FFF} \\
@@ -209,23 +209,22 @@ mapped to different ROM banks.
 Since we are targeting a standard FPGA development board we cannot easily use
 the actual game cartridge without some kind of hardware adaptor.  Additionally,
 using the actual game cartridge would go against what we are trying to
-accomplish with this project which is eliminating the need for any of the
+accomplish with this project which is to eliminate the need for any of the
 original hardware. Lucky, virtually every Game Gear cartridge has been dumped
 and are available online.  Unfortunately, the ROMs range in size all the way up
 to 4MB and being that most affordable FPGAs do not have that much block RAM it
 would be impossible for us to pack the ROM with the bitstream. A more ideal
 solution would be to use a SD card which can be loaded with numerous ROM files
 and then write a bootloader to select which one to play.  The complexity of
-that strategy, however, is not worth the initial effort. A simpler solution
-which would allow us to quickly start on the rest of the project is to load a
+that strategy, however, was not worth the initial effort. A simpler solution
+which allowed us to quickly start on the rest of the project is to load a
 single ROM file onto the Flash chip that comes with our DE-1 development board.
 
 \subsection{ROM Flasher}
 The technical requirements of interfacing with the flash chip on our board are
-outside the scope of our project and as such we will be using a core provided
-by Altera \cite{flash_core} to simplify the process.
-Figure~\ref{fig:flash_core} shows the black box diagram of the flash core
-provided by Altera.
+outside the scope of our project and as such we utilized a core provided by
+Altera \cite{flash_core} to simplify the process.  Figure~\ref{fig:flash_core}
+shows the black box diagram of the flash core provided by Altera.
 
 \begin{figure}[H]
 \centering
@@ -234,14 +233,14 @@ provided by Altera.
 \label{fig:flash_core}
 \end{figure}
 
-A ``MemSend" project, completely separate from the GG project, will be used to
+A ``MemSend" project, completely separate from the GG project, is used to
 initially load a single ROM file into the flash chip.  On the computer a Python
-program will read a ROM file byte by byte and send it to the FPGA over the
-serial port. The FPGA will send back the byte it just recieved as an
-acknowledgement. Another Python program will be used to read back and verify
-that the flash contents match the ROM file. Figures~\ref{fig:rom_write}
-and~\ref{fig:rom_read} illustrate the process of writing and reading a ROM to
-and from the flash memory.
+program reads a ROM file byte by byte and sends it to the FPGA over the serial
+port. The FPGA sends back the byte it just received as an acknowledgement.
+Another Python program is used to read back and verify that the flash contents
+match the ROM file. Figures~\ref{fig:rom_write} and~\ref{fig:rom_read}
+illustrate the process of writing and reading a ROM to and from the flash
+memory.
 
 \begin{figure}[H]
     \centering
@@ -263,9 +262,9 @@ and from the flash memory.
 \section{Zilog Z80}
 The Game Gear uses the classic Zilog Z80 CPU running at 3.58MHz as it's main
 processor.  The re-implementation of the Z80 is completely outside the scope of
-this project and as such we will be using the popular TV80 \cite{tv80} CPU
-which is a proven, open source, implementation of the Z80 written in Verilog.
-The interface of the TV80 exactly matches that of the original Z80, shown in
+this project and as such we utilized the popular TV80 \cite{tv80} CPU which is
+a proven, open source, implementation of the Z80 written in Verilog.  The
+interface of the TV80 exactly matches that of the original Z80, shown in
 Figure~\ref{fig:z80}, with the only exception being the data bus. The original
 Z80, as well as the whole Game Gear memory system, relies on tri-state buses
 where as the TV80 has a separate bus for data in and data out.
@@ -307,14 +306,43 @@ the Game Gear is shown below
 \end{table}
 
 Since the cartridge memory mapper handles the slot mapping itself we are really
-only multiplexing between the cartridge and the system RAM.  The system RAM
-happens to start at a nice edge being that \texttt{0xC000 = 0b1100000000000000}. To see
-if we are accessing RAM we only need to check to see if bits 15 and 16 are
-high. If so, we can simply use the 13 LSBs of the Z80 address as the index into
-the RAM.  This method also accounts for the RAM mirror since the 13 LSBs repeat
-starting at 0xE000.
+only multiplexing between the cartridge, the system RAM, and the IO controller
+which share the memory bus.  The system RAM happens to start at a nice edge
+being that \texttt{0xC000 = 0b1100000000000000}. To see if we are accessing RAM
+we only need to check to see if bits 15 and 16 are high. If so, we can simply
+use the 13 LSBs of the Z80 address as the index into the RAM.  This method also
+accounts for the RAM mirror since the 13 LSBs repeat starting at 0xE000.
 
 \section{IO Controller}
+
+The IO Controller is responsible for determining which IO port
+the Z80 is currently reading or writing from during an IO operation.
+The port that is currently selected is decoded to one of 8 possible
+ports using address bits 7, 6, and 0. The following table describes
+which port corresponds to which IO device.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cl}
+        \toprule
+        \textbf{IO Port} & \textbf{Device} \\
+        \midrule
+        \texttt{0} & Memory Control \\
+        \texttt{1} & IO Port Control\\
+        \texttt{2} & VDP V Counter \\
+        \texttt{3} & VDP H Counter \\
+        \texttt{4} & VDP Data \\
+        \texttt{5} & VDP Control \\
+        \texttt{6} & Input A/B \\
+        \texttt{7} & Input B/Misc \\
+        \bottomrule
+    \end{tabular}
+    \caption{IO Port Mapping}
+\end{table}
+
+The IO controller is also responsible for generating the VDP control and
+data read write signals.
+
 \section{Video Display Processor (VDP)}
 
 The Video Display Processor is a graphics chip which is derived from Texas
@@ -326,14 +354,17 @@ The VDP is accessed at the following Z80 I/O ports:
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{c|p{3in}}
-        \hline
-        \hline
-          \$7E & V counter (read) / SN76489 data (write)             \\
-          \$7F & H counter (read) / SN76489 data (write, mirror)     \\
-          \$BE & Data port (r/w)                                     \\
-          \$BF & Control port (r/w)                                  \\
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Port} & \textbf{Description} \\
+        \midrule
+        \texttt{0x7E} & V counter (read) \\
+        \texttt{0x7F} & H counter (read) \\
+        \texttt{0xBE} & Data port (r/w)     \\
+        \texttt{0xBF} & Control port (r/w)  \\
+        \bottomrule
     \end{tabular}
+    \caption{VDP IO Ports}
 \end{table}
 
 The address decoding for the I/O ports is done with A7, A6 and A0 of the Z80
