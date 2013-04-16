@@ -13,7 +13,7 @@
 \usepackage[pdfborder={0 0 0}]{hyperref}
 \usepackage[table]{xcolor}
 \usepackage{microtype}
-\usepackage[font=bf]{caption}
+\usepackage[font={scriptsize,bf}]{caption}
 \usepackage{booktabs}
 \usepackage{listings}
 
@@ -26,10 +26,8 @@
 \headsep=0.25in
 
 % line spacing
-\linespread{1.1}
+%\linespread{1.1}
 
-% empty line between paragraphs
-\parskip = 0.5\baselineskip
 
 % reduce spacing after figures
 %\setlength{\belowcaptionskip}{-\baselineskip}
@@ -81,18 +79,67 @@
 \maketitle
 
 \newpage
+\parskip = 0.4\baselineskip
 \tableofcontents
+
+% empty line between paragraphs
+\parskip = 0.5\baselineskip
+
 \newpage
 
-\section{Abstract}
-The objective of this project is to reimplement the hardware of the Sega Game
-Gear (GG) in a Field Programmable Gate Array (FPGA). To do this each chip in
-the system will be reimplemented in Verilog based on official and 3rd party
-descriptions and specifications on how they operate. This document details the
-design functionality and testing metrics that will be followed during the
-implementation and execution of our project.
+\section{Executive Summary}
 
-\section{System Overview}
+The goal of this project is to reimplement the original hardware of the Sega Game
+Gear (GG) in a Field Programmable Gate Array (FPGA). Each digital component in
+the original Sega Game Gear was identified and understood based on official
+and 3rd party descriptions and specifications of their operation. Using these
+references we reimplemented a majority of the original Sega Game Gear hardware in
+a hardware description language (Verilog) and were successfully able to run original
+game ROMs on an Altera DE1 FPGA development board.
+
+\section{Background}
+
+As computer systems age it is often impossible to keep physically maintaining
+them.  For many legacy systems you cannot buy replacement parts and finding
+people who have the skills to repair the original hardware is difficult. By
+re-implementing these systems in a Field Programmable Gate Array (FPGA) you can
+replace old multi-chip solutions with a single chip implementation that is
+maintained in software. This allows you to future proof the existing design and
+even extend its functionality. This project is a case study on re-implementing
+an old game console, the Sega Game Gear, in a FPGA.
+
+\section{Design Process}
+
+\section{Requirements / Assessment Metrics}
+
+\section{Use of Standards}
+
+\subsection{Verilog 2001}
+
+The core of this project is built using the Verilog Hardware Description
+Language defined by the IEEE standard 1364-2001 \cite{ieeeverilog}. This
+standard describes the specifics of the Verilog language in regards to its
+lexical structure, data types, expressions, hierarchical structures, and its
+many other language features.  Fortunately for us, we can depends on the Altera
+Quartus II compiler to ensure that all the requirements specified in the IEEE
+standard are met. While the full standard is rather large we only need to
+concern ourselves with a few sections, specifically the sections describing the
+syntax (2, 3, 4, 6) and overall structure of how components are modeled (5, 9,
+12, 14).
+
+\subsection{GNU General Public Licensing Standard}
+
+The GNU General Public License (GPL) \cite{gpl} is a standard, copyleft,
+license for software and other works.  It guarantees end users the freedoms to
+use, study, share, and modify the source code of the software so long as any
+derivatives of the work is distributed under the same license. We felt that
+this license was the best choice for our project given the fact that it is
+primarily an academic pursuit and to be used, shared, and learned from.
+
+\section{Design Overview}
+
+\subsection{System Overview}
+
 The Sega Game Gear, released in 1991, was Sega's first attempt at a handheld
 gaming console. It featured a Zilog Z80 clocked at 3.58MHz, 8KB of system RAM,
 16KB of video ram, and a 160x144 pixel resolution screen.
@@ -119,7 +166,7 @@ components
 \end{table}
 
 \newpage
-\subsection{Functional Diagrams}
+\subsubsection{Functional Diagrams}
 At a high level the Game Gear can be viewed simply as a system which takes
 input from a game controller and produces video and audio as an output. This
 description is shown in Figure~\ref{fig:external}.
@@ -147,7 +194,7 @@ implemented in our project.
 \end{figure}
 
 \newpage
-\section{Cartridges and Memory Mapping}
+\subsection{Cartridges and Memory Mapping}
 The Z80 CPU only has 64KB of address space and 48KB of it is dedicated to the
 game cartridge. A "mapper" is used to allow the use of larger ROMs (as well as
 on-catridge RAM). Figure~\ref{fig:gg_cart} shows a standard GG cartridge and
@@ -171,7 +218,7 @@ Mapper and the bottom chip is the actual game ROM.
     \end{minipage}
 \end{figure}
 
-\subsection{Sega Mapper}
+\subsubsection{Sega Mapper}
 There are several different mappers in existence but we only focused on
 implementing the "Sega Mapper" as it is the most popular.  The Sega mapper
 defines 3 16KB slots in the Z80 memory map. Any 16KB bank of ROM can be mapped
@@ -205,7 +252,7 @@ mapped to different ROM banks.
 \label{fig:mapping_diagram}
 \end{figure}
 
-\subsection{Cartridge Alternatives}
+\subsubsection{Cartridge Alternatives}
 Since we are targeting a standard FPGA development board we cannot easily use
 the actual game cartridge without some kind of hardware adaptor.  Additionally,
 using the actual game cartridge would go against what we are trying to
@@ -220,7 +267,7 @@ that strategy, however, was not worth the initial effort. A simpler solution
 which allowed us to quickly start on the rest of the project is to load a
 single ROM file onto the Flash chip that comes with our DE-1 development board.
 
-\subsection{ROM Flasher}
+\subsubsection{ROM Flasher}
 The technical requirements of interfacing with the flash chip on our board are
 outside the scope of our project and as such we utilized a core provided by
 Altera \cite{flash_core} to simplify the process.  Figure~\ref{fig:flash_core}
@@ -246,20 +293,20 @@ memory.
     \centering
     \begin{minipage}[b]{0.45\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_write.png}
+        \includegraphics[width=\textwidth, height=3in]{../../fpga/rom_flasher/doc/block_diagram_write.png}
         \caption{MemSend - Write}
         \label{fig:rom_write}
     \end{minipage}
     \hfill
     \begin{minipage}[b]{0.45\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_read.png}
+        \includegraphics[width=\textwidth, height=3in]{../../fpga/rom_flasher/doc/block_diagram_read.png}
         \caption{MemSend - Read}
         \label{fig:rom_read}
     \end{minipage}
 \end{figure}
 
-\section{Zilog Z80}
+\subsection{Zilog Z80}
 The Game Gear uses the classic Zilog Z80 CPU running at 3.58MHz as it's main
 processor.  The re-implementation of the Z80 is completely outside the scope of
 this project and as such we utilized the popular TV80 \cite{tv80} CPU which is
@@ -276,7 +323,7 @@ where as the TV80 has a separate bus for data in and data out.
 \label{fig:z80}
 \end{figure}
 
-\section{Memory Management Unit (MMU)}
+\subsection{Memory Management Unit (MMU)}
 Since our design does not use tri-state buses we cannot simply connect the data
 lines from each component together. Instead, we need to have some kind of
 memory manager that can multiplex the data lines to whichever device the
@@ -305,7 +352,7 @@ the Game Gear is shown below
     \caption{Z80 Memory Map \protect\cite{mem_map_table}}
 \end{table}
 
-Since the cartridge memory mapper handles the slot mapping itself we are really
+Since the cartridge mapper handles the slot mapping itself we are really
 only multiplexing between the cartridge, the system RAM, and the IO controller
 which share the memory bus.  The system RAM happens to start at a nice edge
 being that \texttt{0xC000 = 0b1100000000000000}. To see if we are accessing RAM
@@ -313,7 +360,7 @@ we only need to check to see if bits 15 and 16 are high. If so, we can simply
 use the 13 LSBs of the Z80 address as the index into the RAM.  This method also
 accounts for the RAM mirror since the 13 LSBs repeat starting at 0xE000.
 
-\section{IO Controller}
+\subsection{IO Controller}
 
 The IO Controller is responsible for determining which IO port
 the Z80 is currently reading or writing from during an IO operation.
@@ -343,75 +390,34 @@ which port corresponds to which IO device.
 The IO controller is also responsible for generating the VDP control and
 data read write signals.
 
-\section{Video Display Processor (VDP)}
+\subsection{Video Display Processor (VDP)}
 
-The Video Display Processor is a graphics chip which is derived from Texas
-Instruments (TMS9918).
+The Video Display Processor is a graphics chip which is derived from a Texas
+Instruments TMS9918. The VDP contains 10 control registers and interfaces with
+16KB of VRAM which it reads from to continuously draw the background and sprite
+tiles to the screen. The Z80 can only access the VRAM through the \texttt{Data}
+and \texttt{Control} IO ports. Additionally, the VDP provides a vertical and
+horizontal pixel count which is accessed by the Z80 via the \texttt{V Counter}
+and \texttt{H Counter} IO ports.  Finally, the VDP directly drives the
+interrupt line of the Z80 and asserts an interrupt when certain video events
+have occurred.
 
-\subsection{Ports}
-
-The VDP is accessed at the following Z80 I/O ports:
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Port} & \textbf{Description} \\
-        \midrule
-        \texttt{0x7E} & V counter (read) \\
-        \texttt{0x7F} & H counter (read) \\
-        \texttt{0xBE} & Data port (r/w)     \\
-        \texttt{0xBF} & Control port (r/w)  \\
-        \bottomrule
-    \end{tabular}
-    \caption{VDP IO Ports}
-\end{table}
-
-The address decoding for the I/O ports is done with A7, A6 and A0 of the Z80
-address bus, so the VDP locations are mirrored:
-
-\begin{itemize}
-    \item \$40 - 7F = Even locations are V counter/PSG, odd locations are H counter/PSG
-    \item \$80 - BF = Even locations are data port, odd locations are control port.
-\end{itemize}
-
-%The H and V counters are described in the display timing section. The control
-%and data ports are des
-
-\subsection{Control port}
+\subsubsection{Control Port}
 
 The VDP is programmed by sending a two-byte sequence to the control port. The
 control port is used to define an offset into VRAM or CRAM for subsequent data
 port I/O, and also to write to the internal VDP registers.
-\\
 
 There is a flag which is set after the first byte is sent and cleared when the
-second byte is written. This insures the VDP to know which byte of the control
-port is being received. Note that the flag is also cleared when the control
-port is read, and when the data port is read or written. This is used to
-initialize the flag to zero after it has been modified unpredictably, after an
-interrupt routine has executed, for example.
-\\
-
-The VDP has two components that are used for accessing CRAM and VRAM:
-
-\begin{itemize}
-    \item address register
-    \item code register
-\end{itemize}
+second byte is written. This insures the VDP knows which byte of the control
+port is being received. The flag is also cleared when the control port is read
+or when the data port is read or written.
 
 The address register is 14 bits in length and defines the address into VRAM
-for reads and writes, and the address into CRAM for writes. The code register
-is 2 bits in length and selects four different operations:
+for reads and writes and the address into CRAM for writes. The code register
+is 2 bits in length and selects four different operations.
 
-\begin{itemize}
-    \item VRAM write
-    \item VRAM read
-    \item CRAM write
-    \item VDP register write
-\end{itemize}
-
-The control port has the following format:
+Writes to the control port have the following format:
 
 \begin{figure}[H]
     \centering
@@ -427,15 +433,15 @@ The control port has the following format:
         \end{rightwordgroup} \\
         \bitheader{0-7}
     \end{bytefield}
-    \caption{Caption Here}
-    \label{fig:figure1234}
 \end{figure}
+
 Where,
+
 \begin{table}[H]
     \centering
     \begin{tabular}{ll}
         \toprule
-        \textbf{Bit} & \textbf{Definition} \\
+        \textbf{Bits} & \textbf{Definition} \\
         \midrule
         CDx & Code register     \\
         Axx & Address register  \\
@@ -443,44 +449,42 @@ Where,
     \end{tabular}
 \end{table}
 
-When the first byte is written, the lower 8 bits of the address register are
-updated. When the second byte is written, the upper 6 bits of the address
-register and the code register are updated, and the VDP may carry out
-additional processing based on the value of the code register:
+When the first byte is written it is stored in a temporary hold register.  Once
+the second byte is written the code is checked to see if it is setting the VRAM
+address or doing a register write. If it is setting the VRAM then the temporary
+hold register is used to update the lower 8 bytes of the VRAM address and the
+lower 6 bites of the second byte are used to update the upper bits of the VRAM
+address.
+
+The table below summarizes the different actions performed for each code.
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{cp{5in}}
+    \begin{tabular}{clp{3.5in}}
         \toprule
-        \textbf{Code} & \textbf{Actions Taken} \\
+        \textbf{Code} & \textbf{Action} & \textbf{Description}\\
         \midrule
-            0 & A byte of VRAM is read from the location defined by
-                the address register and is stored in the read buffer.
-                The address register is incremented by one. Writes to
-                the data port go to VRAM.                                     \\
-            1 & Writes to the data port go to VRAM                            \\
-            2 & This value signifies a VDP register write, explained below.
-                Writes to the data port go to VRAM.                           \\
-            3 & Writes to the data port go to CRAM.                           \\
+        0 & VRAM Read       & A byte of VRAM is read from the location defined by
+                              the address register and is stored in the read buffer.
+                              The address register is incremented by one. Writes to
+                              the data port go to VRAM.                                     \\
+        1 & VRAM Write      & Writes to the data port go to VRAM                            \\
+        2 & Register Write  & This value signifies a VDP register write, explained below.
+                              Writes to the data port go to VRAM.                           \\
+        3 & CRAM Write      & Writes to the data port go to CRAM.                           \\
         \bottomrule
     \end{tabular}
 \end{table}
 
+When accessing CRAM, the upper bits of the address register are ignored as the
+CRAM is only 64 bytes. The address register will wrap when it exceeds \texttt{0x3FFF}.
 
-When accessing CRAM, the upper bits of the address register are ignored as CRAM
-is smaller than 16k (either 32 or 64 bytes depending on the VDP). The address
-register will wrap when it exceeds \$3FFF.                                      \\
-
-\textbf{VDP register write}                                                     \\
-
-While the address and code register are updated like normal when a VDP register
-write is done, the control port sent can be viewed as having a different format
-to the programmer:
+If the code specified by the second byte indicates a register write the two
+bytes have a different format as shown below.
 
 \begin{figure}[H]
     \centering
     \begin{bytefield}[bitwidth=2em, endianness=big]{8}
-        \bitheader{0-7} \\
         \begin{rightwordgroup}{First Byte Written}
             \bitbox{1}{\tiny D07} & \bitbox{1}{\tiny D06} & \bitbox{1}{\tiny D05} & \bitbox{1}{\tiny D04} &
             \bitbox{1}{\tiny D03} & \bitbox{1}{\tiny D02} & \bitbox{1}{\tiny D01} & \bitbox{1}{\tiny D00}
@@ -489,146 +493,94 @@ to the programmer:
         \begin{rightwordgroup}{Second Byte Written}
             \bitbox{1}{\tiny 1}   & \bitbox{1}{\tiny 0}   & \bitbox{1}{\tiny X}   & \bitbox{1}{\tiny X} &
             \bitbox{1}{\tiny R03} & \bitbox{1}{\tiny R02} & \bitbox{1}{\tiny R01} & \bitbox{1}{\tiny R00}
-        \end{rightwordgroup}
+        \end{rightwordgroup} \\
+        \bitheader{0-7}
     \end{bytefield}
-    \caption{Caption Here}
-    \label{fig:figure1234}
 \end{figure}
 
-%\begin{table}[H]
-%    \centering
-%    \begin{tabular}{|l|l|}
-%        \hline
-%        MSB LSB                                                 \\ \hline
-%        1   0   ?   ?   R03 R02 R01 R00 & Second byte written   \\ \hline
-%        D07 D06 D05 D04 D03 D02 D01 D00 & First byte written    \\
-%        \hline
-%    \end{tabular}
-%\end{table}
+Where,
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{l|l}
-        \hline
-        \hline
-        RXX & VDP register number   \\
-        DXX & VDP register data     \\
-         X  & Ignored               \\
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Bits} & \textbf{Definition} \\
+        \midrule
+        Rxx & Register number   \\
+        Dxx & Register data     \\
+        x   & Ignored           \\
+        \bottomrule
     \end{tabular}
 \end{table}
 
-The VDP selects a register using bits 3-0 of the second byte, and writes the
-data from the first byte to the register in question. There are only 10
-registers, values 11 through 15 have no effect when written to.
-\\
+The VDP selects a register using bits 3-0 of the second byte and writes the
+data from the first byte into that register. Since there is only 10 registers
+values 11 through 15 have no effect when written to.
 
-\textbf{Data Port}
+\subsubsection{Data Port}
 
 Depending on the code register, data written to the data port is sent to either
 VRAM or CRAM. After each write, the address register is incremented by one, and
-will wrap past \$3FFF.
-\\
+will wrap past \texttt{3FFF}.
 
 Reads from VRAM or CRAM are buffered. Every time the data port is read
 (regardless of the code register) the contents of a buffer are returned. The
 VDP will then read a byte from VRAM at the current address, and increment the
 address register.  In this way data for the next data port read is ready with
-no delay while the VDP reads VRAM. An additional quirk is that writing to the
-data port will also load the buffer with the value written.
+no delay while the VDP reads VRAM.
 
-\subsection{Status Flags}
+\subsubsection{Status Flags}
 
 Reading the control port returns a byte containing status flags:
 
 \begin{figure}[H]
     \centering
     \begin{bytefield}[bitwidth=2em, endianness=big]{8}
-        \bitheader{0-7} \\
         \bitbox{1}{\tiny INT} & \bitbox{1}{\tiny OVR} & \bitbox{1}{\tiny COL} & \bitbox{1}{\tiny ---} &
-        \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---}
+        \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---} & \bitbox{1}{\tiny ---} \\
+        \bitheader{0-7}
     \end{bytefield}
-    \caption{Caption Here}
-    \label{fig:figure1234}
+    \caption{Status Register}
 \end{figure}
 
-%\begin{table}[H]
-%    \centering
-%    \begin{tabular}{|l|}
-%        \hline
-%        MSB LSB                         \\ \hline
-%        INT OVR COL --- --- --- --- --- \\
-%        \hline
-%    \end{tabular}
-%\end{table}
+The \textbf{INT} bit indicates a frame interrupt is pending and is set on the
+first line after the end of the active display period. It is cleared when the
+control port is read. (See the interrupts section for more details). The
+\textbf{OVR} and \textbf{COL} bits are used for sprites and are not implemented
+in our project. The remaining bits are not set by the VDP.
 
-\textbf{INT - Frame Interrupt Pending}
+\subsubsection{Color RAM (CRAM)}
 
-This flag is set on the first line after the end of the active display period.
-It is cleared when the control port is read. (Please see the interrupts section
-for more details).
+The Game Gear uses a 64 byte palette where each entry is composed of two bytes as shown below.
 
-\textbf{OVR - Sprite Overflow}
-
-This flag is set if there are more than eight sprites that are positioned on a
-single scanline. It is cleared when the control port is read.  (Please see the
-sprites section for more information).
-
-\textbf{COL - Sprite Collision}
-
-This flag is set if an opaque pixel from any two sprites overlap. It is cleared
-when the control port is read. (Please see the sprites section for more
-information).
-
-The remaining bits are not set by the VDP.
-
-\subsection{Color RAM (CRAM)}
-
-In Game Gear mode, CRAM has been expanded to 32 words or 64 bytes. Each word
-defined a single color as shown below:
-
-\begin{table}[H]
+\begin{figure}[H]
     \centering
-    \begin{tabular}{l c l}
-        - & = & Unused          \\
-        R & = & Red pixels      \\
-        G & = & Green pixels    \\
-        B & = & Blue pixels     \\
-    \end{tabular}
-\end{table}
+    \begin{bytefield}[bitwidth=2em, endianness=big]{8}
+        \begin{rightwordgroup}{High byte}
+        \bitbox{1}{\tiny --} & \bitbox{1}{\tiny --} & \bitbox{1}{\tiny --} & \bitbox{1}{\tiny --} &
+        \bitbox{1}{\tiny B3} & \bitbox{1}{\tiny B2} & \bitbox{1}{\tiny B1} & \bitbox{1}{\tiny B0}
+        \end{rightwordgroup}\\
+        \bitheader{0-7}
+        \\
+        \begin{rightwordgroup}{Low byte}
+        \bitbox{1}{\tiny G3} & \bitbox{1}{\tiny G2} & \bitbox{1}{\tiny G1} & \bitbox{1}{\tiny G0} &
+        \bitbox{1}{\tiny R3} & \bitbox{1}{\tiny R2} & \bitbox{1}{\tiny R1} & \bitbox{1}{\tiny R0}
+        \end{rightwordgroup}\\
+        \bitheader{0-7}
+    \end{bytefield}
+    \caption{Palette Entry}
+\end{figure}
 
-There are a total of 4096 (2\^{}12) possible colors that can be used, but only
-32 colors can be shown at any given time.
-
-The address register now wraps past address \$003F. Writing to an even CRAM
-address causes the data written to be stored in a latch, and writing to an odd
-CRAM address makes the VDP write the contents of the latch as well as the new
-data from the CPU to the current CRAM entry. For example:
-
-\begin{table}[H]
-    \centering
-    \fontfamily{pcr}\selectfont
-    \begin{tabular}{p{1cm} p{1in} p{3.5in}}
-        %\hline
-        ld  &  hl, \$C000   & ; CRAM address \$0000                     \\
-        rst &  10h          & ; Assume this functions sets VDP address  \\
-        ld  &  a, \$FF      & ; Color data                              \\
-        out &  (\$BE), a    & ; CRAM unchanged, latch = \$FF            \\
-        ld  &  hl, \$C021   & ; CRAM address \$0021                     \\
-        rst &  10h          & ; Set the address again                   \\
-        ld  &  a, \$0F      & ; Color data                              \\
-        out &  (\$BE), a    & ; CRAM word at \$0020 is now \$0FFF,
-                                and the data at \$0000 is unchanged.    \\
-        %\hline
-    \end{tabular}
-    \fontfamily{}\selectfont
-    %\caption{
-\end{table}
+When writing to CRAM the address register wraps at \texttt{0x0040}. Writing to
+an even CRAM address causes the data written to be stored in a latch, and
+writing to an odd CRAM address makes the VDP write the contents of the latch as
+well as the new data from the CPU to the current CRAM entry.
 
 Therefore, writing single bytes to even CRAM addresses will not modify CRAM.
 You could write multiple times to even addresses. This allows the same latched
 color data to be written to multiple palette entries.
 
-\subsection{Display Modes}
+\subsubsection{Display Modes}
 
 The TMS9918 has three bits which select different display modes called M1, M2,
 and M3. Note that in the TMS9918 manual, there are only four modes documented:
@@ -645,12 +597,13 @@ and M3. Note that in the TMS9918 manual, there are only four modes documented:
 
 %\subsection{Tiles}
 %\subsection{Layers}
-%\subsection{Interrupts}
+\subsubsection{Counters}
+\subsubsection{Interrupts}
 %\subsection{Display Timing}
-\section{VGA Controller}
+\subsection{VGA Controller}
 
 \newpage
-\section{Testing}
+\section{Test Plan}
 \subsection{Custom Test ROMs}
 
 In order to test the operation of the z80, and basic functionality of the VDP,
@@ -810,29 +763,13 @@ The testing strategy is executed as follows:
         \end{enumerate}
 \end{enumerate}
 
-\newpage
-\section{Standards}
-\subsection{Verilog 2001}
+\section{Project Limitations}
 
-The core of this project is built using the Verilog Hardware Description
-Language defined by the IEEE standard 1364-2001 \cite{ieeeverilog}. This
-standard describes the specifics of the Verilog language in regards to its
-lexical structure, data types, expressions, hierarchical structures, and its
-many other language features.  Fortunately for us, we can depends on the Altera
-Quartus II compiler to ensure that all the requirements specified in the IEEE
-standard are met. While the full standard is rather large we only need to
-concern ourselves with a few sections, specifically the sections describing the
-syntax (2, 3, 4, 6) and overall structure of how components are modeled (5, 9,
-12, 14).
+\section{Social Responsibility}
 
-\subsection{GNU General Public Licensing Standard}
 
-The GNU General Public License (GPL) \cite{gpl} is a standard, copyleft,
-license for software and other works.  It guarantees end users the freedoms to
-use, study, share, and modify the source code of the software so long as any
-derivatives of the work is distributed under the same license. We felt that
-this license was the best choice for our project given the fact that it is
-primarily an academic pursuit and to be used, shared, and learned from.
+
+\section{Conclusion}
 
 \newpage
 \begin{thebibliography}{9}
