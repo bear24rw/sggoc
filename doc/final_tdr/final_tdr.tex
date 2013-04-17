@@ -11,14 +11,36 @@
 \usepackage[T1]{fontenc}
 \usepackage{cmap}
 \usepackage[utf8]{inputenc}
-\lstset{breakatwhitespace,
-    language=C++,
-    columns=fullflexible,
-    keepspaces,
-    breaklines,
-    tabsize=3,
+
+% syntax highlighting
+\definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18}
+\definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}
+\definecolor{sh_string}{rgb}{0.06, 0.10, 0.98}
+
+\lstset{
+    language=C,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=tb,
     showstringspaces=false,
-extendedchars=true}
+    captionpos=b,
+    stringstyle=\color{sh_string},
+    keywordstyle = \color{sh_keyword}\bfseries,
+    commentstyle=\color{sh_comment}\itshape,
+    basicstyle=\small\sffamily,
+    numbersep=-5pt,
+    belowskip=-\parskip,
+    aboveskip=\baselineskip
+}
+
+%\lstset{breakatwhitespace,
+%    language=C++,
+%    columns=fullflexible,
+%    keepspaces,
+%    breaklines,
+%    tabsize=3,
+%    showstringspaces=false,
+%extendedchars=true}
 
 \mode<presentation>
 {
@@ -140,11 +162,36 @@ extendedchars=true}
 \end{frame}
 
 \begin{frame}
+    \frametitle{Implementation Priority}
+    \begin{enumerate}
+        \olditem Flash Memory Interface
+        \olditem Memory Management Unit (MMU)
+        \olditem Z80 + System RAM
+        \olditem Cartridge Mapper
+        \olditem VGA Driver
+        \olditem Background Tiles + VRAM
+        \olditem Video Display Processor Logic (VDP)
+        \olditem Sprites
+        \olditem Controller Input
+        \olditem Sound
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
     \frametitle{Requirements}
     \begin{enumerate}
-        \item<1-> VGA Output
-        \item<2-> Accurate gameplay
-        \item<3-> asdf
+        \item<1-> \textbf{VGA Output -} Need to output video via VGA which is
+            the most common video interface found on FPGA development boards.
+        \item<2-> \textbf{ROM Loading -} Need to be able to easily load in
+            different game and test ROMs into the Flash memory chip on the dev
+            board.
+        \item<3-> \textbf{Accurate Re-implementation -} Overall goal of this
+            project is to re-implement the Sega Game Gear as accurately as
+            possible. User should not be able to tell its not the original
+            hardware.
+        \item<4-> \textbf{Accurate Architecture -} Overall system architecture
+            should be as clean as possible and closely match that of the
+            original Game Gear.
     \end{enumerate}
 \end{frame}
 
@@ -167,6 +214,87 @@ extendedchars=true}
     \end{tabular}
 \end{frame}
 
+\section{Test Plan}
+\begin{frame}
+    \frametitle{Test Plan}
+    Test plan split up into 3 areas
+    \vspace{\baselineskip}
+    \begin{itemize}
+        \item Z80, RAM, Cartridge
+        \item VDP Background Tile Rendering
+        \item System Simulation vs Emulator
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Z80, RAM, Cartridge Test}
+    \begin{columns}[c]
+        \column{0.55\textwidth}
+        \begin{enumerate}
+            \item Connect 8 LEDs to Z80 IO port 1
+            \item Write simple Z80 test program that increments IO port 1
+            \item Load test program into flash
+            \item Divide Z80 clock down to 10Hz
+            \item Verify LEDs incrementing on development board
+        \end{enumerate}
+        \column{0.45\textwidth}
+        \begin{lstlisting}
+  __sfr __at (0x01) debug;
+  int main() {
+      debug = 0x38;
+      while (1) {}
+      return 0;
+  }
+        \end{lstlisting}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{VDP Background Tile Rendering}
+    \begin{columns}[c]
+        \column{0.6\textwidth}
+        \begin{enumerate}
+            \item Obtain VRAM dump from the Osmose emulator
+            \item Verify dump integrity using rendering program on computer
+            \item Transfer dump to FPGA VRAM via the `MemSend' tool
+            \item Verify that the resulting image on screen matches the emulator
+        \end{enumerate}
+        \column{0.4\textwidth}
+        \includegraphics[width=\textwidth]{../images/screen.png}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{System Simulation vs Emulator}
+    \begin{enumerate}
+        \item Insert print statements on all memory and IO accesses in emulator
+        \item Do the same for the Verilog system level simulation
+        \item Run emulator and simulation on same ROM
+        \item Diff the print logs
+        \item Verify that the memory and IO accesses match between the emulator
+            and simulation
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{System Simulation vs Emulator}
+    \includegraphics[width=\textwidth]{../images/diff_good.png}
+\end{frame}
+
+\begin{frame}
+    \frametitle{System Simulation vs Emulator}
+    \includegraphics[width=\textwidth]{../images/diff_weird.png}
+\end{frame}
+
+\begin{frame}
+    \frametitle{System Simulation vs Emulator}
+    \includegraphics[width=\textwidth]{../images/diff_bad.png}
+\end{frame}
+
+\begin{frame}
+    \frametitle{System Simulation vs Emulator}
+    \includegraphics[width=\textwidth]{../images/diff_x.png}
+\end{frame}
 
 %\begin{frame}[fragile] % fragile for lstlisting
 \begin{frame}
