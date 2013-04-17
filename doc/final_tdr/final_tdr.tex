@@ -109,20 +109,21 @@
 %{\includegraphics[width=\paperwidth,height=\paperheight]{slide_bg.png}}
 %\setbeamertemplate{footline}[bunsentheme]
 
-\section{Agenda}
 \begin{frame}
 \frametitle{Agenda}
     \begin{itemize}
-        \item Problem Description
-        \item Design Process
-        \item Requirements/Assessment Metrics/Test Plan
-        \item Design Overview
-        \item Project Limitations
-        \item Demonstration
+        \olditem Problem Description
+        \olditem Design Process
+        \olditem Implementation Priority
+        \olditem Requirements
+        \olditem Assessment Metrics
+        \olditem Test Plans
+        \olditem Design Overview
+        \olditem Project Limitations
+        \olditem Demonstration
     \end{itemize}
 \end{frame}
 
-\section{Problem Description}
 \begin{frame}
     \frametitle{Problem Description}
     \begin{center}
@@ -149,7 +150,6 @@
     \end{columns}
 \end{frame}
 
-\section{Design Process}
 \begin{frame}
     \frametitle{Design Process}
     \begin{enumerate}
@@ -199,7 +199,7 @@
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \begin{frame}
-    \frametitle{Assesment Metrics}
+    \frametitle{Assessment Metrics}
     \rowcolors{1}{}{lightgray}
     \begin{tabular}{L{1in}L{1.9in}C{0.6in}C{0.7in}}
         \textbf{Function} & \textbf{Requirement Specification} & \textbf{Design Verified} & \textbf{Device Validated}\\
@@ -214,20 +214,22 @@
     \end{tabular}
 \end{frame}
 
-\section{Test Plan}
 \begin{frame}
-    \frametitle{Test Plan}
-    Test plan split up into 3 areas
+    \frametitle{Test Plans}
+    Test plan split up into 4 areas:
     \vspace{\baselineskip}
     \begin{itemize}
         \item Z80, RAM, Cartridge
         \item VDP Background Tile Rendering
         \item System Simulation vs Emulator
+        \item Custom test ROMs
     \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
     \frametitle{Z80, RAM, Cartridge Test}
+    Ensures basic code execution and memory/IO interfaces are working properly
+    \vspace{\baselineskip}
     \begin{columns}[c]
         \column{0.55\textwidth}
         \begin{enumerate}
@@ -250,7 +252,9 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{VDP Background Tile Rendering}
+    \frametitle{VDP Background Tile Rendering Test}
+    Ensures VDP background tile rendering works correctly without worrying about Z80 or interface logic
+    \vspace{\baselineskip}
     \begin{columns}[c]
         \column{0.6\textwidth}
         \begin{enumerate}
@@ -265,7 +269,9 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{System Simulation vs Emulator}
+    \frametitle{System Simulation vs Emulator Test}
+    Ensures that our system functionally matches a known good one
+    \vspace{\baselineskip}
     \begin{enumerate}
         \item Insert print statements on all memory and IO accesses in emulator
         \item Do the same for the Verilog system level simulation
@@ -296,206 +302,120 @@
     \includegraphics[width=\textwidth]{../images/diff_x.png}
 \end{frame}
 
-%\begin{frame}[fragile] % fragile for lstlisting
 \begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
-    In order to test the operation of the z80, and basic functionality of the VDP,
-    custom ROMs were developed. Using the Small Device C Compiler (SDCC)
-    \cite{SDCC} we are able to write programs that exercises various functionality
-    of the system.
-
-    We found SDCC extremely easy to setup and get working. The only thing we needed
-    to modify was the stack pointer location in the C Runtime file (crt0.s). The
-    default stack pointer location is set to \texttt{0xFFFF} but the top most RAM
-    address on the Game Gear is \texttt{0xDFFF}. Setting up IO is as easy as
-    specifying a special function register at a given IO port. An example showing
-    how to write data to the VDP data port (0xBE) is shown below.
+    \frametitle{Custom Test ROMs}
+    Allows unit testing of specific features of the system
+    \vspace{\baselineskip}
+    \begin{columns}[c]
+        \column{0.6\textwidth}
+        \begin{enumerate}
+            \item Write program that performs a certain task (ex. scroll screen left 5 pixels)
+            \item Verify ROM in emulator
+            \item Flash ROM onto the dev board
+            \item Verify expected output is achived on FPGA
+        \end{enumerate}
+        \column{0.4\textwidth}
+        \includegraphics[width=\textwidth]{../images/scroll.png}
+    \end{columns}
 \end{frame}
 
-%\defverbatim[colored]\lst{%
-%    \begin{lstlisting}[captionpos=b, caption=VDP Data Write]
-%        __sfr __at (0xBE) vdp_data;
-%        int main() {
-%            vdp_data = 0x38;    // write 0x38 to VDP data port
-%            while (1) {}
-%            return 0;
-%        }
-%    \end{lstlisting}}
-%
-%    \begin{frame}
-%        \frametitle{Requirements/Ass. Metrics/Test Plan}
-%        \lst
-%    \end{frame}
-%
-%    \begin{frame}
-%        \frametitle{Requirements/Ass. Metrics/Test Plan}
-%        \begin{center}
-%            We ended up building a small GG library with the following functions:
-%        \end{center}
-%    \end{frame}
-
-%\defverbatim[colored]\lst{%
-%    \begin{lstlisting}[captionpos=b, caption=Game Gear Library Functions]
-%        void vdp_write_control(uint8_t value);
-%        void vdp_write_data(uint8_t value);
-%        void vdp_set_register(uint8_t reg, uint8_t value);
-%        void vdp_set_vram_addr(uint16_t addr);
-%        void vdp_set_palette(uint8_t id, uint16_t color);
-%        void set_pattern_fill(uint16_t id, uint8_t color);
-%        void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern);
-%        void delay(uint16_t x);
-%        void set_debug(uint8_t x);
-%    \end{lstlisting}}
-%
-%    \begin{frame}
-%        \frametitle{Requirements/Ass. Metrics/Test Plan}
-%        \lst
-%    \end{frame}
-
-\begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
-    With this library in place it is easy to to perform operations such as setting
-    up the color palette:
+\begin{frame}[fragile]
+    \frametitle{Custom Test ROM Code Library}
+    We ended up building a library of high level functions to quickly allow new tests to be written
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+  void vdp_write_control(uint8_t value);
+  void vdp_write_data(uint8_t value);
+  void vdp_set_register(uint8_t reg, uint8_t value);
+  void vdp_set_vram_addr(uint16_t addr);
+  void vdp_set_palette(uint8_t id, uint16_t color);
+  void set_pattern_fill(uint16_t id, uint8_t color);
+  void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern);
+  void delay(uint16_t x);
+  void set_debug(uint8_t x);
+    \end{lstlisting}
 \end{frame}
 
-%\defverbatim[colored]\lst{%
-%    \begin{lstlisting}[captionpos=b, caption=Color Palette Test ROM]
-%        #include <gg.h>
-%        int main() {
-%            // set register 1 bit 6 to enable display
-%            vdp_set_register(1, (1<<6));
-%            // set first color palette entry to gray
-%            vdp_set_palette(0, 0x0CCC);
-%            while (1) {}
-%            return 0;
-%        }
-%    \end{lstlisting}}
-%
-%    \begin{frame}
-%        \frametitle{Requirements/Ass. Metrics/Test Plan}
-%        \lst
-%    \end{frame}
-%
-%    \begin{frame}
-%        \frametitle{Requirements/Ass. Metrics/Test Plan}
-%        In order to test the operation of the VDP background generator a separate test
-%        project used which only consists of the background generator, VRAM, VGA timing
-%        generator, and a UART interface.
-%
-%        Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
-%        the game reaches a screen that we want to test on the FPGA we dump the VRAM and
-%        CRAM using Osmoses built in debugger. We then use programs, written in C, that
-%        read the VRAM dump and generate images of the color palette, all 512 background
-%        tiles, and the final screen rendering.  These programs serve a dual purpose
-%        allowing us to both confirm our understanding of how the background image is
-%        generated and also that our VRAM dump is valid. The images below show example
-%        output from these three programs.
-%    \end{frame}
-    %\begin{frame}
-    %    \frametitle{Requirements/Ass. Metrics/Test Plan}
-    %\begin{columns}[c]
-    %    \column{0.45\textwidth}
-    %    \includegraphics[width=\textwidth]{../images/palette.png}
-    %    %\caption{Color Palette}
-    %    \column{0.45\textwidth}
-    %    \includegraphics[width=\textwidth]{../images/screen.png}
-    %    %\caption{Complete Screen Render}
-    %\end{columns}
-%\end{frame}
+\begin{frame}[fragile]
+    \frametitle{Custom Test ROM Example}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+    #include <stdint.h>
+    #include <gg.h>
 
-\begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
-    \begin{figure}[H]
-        \centering
-        \begin{minipage}[H]{0.45\linewidth}
-            \centering
-            \includegraphics[width=\textwidth]{../images/palette.png}
-            \caption{Color Palette}
-            \label{fig:palette}
-        \end{minipage}
-        \hfill
-        \begin{minipage}[H]{0.45\linewidth}
-            \centering
-            \includegraphics[width=\textwidth]{../images/screen.png}
-            \caption{Complete Screen Render}
-            \label{fig:screen}
-        \end{minipage}
-    \end{figure}
+    int main() {
+      uint8_t x = 0;
+
+      while (1) {
+          // set register 1 bit 6 to enable display
+          vdp_set_register(1, (1<<6));
+
+          // set color palette (0x0BGR)
+          vdp_set_palette(0, 0x0CCC);     // gray
+          vdp_set_palette(1, 0x000F);     // red
+          vdp_set_palette(2, 0x00F0);     // green
+
+          // update the debug leds
+          set_debug(x++);
+      }
+
+      return 0;
+    }
+    \end{lstlisting}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
-    \begin{figure}[H]
-        \centering
-        \begin{minipage}[H]{0.8\linewidth}
-            \centering
-            \includegraphics[width=\textwidth]{../images/tiles.png}
-            \caption{All 512 Tiles}
-            \label{fig:tiles}
-        \end{minipage}
-    \end{figure}
-    \vfill
-    %\begin{columns}[c]
-    %    \column{0.8\textwidth}
-    %    \includegraphics[width=\textwidth]{../images/tiles.png}
-    %    \caption{All 512 Tiles}
-    %\end{columns}
-\end{frame}
-
-\section{Design Overview}
 \begin{frame}
     \frametitle{Design Overview}
-    \begin{columns}[c]
-        %\column{0.8\textwidth}
-        \column{0.3\textwidth}
-        Black Box Diagram
-    \end{columns}
+    \vspace{-0.5\baselineskip}
     \begin{center}
+        Black Box Diagram \\
+        \vspace{0.5\baselineskip}
         \includegraphics[scale=0.4]{../block_diagrams/block_diagram_external.png}
     \end{center}
+
 \end{frame}
 
 \begin{frame}
     \frametitle{Design Overview}
-    \begin{columns}[c]
-        %\column{1.0\textwidth}
-        \column{0.4\textwidth}
-        \vspace{-0.8cm}
-        Internal Functional Diagram
-    \end{columns}
+    \vspace{-0.5\baselineskip}
     \begin{center}
-        %\includegraphics[width=\textwidth]{../block_diagrams/block_diagram_internal_implemented.png}
+        Internal Functional Diagram \\
+        \vspace{0.5\baselineskip}
         \includegraphics[scale=0.3]{../block_diagrams/block_diagram_internal_implemented.png}
     \end{center}
 \end{frame}
 
 \begin{frame}
     \frametitle{Design Overview}
+    \begin{center}
+        `Memsend' tool used to write ROMs to the flash chip on the FPGA development board
+    \end{center}
     \begin{columns}[c]
         \column{0.45\textwidth}
-        \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_write.png}
+        \begin{center}
+            \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_write.png} \\
+            Write
+        \end{center}
         \column{0.45\textwidth}
-        \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_read.png}
+        \begin{center}
+            \includegraphics[width=\textwidth]{../../fpga/rom_flasher/doc/block_diagram_read.png} \\
+            Read
+        \end{center}
     \end{columns}
 \end{frame}
 
-\section{Project Limitations}
 \begin{frame}
     \frametitle{Project Limitations}
-    Game Gear is hard to test/verify
     \begin{itemize}
-            \olditem<2-> Its only output is video (no UART, JTAG, etc..)
-            \olditem<3-> Most documentation is 3rd party
+        \item<1-> \textbf{Tile Corruption - } Some tiles are fliped or are the
+            wrong tile ID. Not sure if timing or logic issue yet. Haven't been
+            able to reproduce with a test ROM yet.
+        \item<2-> \textbf{Missing Features -} Currently missing some core
+            functionality such as sprites, controller input, and sound. Each
+            will be added with time.
+        \item<3-> \textbf{Cumbersome ROM Loading -} The current process to load
+            a new ROM is cumbersome and takes a long time. It can take 5-10
+            minutes to flash a multi-megabyte ROM. Loading off an SD card would be
+            much nicer.
     \end{itemize}
-    \vspace{0.25cm}
-    \onslide<4->{Our strategy:}
-    \begin{enumerate}
-            \olditem<5-> Use an emulator to watch memory fetches and get memory dumps
-            \olditem<6-> Initialize our RAMs with these dumps and verify we achieve the same visual output
-            \olditem<7-> Watch instruction fetches with a logic analyzer and see if they match the emulator
-    \end{enumerate}
-    \vspace{0.25cm}
-    \onslide<8->{Could replace emulator with a logic/bus analyzer connected to the original hardware}
 \end{frame}
 
 \begin{frame}
@@ -515,24 +435,5 @@
 \end{frame}
 
 \newpage
-
-\section{Bibliography}
-\begin{frame}
-    \frametitle{References}
-    \begin{thebibliography}{9}
-    %\bibitem{gg} \url{http://mo5.com/musee-machines-gamegear.html}
-    %\bibitem{gg_cart} \url{http://www.magisterrex.com/prodimages/EccoDolphinGameGear-h450.png}
-    %\bibitem{gg_cart_pcb} \url{http://www.smspower.org/Development/SMSPagingChips}
-    %\bibitem{mapper} \url{http://www.smspower.org/Development/Mappers}
-    %\bibitem{flash_core} \url{ftp://ftp.altera.com/up/pub/flash/altera_up_flash_memory.zip}
-    %\bibitem{tv80} \url{http://opencores.org/project,tv80}
-    %\bibitem{mem_map_table} \url{http://code.google.com/p/bizhawk/source/browse/trunk/BizHawk.Emulation/Consoles/Sega/SMS/MemoryMap.Sega.cs}
-    %\bibitem{VDP} \url{http://www.smspower.org/uploads/Development/msvdp-20021112.txt?sid=c8bdf72dd28a0a34eeedf5f7742ca62a}
-            \bibitem{osmose} \url{http://bcz.asterope.fr/osmose.htm}
-    %\bibitem{ieeeverilog} \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00954909}
-    %\bibitem{gpl} \url{http://www.gnu.org/licenses/gpl.html}
-            \bibitem{SDCC} \url{http://sdcc.sourceforge.net/}
-    \end{thebibliography}
-\end{frame}
 
 \end{document}
