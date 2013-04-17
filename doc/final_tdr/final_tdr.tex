@@ -1,9 +1,12 @@
-\documentclass{beamer}
+\documentclass[xcolor=table]{beamer}
 
 \usepackage{pgf,pdfpages}
 \usepackage{listings}
 %\usepackage{adjustbox}
 \usepackage{graphicx} % http://tex.stackexchange.com/questions/38177/including-large-tables-in-a-beamer-frame
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
 
 \usepackage[T1]{fontenc}
 \usepackage{cmap}
@@ -24,6 +27,11 @@ extendedchars=true}
     \setbeamercovered{transparent}
     \setbeamertemplate{items}[circle]
 }
+
+\definecolor{lightgray}{gray}{0.9}
+\definecolor{darkgreen}{RGB}{0, 150, 0}
+\definecolor{darkred}{RGB}{150, 0, 0}
+\definecolor{darkyellow}{RGB}{140, 140, 0}
 
 % suppress navigation bar
 \beamertemplatenavigationsymbolsempty
@@ -122,22 +130,43 @@ extendedchars=true}
 \section{Design Process}
 \begin{frame}
     \frametitle{Design Process}
-    \begin{center}
-        WHY?
-    \end{center}
-\end{frame}
-
-\section{Requirements/Assessment Metrics/Test Plan}
-\begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
     \begin{enumerate}
         \item<1-> Break down system components according to the original system architecture
-        \item<2-> Implement each component to match the original functionality described by official and
-            non official documents
-        \item<3-> Test each components functionality against the actual hardware (in our case an emulator)
+        \item<2-> Implement each component in Verilog matching the original
+            functionality described by official and non official documents
+        \item<3-> Simulate each components functionality and compare it against the actual hardware (in our case an emulator)
         \item<4-> Tie components together in a way that is better suited toward FPGA technology (\emph{E.g.} avoid tri-state buses)
     \end{enumerate}
 \end{frame}
+
+\begin{frame}
+    \frametitle{Requirements}
+    \begin{enumerate}
+        \item<1-> VGA Output
+        \item<2-> Accurate gameplay
+        \item<3-> asdf
+    \end{enumerate}
+\end{frame}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\begin{frame}
+    \frametitle{Assesment Metrics}
+    \rowcolors{1}{}{lightgray}
+    \begin{tabular}{L{1in}L{1.9in}C{0.6in}C{0.7in}}
+        \textbf{Function} & \textbf{Requirement Specification} & \textbf{Design Verified} & \textbf{Device Validated}\\
+        \hline
+        VGA Output               & Design must output video at 640x480 to a VGA monitor & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+        Sega Mapper              & Design must implement the Sega Memory Mapper         & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+        Video Display Processor  & Design must implement the TMS9918                    & {\color{darkyellow} Partly} & {\color{darkyellow} Partly} \\
+        Game ROM stored in flash & Design must be able to load game ROMs from flash     & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+        Controller Input         & Design must implement a single controller            & {\color{darkred} No}        & {\color{darkred} No} \\
+        Game Gear system functionality & Design must implement the same functionality as the original Game Gear & {\color{darkyellow}Partly} & {\color{darkyellow}Partly} \\
+        %\bottomrule
+    \end{tabular}
+\end{frame}
+
 
 %\begin{frame}[fragile] % fragile for lstlisting
 \begin{frame}
@@ -155,45 +184,45 @@ extendedchars=true}
     how to write data to the VDP data port (0xBE) is shown below.
 \end{frame}
 
-\defverbatim[colored]\lst{%
-    \begin{lstlisting}[captionpos=b, caption=VDP Data Write]
-        __sfr __at (0xBE) vdp_data;
-        int main() {
-            vdp_data = 0x38;    // write 0x38 to VDP data port
-            while (1) {}
-            return 0;
-        }
-    \end{lstlisting}}
+%\defverbatim[colored]\lst{%
+%    \begin{lstlisting}[captionpos=b, caption=VDP Data Write]
+%        __sfr __at (0xBE) vdp_data;
+%        int main() {
+%            vdp_data = 0x38;    // write 0x38 to VDP data port
+%            while (1) {}
+%            return 0;
+%        }
+%    \end{lstlisting}}
+%
+%    \begin{frame}
+%        \frametitle{Requirements/Ass. Metrics/Test Plan}
+%        \lst
+%    \end{frame}
+%
+%    \begin{frame}
+%        \frametitle{Requirements/Ass. Metrics/Test Plan}
+%        \begin{center}
+%            We ended up building a small GG library with the following functions:
+%        \end{center}
+%    \end{frame}
 
-    \begin{frame}
-        \frametitle{Requirements/Ass. Metrics/Test Plan}
-        \lst
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Requirements/Ass. Metrics/Test Plan}
-        \begin{center}
-            We ended up building a small GG library with the following functions:
-        \end{center}
-    \end{frame}
-
-\defverbatim[colored]\lst{%
-    \begin{lstlisting}[captionpos=b, caption=Game Gear Library Functions]
-        void vdp_write_control(uint8_t value);
-        void vdp_write_data(uint8_t value);
-        void vdp_set_register(uint8_t reg, uint8_t value);
-        void vdp_set_vram_addr(uint16_t addr);
-        void vdp_set_palette(uint8_t id, uint16_t color);
-        void set_pattern_fill(uint16_t id, uint8_t color);
-        void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern);
-        void delay(uint16_t x);
-        void set_debug(uint8_t x);
-    \end{lstlisting}}
-
-    \begin{frame}
-        \frametitle{Requirements/Ass. Metrics/Test Plan}
-        \lst
-    \end{frame}
+%\defverbatim[colored]\lst{%
+%    \begin{lstlisting}[captionpos=b, caption=Game Gear Library Functions]
+%        void vdp_write_control(uint8_t value);
+%        void vdp_write_data(uint8_t value);
+%        void vdp_set_register(uint8_t reg, uint8_t value);
+%        void vdp_set_vram_addr(uint16_t addr);
+%        void vdp_set_palette(uint8_t id, uint16_t color);
+%        void set_pattern_fill(uint16_t id, uint8_t color);
+%        void set_tile_to_pattern(uint8_t x, uint8_t y, uint16_t pattern);
+%        void delay(uint16_t x);
+%        void set_debug(uint8_t x);
+%    \end{lstlisting}}
+%
+%    \begin{frame}
+%        \frametitle{Requirements/Ass. Metrics/Test Plan}
+%        \lst
+%    \end{frame}
 
 \begin{frame}
     \frametitle{Requirements/Ass. Metrics/Test Plan}
@@ -201,39 +230,39 @@ extendedchars=true}
     up the color palette:
 \end{frame}
 
-\defverbatim[colored]\lst{%
-    \begin{lstlisting}[captionpos=b, caption=Color Palette Test ROM]
-        #include <gg.h>
-        int main() {
-            // set register 1 bit 6 to enable display
-            vdp_set_register(1, (1<<6));
-            // set first color palette entry to gray
-            vdp_set_palette(0, 0x0CCC);
-            while (1) {}
-            return 0;
-        }
-    \end{lstlisting}}
-
-    \begin{frame}
-        \frametitle{Requirements/Ass. Metrics/Test Plan}
-        \lst
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Requirements/Ass. Metrics/Test Plan}
-        In order to test the operation of the VDP background generator a separate test
-        project used which only consists of the background generator, VRAM, VGA timing
-        generator, and a UART interface.
-
-        Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
-        the game reaches a screen that we want to test on the FPGA we dump the VRAM and
-        CRAM using Osmoses built in debugger. We then use programs, written in C, that
-        read the VRAM dump and generate images of the color palette, all 512 background
-        tiles, and the final screen rendering.  These programs serve a dual purpose
-        allowing us to both confirm our understanding of how the background image is
-        generated and also that our VRAM dump is valid. The images below show example
-        output from these three programs.
-    \end{frame}
+%\defverbatim[colored]\lst{%
+%    \begin{lstlisting}[captionpos=b, caption=Color Palette Test ROM]
+%        #include <gg.h>
+%        int main() {
+%            // set register 1 bit 6 to enable display
+%            vdp_set_register(1, (1<<6));
+%            // set first color palette entry to gray
+%            vdp_set_palette(0, 0x0CCC);
+%            while (1) {}
+%            return 0;
+%        }
+%    \end{lstlisting}}
+%
+%    \begin{frame}
+%        \frametitle{Requirements/Ass. Metrics/Test Plan}
+%        \lst
+%    \end{frame}
+%
+%    \begin{frame}
+%        \frametitle{Requirements/Ass. Metrics/Test Plan}
+%        In order to test the operation of the VDP background generator a separate test
+%        project used which only consists of the background generator, VRAM, VGA timing
+%        generator, and a UART interface.
+%
+%        Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
+%        the game reaches a screen that we want to test on the FPGA we dump the VRAM and
+%        CRAM using Osmoses built in debugger. We then use programs, written in C, that
+%        read the VRAM dump and generate images of the color palette, all 512 background
+%        tiles, and the final screen rendering.  These programs serve a dual purpose
+%        allowing us to both confirm our understanding of how the background image is
+%        generated and also that our VRAM dump is valid. The images below show example
+%        output from these three programs.
+%    \end{frame}
     %\begin{frame}
     %    \frametitle{Requirements/Ass. Metrics/Test Plan}
     %\begin{columns}[c]
@@ -285,19 +314,6 @@ extendedchars=true}
     %\end{columns}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Requirements/Ass. Metrics/Test Plan}
-        %\adjustbox{max height=\dimexpr\textheight-5.5cm\relax,
-                       %max width=0.1mm}{
-        \resizebox{\linewidth}{!}{% Resize table to fit within \linewidth horizontally
-        \begin{tabular}{|c|c|c|c|c|c|}
-            \hline
-            Function    & Requirement Spec.     & Design Verified?  & Test Protocol     & Signature     \\ \hline
-            6           & test                  &    test           &    test           &    test       \\
-            \hline
-        \end{tabular}}
-\end{frame}
-
 \section{Design Overview}
 \begin{frame}
     \frametitle{Design Overview}
@@ -346,16 +362,16 @@ extendedchars=true}
     \vspace{0.25cm}
     \onslide<4->{Our strategy:}
     \begin{enumerate}
-        \olditem<5-> Use an emulator to watch memory fetches and get memory dumps
-        \olditem<6-> Initialize our RAMs with these dumps and verify we achieve the same visual output
-        \olditem<7-> Watch instruction fetches with a logic analyzer and see if they match the emulator
+            \olditem<5-> Use an emulator to watch memory fetches and get memory dumps
+            \olditem<6-> Initialize our RAMs with these dumps and verify we achieve the same visual output
+            \olditem<7-> Watch instruction fetches with a logic analyzer and see if they match the emulator
     \end{enumerate}
     \vspace{0.25cm}
     \onslide<8->{Could replace emulator with a logic/bus analyzer connected to the original hardware}
 \end{frame}
 
 \begin{frame}
-\frametitle{}
+    \frametitle{}
     \begin{center}
         \Huge
         Demonstration
@@ -363,7 +379,7 @@ extendedchars=true}
 \end{frame}
 
 \begin{frame}
-\frametitle{}
+    \frametitle{}
     \begin{center}
         \Huge
         Questions?
