@@ -16,6 +16,7 @@
 \usepackage[font={scriptsize,bf}]{caption}
 \usepackage{booktabs}
 \usepackage{listings}
+\usepackage[table]{xcolor}
 
 % margins
 \topmargin=-0.45in
@@ -66,6 +67,15 @@
     aboveskip=\baselineskip
 }
 
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\definecolor{lightgray}{gray}{0.9}
+\definecolor{darkgreen}{RGB}{0, 150, 0}
+\definecolor{darkred}{RGB}{150, 0, 0}
+\definecolor{darkyellow}{RGB}{140, 140, 0}
+
 \title{
     \vspace{2in}
     \textbf{Sega Game Gear on a Chip}\\
@@ -110,7 +120,55 @@ an old game console, the Sega Game Gear, in a FPGA.
 
 \section{Design Process}
 
+\begin{table}[H]
+    \parbox{.45\linewidth}{
+    \begin{tabular}{cl}
+        \toprule
+        \textbf{Priority} & \textbf{Component} \\
+        \midrule
+        1 & Flash Memory Interface \\
+        2 & Memory Management Unit (MMU) \\
+        3 & Z80 + System RAM \\
+        4 & Cartridge Mapper \\
+          &\\
+        \bottomrule
+    \end{tabular}
+    \caption{CPU \& Memory Implementation Priority}
+}
+\hfill
+\parbox{.45\linewidth}{
+    \begin{tabular}{cl}
+        \toprule
+        \textbf{Priority} & \textbf{Component} \\
+        \midrule
+        1 & Background Tiles + VRAM \\
+        2 & Video Display Processor Logic \\
+        3 & Sprites \\
+        4 & Controller Input \\
+        5 & Sound \\
+        \bottomrule
+    \end{tabular}
+    \caption{Video \& Sound Implementation Priority}
+}
+\end{table}
+
 \section{Requirements / Assessment Metrics}
+
+\rowcolors{1}{}{lightgray}
+\begin{tabular}{L{1.75in}L{2.75in}C{0.6in}C{0.7in}}
+    \toprule
+    \textbf{Function} & \textbf{Requirement Specification} & \textbf{Design Verified} & \textbf{Device Validated}\\
+    \midrule
+    VGA Output               & Design must output video at 640x480 to a VGA monitor & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+    Sega Mapper              & Design must implement the Sega Memory Mapper         & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+    Z80 CPU                  & Design must implement a functional equivalent to the Z80 CPU & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+    Video Display Processor  & Design must implement the TMS9918                    & {\color{darkyellow} Partly} & {\color{darkyellow} Partly} \\
+    Game ROM stored in flash & Design must be able to load game ROMs from flash     & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
+    Controller Input         & Design must implement a single controller            & {\color{darkred} No}        & {\color{darkred} No} \\
+    Game Gear system functionality & Design must implement the same functionality as the original Game Gear & {\color{darkyellow}Partly} & {\color{darkyellow}Partly} \\
+    \bottomrule
+\end{tabular}
+\rowcolors{1}{}{}
 
 \section{Use of Standards}
 
@@ -604,6 +662,91 @@ and M3. Note that in the TMS9918 manual, there are only four modes documented:
 
 \newpage
 \section{Test Plan}
+
+\subsection{VDP Background Generation}
+
+In order to test the operation of the VDP background generator a separate test
+project was used which only consists of the background generator, VRAM, VGA timing
+generator, and a UART interface.
+
+Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
+the game reaches a screen that we want to test on the FPGA we dump the VRAM and
+CRAM using Osmoses built in debugger. We then use programs, written in C, that
+read the VRAM dump and generate images of the color palette, all 512 background
+tiles, and the final screen rendering.  These programs serve a dual purpose
+allowing us to both confirm our understanding of how the background image is
+generated and also that our VRAM dump is valid. The images below show example
+output from these three programs.
+\vfill
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{../images/palette.png}
+        \caption{Color Palette}
+        \label{fig:palette}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[H]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{../images/screen.png}
+        \caption{Complete Screen Render}
+        \label{fig:screen}
+    \end{minipage}
+\end{figure}
+\vfill
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.8\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{../images/tiles.png}
+        \caption{All 512 Tiles}
+        \label{fig:tiles}
+    \end{minipage}
+\end{figure}
+\vfill
+\newpage
+
+After the VRAM dumps have been obtained they are loaded into the VRAM on the
+FPGA via the same `MemSend' program introduced in the ROM section. The image
+displayed on the monitor is then verified to ensure it matches both the
+emulator and the output renderings of our C programs.
+
+The testing strategy is executed as follows:
+\begin{enumerate}
+    \item Obtain VRAM dump from the Osmose emulator
+        \begin{enumerate}
+            \item Launch Osmose and open ROM file
+                \begin{verbatim}$ ./Osmose-0-9-96-QT sonic.gg\end{verbatim}
+            \item Set a scanline breakpoint in the debug console
+                \begin{verbatim}Cmd: slbp 20\end{verbatim}
+            \item Continue execution by entering `c' until the desired frame is reached.
+            \item Dump the VRAM and CRAM
+                \begin{verbatim}Cmd: davram 0\end{verbatim}
+            \item Dump files are located at \texttt{/tmp/osmose.(vram,cram)}
+        \end{enumerate}
+    \item Verify dump integrity using C rendering programs
+        \begin{enumerate}
+            \item Run \texttt{screen}, located in \texttt{./tools/vdp\_render/}, on the dump files
+            \item Ensure \texttt{screen.png} is generated
+            \item Inspect \texttt{screen.png} pixel by pixel to ensure it matches the frame displayed in Osmose
+            \item If image does not match another dump must be performed
+            \item If image still does not match then debugging needs to be performed on the \texttt{screen} rendering program
+        \end{enumerate}
+    \item Transfer dump to FPGA VRAM via the `MemSend' tool
+        \begin{enumerate}
+            \item Flash the FPGA with the Video Display Processor test project located in \texttt{./fpga/vdp\_test/}
+            \item Send a ROM file to the FPGA via the \texttt{send.py} program located in \texttt{./tools/mem\_send/}
+            \item Ensure the \texttt{send.py} program completes without errors
+        \end{enumerate}
+    \item Verify that resulting image on screen
+        \begin{enumerate}
+            \item Inspect resulting image on monitor pixel by pixel and verify it matches both the original Osmose frame as well as the output from the C rendering programs
+            \item If the image doe not match attempt to resend the rom
+            \item If the image still does not match then debugging needs to be performed on the image rendering core.
+        \end{enumerate}
+\end{enumerate}
+
 \subsection{Custom Test ROMs}
 
 In order to test the operation of the z80, and basic functionality of the VDP,
@@ -678,92 +821,89 @@ is shown below:
     \end{minipage}
 \end{figure}
 
+The general testing strategy for the test ROMs is executed as follows:
 
-\subsection{VDP Background Generation}
-
-In order to test the operation of the VDP background generator a separate test
-project used which only consists of the background generator, VRAM, VGA timing
-generator, and a UART interface.
-
-Games are run using the open-source Osmose Sega Emulator \cite{osmose}. When
-the game reaches a screen that we want to test on the FPGA we dump the VRAM and
-CRAM using Osmoses built in debugger. We then use programs, written in C, that
-read the VRAM dump and generate images of the color palette, all 512 background
-tiles, and the final screen rendering.  These programs serve a dual purpose
-allowing us to both confirm our understanding of how the background image is
-generated and also that our VRAM dump is valid. The images below show example
-output from these three programs.
-\vfill
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[H]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\textwidth]{../images/palette.png}
-        \caption{Color Palette}
-        \label{fig:palette}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[H]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\textwidth]{../images/screen.png}
-        \caption{Complete Screen Render}
-        \label{fig:screen}
-    \end{minipage}
-\end{figure}
-\vfill
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[H]{0.8\linewidth}
-        \centering
-        \includegraphics[width=\textwidth]{../images/tiles.png}
-        \caption{All 512 Tiles}
-        \label{fig:tiles}
-    \end{minipage}
-\end{figure}
-\vfill
-\newpage
-
-After the VRAM dumps have been obtained they are loaded into the VRAM on the
-FPGA via the same `MemSend' program introduced in the ROM section. The image
-displayed on the monitor is then verified to ensure it matches both the
-emulator and the output renderings of our C programs.
-
-The testing strategy is executed as follows:
 \begin{enumerate}
-    \item Obtain VRAM dump from the Osmose emulator
-        \begin{enumerate}
-            \item Launch Osmose and open ROM file
-                \begin{verbatim}$ ./Osmose-0-9-96-QT sonic.gg\end{verbatim}
-            \item Set a scanline breakpoint in the debug console
-                \begin{verbatim}Cmd: slbp 20\end{verbatim}
-            \item Continue execution by entering `c' until the desired frame is reached.
-            \item Dump the VRAM and CRAM
-                \begin{verbatim}Cmd: davram 0\end{verbatim}
-            \item Dump files are located at \texttt{/tmp/osmose.(vram,cram)}
-        \end{enumerate}
-    \item Verify dump integrity using C rendering programs
-        \begin{enumerate}
-            \item Run \texttt{screen}, located in \texttt{./tools/vdp\_render/}, on the dump files
-            \item Ensure \texttt{screen.png} is generated
-            \item Inspect \texttt{screen.png} pixel by pixel to ensure it matches the frame displayed in Osmose
-            \item If image does not match another dump must be performed
-            \item If image still does not match then debugging needs to be performed on the \texttt{screen} rendering program
-        \end{enumerate}
-    \item Transfer dump to FPGA VRAM via the `MemSend' tools
-        \begin{enumerate}
-            \item Flash the FPGA with the Video Display Processor test project located in \texttt{./fpga/vdp\_test/}
-            \item Send a ROM file to the FPGA via the \texttt{send.py} program located in \texttt{./tools/mem\_send/}
-            \item Ensure the \texttt{send.py} program completes without errors
-        \end{enumerate}
-    \item Verify that resulting image on screen
-        \begin{enumerate}
-            \item Inspect resulting image on monitor pixel by pixel and verify it matches both the original Osmose frame as well as the output from the C rendering programs
-            \item If the image doe not match attempt to resend the rom
-            \item If the image still does not match then debugging needs to be performed on the image rendering core.
-        \end{enumerate}
+    \item Identify a specific functionality that you wish to test (scrolling the background left by 5 pixels for example)
+    \item Write a test program that achieves the desired functionality in the simplest way possible.
+    \item Run the test program in the Osmose emulator and ensure the test program achieves the desired functionality.
+    \item Flash the test ROM onto the FPGA development board using the `MemSend' tool.
+    \item Verify that the desired functionality is also achieved on the FPGA.
 \end{enumerate}
 
+\subsection{Simulation vs Emulator}
+
+In order to prove that our system is functionality equivalent to a known `good'
+system we utilized simulations to generate dumps of all major events happening
+in the system. The events that we are primarily concerned with are memory and
+IO accesses. In order to generate logs of all the events we inserted prints
+into our simulation when the desired events occurred. We then inserted the
+exact same print into the emulator. By running the same game in both the
+simulation and the emulator we can compare the difference between the print
+logs and identify differences in functionality.
+
+The testing strategy for this testing method is executed as follows:
+
+\begin{enumerate}
+    \item Insert print statements on all memory and IO accesses in the emulator
+    \item Insert the exact same print statements on all memory and IO accesses in the simulation
+    \item Run the emulator and simulation on the same ROM
+    \item Diff the resulting logs
+    \item Verify that the memory and IO accesses match between the emulator and simulation
+\end{enumerate}
+
+An example of a successful test result is shown below in
+Figure~\ref{fig:diff_good}. Notice how both the simulation and emulator prints
+indicate matching functionality.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.4]{../images/diff_good.png}
+\caption{Successful Test Result}
+\label{fig:diff_good}
+\end{figure}
+
+On the contrary Figure~\ref{fig:diff_bad} shows an example of a bad test
+result. Notice how there are discrepancies between the simulation (shown on the left) and the
+emulator (shown on the right).
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.4]{../images/diff_bad.png}
+\caption{Successful Test Result}
+\label{fig:diff_bad}
+\end{figure}
 \section{Project Limitations}
+
+Our project currently has a few limitations the most notable of which is
+missing core functionality.  The Video Display Processor does not currently
+implement sprite tiles which makes most games unplayable due to the fact
+that the actual game characters, items, and enemies are often drawn as sprites.
+We also did not have time to fully implement controller support or audio
+support. These features are incomplete purely due to lack of time not technical
+problems with them. With time all components found in the original Game Gear
+will be implemented.
+
+One issue that currently exists in our project is video corruption. Tiles are
+often flipped or the wrong tile is drawn. This corruption differs between game
+but seems to be static per game in that the game is corrupted the same way each
+time. Interestingly, some games have significantly more corruption than others.
+Our current guess is that there is a timing issue in the video display
+processor. We also believe that there might be a logic issue in the way the
+video display processor generates interrupts. In order to combat this issue we
+plan to try and create a custom test ROM which can consistently replicate the
+issue.  We hope that we will then be able to narrow down the root cause by
+using similar debugging techniques discussed above such as comparing simulation
+results to an emulator.
+
+An additional limitation, while not critical to the overall functionality of
+our project, is the fact that loading a new game ROM onto the board is
+cumbersome and time consuming. The method that is currently implemented was
+originally chosen because of it's relative simplicity in implementation and
+allowed us to quickly move on to the rest of the development.  A better
+solution in the long run would be to write a simple bootloader that loads game
+ROMs into RAM off an SD card. This would allow us to store multiple games on
+the SD card and simply choose which one we wanted to run on startup.
 
 \section{Social Responsibility}
 
