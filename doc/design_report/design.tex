@@ -656,7 +656,107 @@ and M3. Note that in the TMS9918 manual, there are only four modes documented:
 %\subsection{Tiles}
 %\subsection{Layers}
 \subsubsection{Counters}
+
+The VDP is responsible for two counters:
+
+\begin{enumerate}
+    \item \textbf{Horizontal Counter,}
+    \item \textbf{Vertical Counter.}
+\end{enumerate}
+
+The horizontal counter is incremented on the rising edge of the VGA clock. Once
+each scanline is complete, the vertical counter is then incremented by one, and
+this continues until a full frame is generated.
+
+The horizontal and vertical counters can be read by the Z80. Also, the vertical
+counter can be read at any time. Our design consisted of using a NTSC display of
+256x192. Description of the line values can be shown below:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|l}
+        Lines   & Description       \\ \hline \hline
+        192     & Active Display    \\
+        24      & Bottom Border     \\
+        3       & Bottom Blanking   \\
+        3       & Vertical Blanking \\
+        13      & Top Blanking      \\
+        27      & Top Border        \\
+    \end{tabular}
+\end{table}
+
+Vertical counter values:
+
+\vspace{-0.1cm}
+\begin{itemize}
+    \item 00  - 218,
+    \item 213 - 255.
+\end{itemize}
+
 \subsubsection{Interrupts}
+
+The VDP generates two interrupts:
+
+\vspace{-0.1cm}
+\begin{enumerate}
+    \item \textbf{Frame interrupt:} occurs when vertical blanking period has started,
+    \item \textbf{Line interrupt:} occurs when the line interrupt counter has expired.
+\end{enumerate}
+
+\textbf{\underline{Frame Interrupts }}
+
+There are several different height displays, and depending on each one, the VDP will
+generate a frame interrupt on the following lines:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c}
+        Height  & Line \\ \hline \hline
+        192     & 0xC1 \\
+        224     & 0xE1 \\
+        240     & 0xF1 \\
+    \end{tabular}
+\end{table}
+
+Depending on the height, for example, we used a height of 192 in our design, an
+interrupt at line 193 (0xC1) will be raised and the VDP will set bit 7 of the status
+flags. This bit will remain set until the control port is read.
+
+The fifth bit of the first register acts like a toggle switch for the VDP's interrupt
+request (IRQ) line. Therefore if the 5th bit of register 1 is set and the 7th bit of
+the status flag is set, the VDP will assert the IRQ line, and if that bit is cleared,
+then the VDP will de-assert the IRQ line.
+
+\textbf{\underline{Line Interrupts }}
+
+The contents of the 10th register is loaded into a counter on every line outside of
+the active display period which excludes the line after the last line of the active
+display period. The counter is then decremented on every line within the active display
+period including the line after the last line of the active display period.
+
+For example, with a 192-line display on a NTSC machine that has 262 scanlines per
+frame (used in our design):
+
+For lines 0 - 261:
+
+\vspace{-0.1cm}
+\begin{enumerate}
+    \item The counter is decremented on lines 0 - 192,
+    \item Then the counter is reloaded on lines 193 - 261.
+\end{enumerate}
+
+If the counter underflows from 0 to 255, then it is reloaded with the previous contents
+stored in register 10. Writing to the tenth register will not immediately affect/change
+the contents of the counter; this only occurs when the VDP is outside of the active
+display or when (counter is reloaded) or when the counter underflows.
+
+The VDP sets an internal flag when the counter underflows. This flag remains set until
+the control port is read.
+
+The fourth bit of register 0 acts like a toggle switch for the VDP's IRQ line. If the
+internal flag is set and the fourth bit of register 0 is set, then the VDP will assert
+the IRQ line, and will de-assert the IRQ line if the bit is cleared.
+
 %\subsection{Display Timing}
 \subsection{VGA Controller}
 
