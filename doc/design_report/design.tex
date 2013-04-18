@@ -120,6 +120,16 @@ an old game console, the Sega Game Gear, in a FPGA.
 
 \section{Design Process}
 
+Being that our project is a re-implementation and not a completely new design
+in the traditional sense a majority of our design process revolved around
+understanding the original system, breaking it down, and understanding the
+components. In order to focus our efforts we attempted to split up and
+prioritize each of the components of the system. We determined that we could
+implement the CPU and it's associated memory separate from the video and audio
+components. Once that was determined we prioritized the components in each
+subsystem based on how important they are to the overall system and their
+dependencies on each other.
+
 \begin{table}[H]
     \parbox{.45\linewidth}{
     \begin{tabular}{cl}
@@ -127,9 +137,10 @@ an old game console, the Sega Game Gear, in a FPGA.
         \textbf{Priority} & \textbf{Component} \\
         \midrule
         1 & Flash Memory Interface \\
-        2 & Memory Management Unit (MMU) \\
-        3 & Z80 + System RAM \\
-        4 & Cartridge Mapper \\
+        2 & System RAM \\
+        3 & Memory Management Unit (MMU) \\
+        4 & Z80 \\
+        5 & Cartridge Mapper \\
           &\\
         \bottomrule
     \end{tabular}
@@ -141,16 +152,46 @@ an old game console, the Sega Game Gear, in a FPGA.
         \toprule
         \textbf{Priority} & \textbf{Component} \\
         \midrule
-        1 & Background Tiles + VRAM \\
-        2 & Video Display Processor Logic \\
-        3 & Sprites \\
-        4 & Controller Input \\
-        5 & Sound \\
+        1 & VGA Controller \\
+        2 & Background Tiles + VRAM \\
+        3 & Video Display Processor Logic \\
+        4 & Sprites \\
+        5 & Controller Input \\
+        6 & Sound \\
         \bottomrule
     \end{tabular}
     \caption{Video \& Sound Implementation Priority}
 }
 \end{table}
+
+For the CPU subsystem the first step is to get a program (also called ROM
+throughout this document) onto the flash memory chip on our development board.
+Once we have a program loaded in we could then add the system RAM and the
+memory management unit that selects between the too. After that we were ready
+to implement the main CPU, the Zilog Z80. We determined the implementation of
+the Zilog Z80 to be outside the scope of our project and utilized an open
+source implementation called the TV80.  At this point we were able to run
+custom programs and verify the functionality of the CPU subsystem.
+
+For the Video and Sound subsystem the first thing that needed to be implemented
+was a VGA controller to drive a VGA computer monitor. Once that was complete
+the next step was to implement VRAM and the background tile render. Since the
+development of this subsystem was independent of the CPU subsystem we obtained
+VRAM dumps from an emulator on the computer (discussed in detail in later
+sections) and used this dump to initialize the VRAM on the FPGA. This allowed
+us to work off of a known, static, VRAM instead of relying on the CPU subsystem
+to be correct. Basically, this technique allowed us to independently prove out
+the video subsystem without having to worry about the CPU subsystem being
+functionally correct yet. Some components such as sprites, controller input,
+and sound were determined to not be core functional components and given lower
+priority.  Due to time were were unable to fully implement them.
+
+Once the CPU and Video subsystem were independently proven the glue logic was
+written to tie them together. At this point we have a full system that we can
+test real game ROMs on. During this step we also used system level simulations
+to verify the overall functionality against the emulator and we were able to
+tweak our design based on issues found.
+
 
 \section{Requirements / Assessment Metrics}
 
@@ -754,12 +795,13 @@ custom ROMs were developed. Using the Small Device C Compiler (SDCC)
 \cite{SDCC} we are able to write programs that exercises various functionality
 of the system.
 
-We found SDCC extremely easy to setup and get working. The only thing we needed
-to modify was the stack pointer location in the C Runtime file (crt0.s). The
-default stack pointer location is set to \texttt{0xFFFF} but the top most RAM
-address on the Game Gear is \texttt{0xDFFF}. Setting up IO is as easy as
-specifying a special function register at a given IO port. An example showing
-how to write data to the VDP data port (0xBE) is shown below.
+We found SDCC extremely easy to setup and get working. The only thing
+we needed to modify was the initial stack pointer value in the C
+Runtime file (crt0.s). The default stack pointer location is set to
+\texttt{0xFFFF} but the top most RAM address on the Game Gear is
+\texttt{0xDFFF}. Setting up IO is as easy as specifying a special
+function register at a given IO port. An example showing how to write
+data to the VDP data port (0xBE) is shown below.
 
 \begin{lstlisting}[caption=VDP Data Write]
     __sfr __at (0xBE) vdp_data;
@@ -907,7 +949,27 @@ the SD card and simply choose which one we wanted to run on startup.
 
 \section{Social Responsibility}
 
+\textbf{Copyright and liscensing} were two concerns for us throughout this
+project.  Part of our project deals with using game ROMs that we downloaded off
+the internet which raises a copyright issue. While it is illegal to create a
+full duplicate of the original media it is generally understood that possessing
+a ROM dump of a game you physically own is acceptable. For our project we tried
+to only use game ROMs of games that we physically own. Two other components of
+our project, the TV80 CPU and the Osmose emulator, are open sourced under the
+GPL license. One of the main objective of the license is to ensure that
+derivatives of the project are also released as open source. This was a
+non-issue for us since our entire project shares the GPL license as well.
 
+\textbf{Reasonable cost and maintainability} were two of the main driving
+factors of our project. The primary idea of our project is to show that it is
+beneficial to re-implement legacy systems in an FPGA. We believe that
+re-implementation can be done at a reasonable cost being that the physical
+hardware needed for an FPGA solution is cheaper than it has ever been before
+and the only other cost overhead is development man-hours. The cost trade off
+between re-implementation and monetary loss due to a legacy system failing
+swings towards re-implementation being more beneficial. Re-implementation in a
+FPGA also opens the door to better maintainability given that the system is no
+longer dependant on physical, deprecated, components.
 
 \section{Conclusion}
 
