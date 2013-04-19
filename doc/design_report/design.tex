@@ -99,13 +99,15 @@
 
 \section{Executive Summary}
 
-The goal of this project is to reimplement the original hardware of the Sega Game
-Gear (GG) in a Field Programmable Gate Array (FPGA). Each digital component in
-the original Sega Game Gear was identified and understood based on official
-and 3rd party descriptions and specifications of their operation. Using these
-references we reimplemented a majority of the original Sega Game Gear hardware in
-a hardware description language (Verilog) and were successfully able to run original
-game ROMs on an Altera DE1 FPGA development board.
+The goal of this project is to provide a case study on re-implementing a legacy
+computer system in a Field Programmable Gate Array (FPGA). Our project centers
+around re-implement the Sega Game Gear (GG) which is a hand held game console
+released in 1991. Each digital component in the original Sega Game Gear was
+identified and understood based on official and 3rd party descriptions and
+specifications of their operation. Using these references we reimplemented a
+majority of the original Sega Game Gear hardware in a hardware description
+language (Verilog) and were successfully able to run original game ROMs on an
+Altera DE1 FPGA development board.
 
 \section{Background}
 
@@ -926,8 +928,8 @@ support. These features are incomplete purely due to lack of time not technical
 problems with them. With time all components found in the original Game Gear
 will be implemented.
 
-One issue that currently exists in our project is video corruption. Tiles are
-often flipped or the wrong tile is drawn. This corruption differs between game
+Another issue that currently exists in our project is video corruption. Tiles are
+sometimes flipped or the wrong tile is drawn. This corruption differs between game
 but seems to be static per game in that the game is corrupted the same way each
 time. Interestingly, some games have significantly more corruption than others.
 Our current guess is that there is a timing issue in the video display
