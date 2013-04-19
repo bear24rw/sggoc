@@ -17,6 +17,7 @@
 \usepackage{booktabs}
 \usepackage{listings}
 \usepackage[table]{xcolor}
+\usepackage{pdfpages}
 
 % margins
 \topmargin=-0.45in
@@ -86,10 +87,12 @@
 \date{Fall 2012}
 
 \begin{document}
-\maketitle
+\includepdf[pages={1}]{cover.pdf}
 
+\includegraphics[width=\textwidth]{../images/sig_sheet.png}
 \newpage
-\parskip = 0.4\baselineskip
+
+\parskip = 0.30\baselineskip
 \tableofcontents
 
 % empty line between paragraphs
@@ -106,8 +109,11 @@ released in 1991. Each digital component in the original Sega Game Gear was
 identified and understood based on official and 3rd party descriptions and
 specifications of their operation. Using these references we reimplemented a
 majority of the original Sega Game Gear hardware in a hardware description
-language (Verilog) and were successfully able to run original game ROMs on an
-Altera DE1 FPGA development board.
+language (Verilog). We were able to achieve full system level simulation and
+proved that our system has identical execution to an emulator which we used as
+our known `good' system to compare against. In the end we were successfully
+able to run original game ROMs on an Altera DE1 FPGA development board proving
+our project to be a success.
 
 \section{Background}
 
@@ -194,7 +200,6 @@ test real game ROMs on. During this step we also used system level simulations
 to verify the overall functionality against the emulator and we were able to
 tweak our design based on issues found.
 
-
 \section{Requirements / Assessment Metrics}
 
 \rowcolors{1}{}{lightgray}
@@ -209,6 +214,7 @@ tweak our design based on issues found.
     Game ROM stored in flash & Design must be able to load game ROMs from flash     & {\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\
     Controller Input         & Design must implement a single controller            & {\color{darkred} No}        & {\color{darkred} No} \\
     Game Gear system functionality & Design must implement the same functionality as the original Game Gear & {\color{darkyellow}Partly} & {\color{darkyellow}Partly} \\
+    Memory Multiplexer      & Memory mux must be able to properly select between the cartridge, RAM, and IO devices &{\color{darkgreen} Yes}     & {\color{darkgreen} Yes} \\ 
     \bottomrule
 \end{tabular}
 \rowcolors{1}{}{}
@@ -239,32 +245,34 @@ primarily an academic pursuit and to be used, shared, and learned from.
 
 \section{Design Overview}
 
-\subsection{System Overview}
+\subsection{Sega Game Gear Overview}
 
 The Sega Game Gear, released in 1991, was Sega's first attempt at a handheld
 gaming console. It featured a Zilog Z80 clocked at 3.58MHz, 8KB of system RAM,
-16KB of video ram, and a 160x144 pixel resolution screen.
+16KB of video RAM, and a 160x144 pixel resolution screen.
 
 \begin{figure}[H]
-\centering
-\includegraphics[scale=0.4]{../images/gamegear.png}
-\caption{Sega Game Gear \protect\cite{gg}}
-\label{fig:gg}
+    \centering
+    \includegraphics[scale=0.4]{../images/gg.jpg}
+    \caption{Sega Game Gear \protect\cite{gg}}
+    \label{fig:gg}
 \end{figure}
 
-The image below shows a picture of internal PCB of the Game Gear and it's major
-components
+\subsection{Sega Game Gear Overview}
 
-\begin{table}[H]
+Our target platform for our re-implementation is the Altera DE-1 development
+board which contains a number of features such as a Cyclone II EP2C20F484C7,
+512 KB SRAM, 4 MB Flash, VGA 4-bit DAC, and a SD card slot. There is nothing in
+particular about this board that makes it more suitable for our project than
+any other FPGA development board in the same class. It was chosen purely
+because we already owned them and have used them in the past.
+
+\begin{figure}[H]
     \centering
-    \begin{tabular}{|c|l|c|l|}
-        \hline
-        1 & Zilog Z80 CPU           & 4 & 16K VRAM      \\ \hline
-        2 & Video Display Processor & 5 & Sega BIOS ROM \\ \hline
-        3 & 8K RAM                  & 6 & Controller IO \\
-        \hline
-    \end{tabular}
-\end{table}
+    \includegraphics[width=0.7\textwidth]{../images/de1.jpg}
+    \caption{Altera DE1 \protect\cite{de1}}
+    \label{fig:de1}
+\end{figure}
 
 \newpage
 \subsubsection{Functional Diagrams}
@@ -681,60 +689,69 @@ Therefore, writing single bytes to even CRAM addresses will not modify CRAM.
 You could write multiple times to even addresses. This allows the same latched
 color data to be written to multiple palette entries.
 
-\subsubsection{Display Modes}
-
-The TMS9918 has three bits which select different display modes called M1, M2,
-and M3. Note that in the TMS9918 manual, there are only four modes documented:
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{l c c l}
-        Mode & 0 & - & Graphics I   \\
-        Mode & 1 & - & Text         \\
-        Mode & 2 & - & Graphics II  \\
-        Mode & 3 & - & Multicolor   \\
-    \end{tabular}
-\end{table}
+%\subsubsection{Display Modes}
+%
+%The TMS9918 has three bits which select different display modes called M1, M2,
+%and M3. Note that in the TMS9918 manual, there are only four modes documented:
+%
+%\begin{table}[H]
+%    \centering
+%    \begin{tabular}{l c c l}
+%        Mode & 0 & - & Graphics I   \\
+%        Mode & 1 & - & Text         \\
+%        Mode & 2 & - & Graphics II  \\
+%        Mode & 3 & - & Multicolor   \\
+%    \end{tabular}
+%\end{table}
 
 %\subsection{Tiles}
 %\subsection{Layers}
 \subsubsection{Counters}
 
-The VDP is responsible for two counters:
-
-\begin{enumerate}
-    \item \textbf{Horizontal Counter,}
-    \item \textbf{Vertical Counter.}
-\end{enumerate}
+The VDP is responsible for both a Horizontal and Vertical counter.
 
 The horizontal counter is incremented on the rising edge of the VGA clock. Once
 each scanline is complete, the vertical counter is then incremented by one, and
 this continues until a full frame is generated.
 
-The horizontal and vertical counters can be read by the Z80. Also, the vertical
-counter can be read at any time. Our design consisted of using a NTSC display of
-256x192. Description of the line values can be shown below:
+The horizontal and vertical counters can be read by the Z80 through the two IO
+ports described earlier. Our design implements the standard Game Gear NTSC
+display size of 256x192. The vertical counter is not completely linear. While
+the NTSC display size is described as 192 lines there is actually 262 lines
+when blanking is included.  For each of the 262 lines the vertical counter increments
+through the following values:
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{l|l}
-        Lines   & Description       \\ \hline \hline
+    \begin{tabular}{cc}
+        \toprule
+        \textbf{V Counter Values} & \textbf{Line numbers} \\
+        \midrule
+        \texttt{0x00 - 0xDA} & \texttt{0 - 218} \\
+        \texttt{0xD5 - 0xFF} & \texttt{219 - 261} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Vertical Counter Values}
+\end{table}
+
+A description of events that occur for a given number of scanlines is shown below:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cl}
+        \toprule
+        \textbf{Number of Scanlines} & \textbf{Event} \\
+        \midrule
         192     & Active Display    \\
         24      & Bottom Border     \\
         3       & Bottom Blanking   \\
         3       & Vertical Blanking \\
         13      & Top Blanking      \\
         27      & Top Border        \\
+        \bottomrule
     \end{tabular}
+    \caption{Scanline Events}
 \end{table}
-
-Vertical counter values:
-
-\vspace{-0.1cm}
-\begin{itemize}
-    \item 00  - 218,
-    \item 213 - 255.
-\end{itemize}
 
 \subsubsection{Interrupts}
 
@@ -742,66 +759,73 @@ The VDP generates two interrupts:
 
 \vspace{-0.1cm}
 \begin{enumerate}
-    \item \textbf{Frame interrupt:} occurs when vertical blanking period has started,
+    \item \textbf{Frame interrupt:} occurs when vertical blanking period has started.
     \item \textbf{Line interrupt:} occurs when the line interrupt counter has expired.
 \end{enumerate}
 
-\textbf{\underline{Frame Interrupts }}
+\vspace{\baselineskip}
+\textbf{Frame Interrupts}
+\vspace{0.5\baselineskip}
 
-There are several different height displays, and depending on each one, the VDP will
-generate a frame interrupt on the following lines:
+The VDP support several different display modes which determine the height of the display.
+Depending on the display  mode the VDP will generate an interrupt on a particular scanline.
+The table below shows which line the VDP generates an interrupt on for each of the three possible
+display heights.
 
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c}
-        Height  & Line \\ \hline \hline
+        \toprule
+        \textbf{Display Height}  & \textbf{Scanline} \\
+        \midrule
         192     & 0xC1 \\
         224     & 0xE1 \\
         240     & 0xF1 \\
+        \bottomrule
     \end{tabular}
 \end{table}
 
-Depending on the height, for example, we used a height of 192 in our design, an
-interrupt at line 193 (0xC1) will be raised and the VDP will set bit 7 of the status
-flags. This bit will remain set until the control port is read.
-
-The fifth bit of the first register acts like a toggle switch for the VDP's interrupt
-request (IRQ) line. Therefore if the 5th bit of register 1 is set and the 7th bit of
-the status flag is set, the VDP will assert the IRQ line, and if that bit is cleared,
-then the VDP will de-assert the IRQ line.
-
-\textbf{\underline{Line Interrupts }}
-
-The contents of the 10th register is loaded into a counter on every line outside of
-the active display period which excludes the line after the last line of the active
-display period. The counter is then decremented on every line within the active display
-period including the line after the last line of the active display period.
-
-For example, with a 192-line display on a NTSC machine that has 262 scanlines per
-frame (used in our design):
-
-For lines 0 - 261:
-
-\vspace{-0.1cm}
-\begin{enumerate}
-    \item The counter is decremented on lines 0 - 192,
-    \item Then the counter is reloaded on lines 193 - 261.
-\end{enumerate}
-
-If the counter underflows from 0 to 255, then it is reloaded with the previous contents
-stored in register 10. Writing to the tenth register will not immediately affect/change
-the contents of the counter; this only occurs when the VDP is outside of the active
-display or when (counter is reloaded) or when the counter underflows.
-
-The VDP sets an internal flag when the counter underflows. This flag remains set until
+Depending on the height (fixed at 192 in our design) an event is raised at the
+beginning of scanline 193 (0xC1). This event sets bit 7 of the status flag
+register to indicate a frame interrupt request. This bit will remain set until
 the control port is read.
 
-The fourth bit of register 0 acts like a toggle switch for the VDP's IRQ line. If the
-internal flag is set and the fourth bit of register 0 is set, then the VDP will assert
-the IRQ line, and will de-assert the IRQ line if the bit is cleared.
+The 5th bit of the register 0 acts like an enable for the VDP's interrupt
+request (IRQ) line. The bits in the status register indicate an interrupt
+request. The VDP will only assert the IRQ line if an interrupt is requested and
+the 5th bit is set to a 1. The VDP will de-assert the IRQ line if either of
+those conditions is false.
+
+\vspace{\baselineskip}
+\textbf{Line Interrupts}
+\vspace{0.5\baselineskip}
+
+The contents of the 10th register is loaded into a counter on every line
+outside of the active display period which excludes the line after the last
+line of the active display period. The counter is then decremented on every
+line within the active display period including the line after the last line of
+the active display period.
+
+For example, with our design which has 192 display lines and a total of 262
+scanlines per frame the counter is decremented on lines 0-192 and the counter
+is reloaded with the contents of register 10 on lines 193-261.
+
+If the counter underflows from 0 to 255, then it is reloaded with the previous
+contents stored in register 10. Writing to the 10th register will not
+immediately affect/change the contents of the counter; this only occurs when
+the VDP is outside of the active display or when (counter is reloaded) or when
+the counter underflows.
+
+The VDP sets an internal flag when the counter underflows. This flag remains
+set until the control port is read.
+
+The 4th bit of register 0 acts like an enable for the VDP's IRQ line.
+If the internal flag is set and the 4th bit of register 0 is set, then the
+VDP will assert the IRQ line, and will de-assert the IRQ line if the bit is
+cleared.
 
 %\subsection{Display Timing}
-\subsection{VGA Controller}
+%\subsection{VGA Controller}
 
 \newpage
 \section{Test Plan}
@@ -1075,7 +1099,33 @@ longer dependant on physical, deprecated, components.
 
 \section{Conclusion}
 
+In this project we showed possible methods and testing procedures for
+reimplementing a legacy computer system. We found that it was relatively easy
+to get the base system up and running which we attribute mostly to the fact
+that one of the core components, the Zilog Z80 CPU, already existed as a proven
+open source project. Trying to fully implement the Z80 would have been a huge
+undertaking on its own and we doubt we would have even come close to
+implementing the actual Game Gear system in the given time frame if we did not
+leverage the TV80 project. We found that translating old design concepts, such
+as tri-state buses, to new ones was a non-issue and our first attempt at
+implementing the memory and IO multiplexer was successful. Using system level
+simulation to verify the overall functionality of our design proved extremely
+beneficial in identifying irregularities between our system and the emulator
+that we tested against. Had we not had a proper emulator this project would
+have been significantly more difficult. Using the emulator as a known `good'
+system we were able to create video RAM dumps which we used to initialize the
+video sub system while developing it. Had we not had this ability we would have
+had to develop the video subsystem blind, not knowing if any video issues were
+because of the CPU subsystem or the video subsystem. While there are still a
+few functional limitations such as no sprites or controller input we were
+successfully able to get commercial game ROMs running on our system proving
+that our re-implementation was successful.
+
 \newpage
+\section{Code}
+All code and other documentation associated with this project can be found here:\\
+\url{https://github.com/bear24rw/sggoc}
+
 \begin{thebibliography}{9}
     \bibitem{gg} \url{http://mo5.com/musee-machines-gamegear.html}
     \bibitem{gg_cart} \url{http://www.magisterrex.com/prodimages/EccoDolphinGameGear-h450.png}
@@ -1089,6 +1139,7 @@ longer dependant on physical, deprecated, components.
     \bibitem{ieeeverilog} \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=00954909}
     \bibitem{gpl} \url{http://www.gnu.org/licenses/gpl.html}
     \bibitem{SDCC} \url{http://sdcc.sourceforge.net/}
+    \bibitem{de1} \url{http://www.altera.com/education/univ/materials/boards/de1/unv-de1-board.html}
 \end{thebibliography}
 
 \end{document}
