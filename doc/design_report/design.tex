@@ -258,7 +258,7 @@ gaming console. It featured a Zilog Z80 clocked at 3.58MHz, 8KB of system RAM,
     \label{fig:gg}
 \end{figure}
 
-\subsection{Sega Game Gear Overview}
+\subsection{Altera DE1 Overview}
 
 Our target platform for our re-implementation is the Altera DE-1 development
 board which contains a number of features such as a Cyclone II EP2C20F484C7,
@@ -652,12 +652,13 @@ Reading the control port returns a byte containing status flags:
     \caption{Status Register}
 \end{figure}
 
-The \textbf{INT} bit indicates a frame interrupt is pending and is set on the
+The \texttt{INT} bit indicates a frame interrupt is pending and is set on the
 first line after the end of the active display period. It is cleared when the
 control port is read. (See the interrupts section for more details). The
-\textbf{OVR} and \textbf{COL} bits are used for sprites and are not implemented
+\texttt{OVR} and \texttt{COL} bits are used for sprites and are not implemented
 in our project. The remaining bits are not set by the VDP.
 
+\newpage
 \subsubsection{Color RAM (CRAM)}
 
 The Game Gear uses a 64 byte palette where each entry is composed of two bytes as shown below.
@@ -734,7 +735,7 @@ through the following values:
     \caption{Vertical Counter Values}
 \end{table}
 
-A description of events that occur for a given number of scanlines is shown below:
+A table showing the number of scanlines for each event is shown below:
 
 \begin{table}[H]
     \centering
@@ -753,6 +754,7 @@ A description of events that occur for a given number of scanlines is shown belo
     \caption{Scanline Events}
 \end{table}
 
+\newpage
 \subsubsection{Interrupts}
 
 The VDP generates two interrupts:
@@ -774,7 +776,7 @@ display heights.
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{c|c}
+    \begin{tabular}{cc}
         \toprule
         \textbf{Display Height}  & \textbf{Scanline} \\
         \midrule
@@ -916,7 +918,7 @@ The testing strategy is executed as follows:
 
 \subsection{Custom Test ROMs}
 
-In order to test the operation of the z80, and basic functionality of the VDP,
+In order to test the operation of the Z80, and basic functionality of the VDP,
 custom ROMs were developed. Using the Small Device C Compiler (SDCC)
 \cite{SDCC} we are able to write programs that exercises various functionality
 of the system.
@@ -976,14 +978,14 @@ is shown below:
     \centering
     \begin{minipage}[H]{0.45\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{../images/tiles_screen.png}
+        \includegraphics[width=0.8\textwidth]{../images/tiles_screen.png}
         \caption{Tiles Screen}
         \label{fig:tiles_screen}
     \end{minipage}
     \hfill
     \begin{minipage}[H]{0.45\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{../images/tiles_palette.png}
+        \includegraphics[width=0.8\textwidth]{../images/tiles_palette.png}
         \caption{Tiles Palette}
         \label{fig:tile_palette}
     \end{minipage}
@@ -1031,6 +1033,7 @@ indicate matching functionality.
 \label{fig:diff_good}
 \end{figure}
 
+\newpage
 On the contrary Figure~\ref{fig:diff_bad} shows an example of a bad test
 result. Notice how there are discrepancies between the simulation (shown on the left) and the
 emulator (shown on the right).
@@ -1043,6 +1046,7 @@ emulator (shown on the right).
 \end{figure}
 \section{Project Limitations}
 
+\textbf{Missing Functionality -}
 Our project currently has a few limitations the most notable of which is
 missing core functionality.  The Video Display Processor does not currently
 implement sprite tiles which makes most games unplayable due to the fact
@@ -1052,6 +1056,7 @@ support. These features are incomplete purely due to lack of time not technical
 problems with them. With time all components found in the original Game Gear
 will be implemented.
 
+\textbf{Video Corruption -}
 Another issue that currently exists in our project is video corruption. Tiles are
 sometimes flipped or the wrong tile is drawn. This corruption differs between game
 but seems to be static per game in that the game is corrupted the same way each
@@ -1064,15 +1069,17 @@ issue.  We hope that we will then be able to narrow down the root cause by
 using similar debugging techniques discussed above such as comparing simulation
 results to an emulator.
 
+\textbf{ROM Loading -}
 An additional limitation, while not critical to the overall functionality of
 our project, is the fact that loading a new game ROM onto the board is
 cumbersome and time consuming. The method that is currently implemented was
 originally chosen because of it's relative simplicity in implementation and
 allowed us to quickly move on to the rest of the development.  A better
 solution in the long run would be to write a simple bootloader that loads game
-ROMs into RAM off an SD card. This would allow us to store multiple games on
+ROMs into RAM off a SD card. This would allow us to store multiple games on
 the SD card and simply choose which one we wanted to run on startup.
 
+\newpage
 \section{Social Responsibility}
 
 \textbf{Copyright and liscensing} were two concerns for us throughout this
@@ -1088,9 +1095,9 @@ non-issue for us since our entire project shares the GPL license as well.
 
 \textbf{Reasonable cost and maintainability} were two of the main driving
 factors of our project. The primary idea of our project is to show that it is
-beneficial to re-implement legacy systems in an FPGA. We believe that
+beneficial to re-implement legacy systems in a FPGA. We believe that
 re-implementation can be done at a reasonable cost being that the physical
-hardware needed for an FPGA solution is cheaper than it has ever been before
+hardware needed for a FPGA solution is cheaper than it has ever been before
 and the only other cost overhead is development man-hours. The cost trade off
 between re-implementation and monetary loss due to a legacy system failing
 swings towards re-implementation being more beneficial. Re-implementation in a
