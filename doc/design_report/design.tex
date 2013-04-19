@@ -122,9 +122,9 @@ them.  For many legacy systems you cannot buy replacement parts and finding
 people who have the skills to repair the original hardware is difficult. By
 re-implementing these systems in a Field Programmable Gate Array (FPGA) you can
 replace old multi-chip solutions with a single chip implementation that is
-maintained in software. This allows you to future proof the existing design and
-even extend its functionality. This project is a case study on re-implementing
-an old game console, the Sega Game Gear, in a FPGA.
+maintained similar to software. This allows you to future proof the existing
+design and even extend its functionality. This project is a case study on
+re-implementing an old game console, the Sega Game Gear, in a FPGA.
 
 \section{Design Process}
 
@@ -175,7 +175,7 @@ dependencies on each other.
 For the CPU subsystem the first step is to get a program (also called ROM
 throughout this document) onto the flash memory chip on our development board.
 Once we have a program loaded in we could then add the system RAM and the
-memory management unit that selects between the too. After that we were ready
+memory management unit that selects between the two. After that we were ready
 to implement the main CPU, the Zilog Z80. We determined the implementation of
 the Zilog Z80 to be outside the scope of our project and utilized an open
 source implementation called the TV80.  At this point we were able to run
@@ -288,12 +288,12 @@ description is shown in Figure~\ref{fig:external}.
 \end{figure}
 
 Internally the functionality can be easily modularized based on the actual
-physical components found in the original Game Gear. Additional components will
-be needed such as an IO controller and a memory management unit (MMU) to
-account for the lack of tri-state buses in our design (explained later).
-Figure~\ref{fig:internal} shows the interactions between the major functional
-components in Sega Game Gear. The colored components are those which we
-implemented in our project.
+physical components found in the original Game Gear. Additional components not
+found in the original system such as an IO controller and a memory management
+unit (MMU) are added to account for the lack of tri-state buses in our design
+(explained later).  Figure~\ref{fig:internal} shows the interactions between
+the major functional components in Sega Game Gear. The colored components are
+those which we implemented in our project.
 
 \begin{figure}[H]
 \centering
@@ -304,7 +304,7 @@ implemented in our project.
 
 \newpage
 \subsection{Cartridges and Memory Mapping}
-The Z80 CPU only has 64KB of address space and 48KB of it is dedicated to the
+The Z80 CPU only has 64KB of address space 48KB of which is dedicated to the
 game cartridge. A "mapper" is used to allow the use of larger ROMs (as well as
 on-catridge RAM). Figure~\ref{fig:gg_cart} shows a standard GG cartridge and
 Figure~\ref{fig:gg_cart_pcb} shows the internal PCB. The top chip is the Memory
@@ -1148,5 +1148,8 @@ All code and other documentation associated with this project can be found here:
     \bibitem{SDCC} \url{http://sdcc.sourceforge.net/}
     \bibitem{de1} \url{http://www.altera.com/education/univ/materials/boards/de1/unv-de1-board.html}
 \end{thebibliography}
+
+\includepdf[pages={1}]{sig_sheet_1.pdf}
+\includepdf[pages={1}]{sig_sheet_2.pdf}
 
 \end{document}
