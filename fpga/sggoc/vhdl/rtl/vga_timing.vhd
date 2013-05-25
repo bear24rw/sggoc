@@ -71,8 +71,6 @@ begin
         end if;
     end process;
 
-    vga_clk <= clk_25;
-
     process(clk_25, rst) begin
         if (rst = '1') then
             scan_x <= 0;
@@ -95,18 +93,26 @@ begin
         if rising_edge(clk_25) then
             if (scan_x >= h_sync_pulse_cnt) then
                 vga_hs <= '1';
+            else
+                vga_hs <= '0';
             end if;
             if (scan_y >= v_sync_pulse_cnt) then
                 vga_vs <= '1';
+            else
+                vga_vs <= '0';
             end if;
             if (scan_x >= h_sync_pulse_cnt + h_fron_porch_cnt) and
                (scan_y >= v_sync_pulse_cnt + v_fron_porch_cnt) and
                (scan_x <  h_sync_pulse_cnt + h_fron_porch_cnt + h_visible_cnt) and
                (scan_y <  v_sync_pulse_cnt + v_fron_porch_cnt + v_visible_cnt) then
-                   in_display_area <= '1';
+               in_display_area <= '1';
+           else
+               in_display_area <= '0';
            end if;
        end if;
    end process;
+
+   vga_clk <= clk_25;
 
    pixel_x <= slv(to_unsigned(scan_x, pixel_x'length) - (h_sync_pulse_cnt + h_fron_porch_cnt));
    pixel_y <= slv(to_unsigned(scan_y, pixel_y'length) - (v_sync_pulse_cnt + v_fron_porch_cnt));
