@@ -220,18 +220,28 @@ begin
         if rising_edge(z80_clk) then
             if ((z80_mreq_n /= '1') and (z80_rd_n /= '1')) then
                 z80_mem_rd <= '1';
+            else
+                z80_mem_rd <= '0';
             end if;
             if ((z80_mreq_n /= '1') and (z80_wr_n /= '1')) then
                 z80_mem_wr <= '1';
+            else
+                z80_mem_wr <= '0';
             end if;
             if ((z80_iorq_n /= '1') and (z80_rd_n /= '1')) then
                 z80_io_rd <= '1';
+            else
+                z80_io_rd <= '0';
             end if;
             if ((z80_iorq_n /= '1') and (z80_wr_n /= '1')) then
                 z80_io_wr <= '1';
+            else
+                z80_io_wr <= '0';
             end if;
             if ((z80_iorq_n /= '1') and (z80_m1_n /= '1')) then
                 z80_irq_rd <= '1';
+            else
+                z80_irq_rd <= '0';
             end if;
         end if;
     end process;
