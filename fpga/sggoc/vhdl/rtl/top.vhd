@@ -379,7 +379,7 @@ begin
 
     process(z80_clk) begin
         if rising_edge(z80_clk) then
-            if (z80_addr(7 downto 0) = x"1" and z80_io_wr = '1') then
+            if (z80_addr(7 downto 0) = x"01" and z80_io_wr = '1') then
                 z80_debug <= z80_do;
             end if;
         end if;
