@@ -68,9 +68,7 @@ architecture rtl of top is
     --                  KEY MAPPING
     -- ----------------------------------------------------
 
-    --signal rst : std_logic := SW(9);
-    signal rst   : std_logic;
-    signal rst_n : std_logic;
+    signal rst : std_logic := SW(9);
 
     -- ----------------------------------------------------
     --                  CLOCK DIVIDER
@@ -174,8 +172,6 @@ architecture rtl of top is
 
 begin
 
-    rst <= SW(9);
-
     -- ----------------------------------------------------
     --                  CLOCK DIVIDER
     -- ----------------------------------------------------
@@ -194,13 +190,12 @@ begin
     --                      Z80
     -- ----------------------------------------------------
 
-    rst_n <= (not rst);
+    --rst_n <= (not rst);
 
     z80 : tv80s
         port map(
             clk => z80_clk,
-            --reset_n => (not rst),
-            reset_n => rst_n,
+            reset_n => (not rst),
 
             rd_n => z80_rd_n,
             wr_n => z80_wr_n,
