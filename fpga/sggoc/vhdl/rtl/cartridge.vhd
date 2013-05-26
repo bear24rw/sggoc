@@ -48,13 +48,6 @@ end cartridge;
 
 architecture rtl of cartridge is
 
-    --constant S_WAIT_READ_START : integer := 0;
-    --constant S_WAIT_FLASH      : integer := 1;
-    --constant S_DEASSERT_WAIT   : integer := 2;
-    --constant S_WAIT_READ_END   : integer := 3;
-
-    --signal state : std_logic_vector (2 downto 0) := S_WAIT_READ_START;
-
     type state_type is (
         S_WAIT_READ_START,
         S_WAIT_FLASH,
@@ -99,7 +92,7 @@ begin
                     wait_n <= '1';                  -- tell z80 were done
                     state <= S_WAIT_READ_END;       -- wait until the read cycle is over
                 when S_WAIT_READ_END =>
-                    if (rd /= '1') then              -- is the read cycle over?
+                    if (rd /= '1') then             -- is the read cycle over?
                         state <= S_WAIT_READ_START; -- go back and wait for another read
                     end if;
             end case;
