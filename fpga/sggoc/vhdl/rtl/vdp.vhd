@@ -329,19 +329,9 @@ begin
         end if;
     end process;
 
-    process(vga_clk) begin
-        if rising_edge(vga_clk) then
-            if (in_display_area = '1') then
-                VGA_R <= vga_red;
-                VGA_G <= vga_grn;
-                VGA_B <= vga_blu;
-            else
-                VGA_R <= x"0";
-                VGA_G <= x"0";
-                VGA_B <= x"0";
-            end if;
-        end if;
-    end process;
+    VGA_R <= vga_red when (in_display_area = '1') else x"0";
+    VGA_G <= vga_grn when (in_display_area = '1') else x"0";
+    VGA_B <= vga_blu when (in_display_area = '1') else x"0";
 
     -- ----------------------------------------------------
     --                    COUNTERS
@@ -351,12 +341,11 @@ begin
     -- each scanline = 342 pixels
     -- each frame    = 262 scanlines
 
+    line_complete <= '1' when (pixel_x = 342) else '0';
+
     -- h counter
     process(vga_clk) begin
         if rising_edge(vga_clk) then
-            if (pixel_x = 342) then
-                line_complete <= '1';
-            end if;
             if (pixel_x < 342) then
                 h_counter <= pixel_x(8 downto 0);
             else
@@ -402,6 +391,9 @@ begin
         end if;
     end process;
 
+    irq_vsync_pending <= '1' when (status_r(7) = '1' and irq_vsync_en = '1') else '0';
+    status(7) <= status_r(7);
+
     -- line interrupt
 
     process(vga_clk) begin
@@ -425,28 +417,8 @@ begin
     -- disable line counter irq for now since it causes corruption
     -- disabling it in osmose too seems to have no effect
     -- irq_line_pending <= (line_irq and irq_line_en);
-    --irq_n <= (irq_vsync_pending or irq_line_pending) ?? 0 : 1;
-    process(vga_clk) begin
-        if rising_edge(vga_clk) then
-            if (status_r(7) = '1' and irq_vsync_en = '1') then
-                irq_vsync_pending <= '1';
-            else
-                irq_vsync_pending <= '0';
-            end if;
-        end if;
-    end process;
 
-    status(7) <= status_r(7);
-
-    process(vga_clk) begin
-        if rising_edge(vga_clk) then
-            if (irq_vsync_pending = '1' or irq_line_pending = '1') then
-                irq_n <= '0';
-            else
-                irq_n <= '1';
-            end if;
-        end if;
-    end process;
+    irq_n <= '0' when (irq_vsync_pending = '1' or irq_line_pending = '1') else '1';
 
     -- ----------------------------------------------------
     --                  CONTROL LOGIC
@@ -470,30 +442,10 @@ begin
         end if;
     end process;
 
-    process(z80_clk) begin
-        if rising_edge(z80_clk) then
-            if (control_rd = '1' and (last_control_rd /= '1')) then
-                control_rd_edge <= '1';
-            else
-                control_rd_edge <= '0';
-            end if;
-            if (control_wr = '1' and (last_control_wr /= '1')) then
-                control_wr_edge <= '1';
-            else
-                control_wr_edge <= '0';
-            end if;
-            if (data_rd = '1' and (last_data_rd /= '1')) then
-                data_rd_edge <= '1';
-            else
-                data_rd_edge <= '0';
-            end if;
-            if (data_wr = '1' and (last_data_wr /= '1')) then
-                data_wr_edge <= '1';
-            else
-                data_wr_edge <= '0';
-            end if;
-        end if;
-    end process;
+    control_rd_edge <= '1' when (control_rd = '1' and last_control_rd /= '1') else '0';
+    control_wr_edge <= '1' when (control_wr = '1' and last_control_wr /= '1') else '0';
+    data_rd_edge    <= '1' when (data_rd    = '1' and last_data_rd    /= '1') else '0';
+    data_wr_edge    <= '1' when (data_wr    = '1' and last_data_wr    /= '1') else '0';
 
     --
     -- SECOND BYTE FLAG
@@ -538,15 +490,7 @@ begin
     end process;
 
     -- vram write enable when we're not writing to cram
-    process(z80_clk) begin
-        if rising_edge(z80_clk) then
-            if (data_wr = '1' and code /= 3) then
-                vram_we_a <= '1';
-            else
-                vram_we_a <= '0';
-            end if;
-        end if;
-    end process;
+    vram_we_a <= '1' when (data_wr = '1' and code /= 3) else '0';
 
     process(z80_clk, rst) begin
 
