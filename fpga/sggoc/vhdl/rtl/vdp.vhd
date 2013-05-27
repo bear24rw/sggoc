@@ -111,9 +111,8 @@ architecture rtl of vdp is
     --                      CRAM
     -- ----------------------------------------------------
 
-    --type CRAM_LUT is array (7 downto 0) of std_logic_vector (0 to 63);
     type CRAM_LUT is array (0 to 63) of std_logic_vector (7 downto 0);
-    signal CRAM : CRAM_LUT;
+    signal CRAM : CRAM_LUT := ((others => (others => '0')));
 
     signal bg_color : std_logic_vector (5 downto 0) := (others => '0');
     signal priority : std_logic := '0';
