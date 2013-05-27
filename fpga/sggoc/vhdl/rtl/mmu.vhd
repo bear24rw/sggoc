@@ -78,29 +78,12 @@ begin
     --                      RAM
     -- ----------------------------------------------------
 
-    process(clk) begin
-        if rising_edge(clk) then
-            -- RAM starts at 0xC000 = 0b1100000000000000
-            if (z80_addr(15 downto 14) = "11") then
-                ram_en <= '1';
-            else
-                ram_en <= '0';
-            end if;
-        end if;
-    end process;
-
-    process(clk, z80_mem_wr, ram_en, z80_do) begin
-        if rising_edge(clk) then
-            if (z80_mem_wr = '1' and ram_en = '1') then
-                ram_we <= '1';
-            else
-                ram_we <= '0';
-            end if;
-        end if;
-    end process;
+    -- RAM starts at 0xC000 = 0b1100000000000000
+    ram_en <= '1' when (z80_addr(15 downto 14) = "11") else '0';
 
     -- RAM data is from 0xC000 to 0xDFFF = 0x1FFF bytes
     -- 0x1FFF = 0b1111111111111 = 13 bits
+    ram_we <= '1' when (z80_mem_wr = '1' and ram_en = '1') else '0';
     ram_addr <= z80_addr(12 downto 0);
     ram_di <= z80_do;
 
