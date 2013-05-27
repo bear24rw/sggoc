@@ -47,7 +47,7 @@ architecture rtl of clk_div is
     signal z80_clk : std_logic := '0';
 
 begin
-    process(clk_in) begin
+    process(clk_in, rst) begin
         if (rst = '1') then
             counter <= 0;
         elsif rising_edge(clk_in) then
