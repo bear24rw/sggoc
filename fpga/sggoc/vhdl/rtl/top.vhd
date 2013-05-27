@@ -123,7 +123,7 @@ architecture rtl of top is
             nmi_n   : in std_logic;
             busrq_n : in std_logic;
             busak_n : out std_logic
-            --rfsh_n =>
+            --rfsh_n  :
         );
     end component;
     -- ----------------------------------------------------
@@ -189,8 +189,6 @@ begin
     -- ----------------------------------------------------
     --                      Z80
     -- ----------------------------------------------------
-
-    --rst_n <= (not rst);
 
     z80 : tv80s
         port map(
