@@ -430,6 +430,8 @@ begin
         if rising_edge(vga_clk) then
             if (status_r(7) = '1' and irq_vsync_en = '1') then
                 irq_vsync_pending <= '1';
+            else
+                irq_vsync_pending <= '0';
             end if;
         end if;
     end process;
@@ -472,15 +474,23 @@ begin
         if rising_edge(z80_clk) then
             if (control_rd = '1' and (last_control_rd /= '1')) then
                 control_rd_edge <= '1';
+            else
+                control_rd_edge <= '0';
             end if;
             if (control_wr = '1' and (last_control_wr /= '1')) then
                 control_wr_edge <= '1';
+            else
+                control_wr_edge <= '0';
             end if;
             if (data_rd = '1' and (last_data_rd /= '1')) then
                 data_rd_edge <= '1';
+            else
+                data_rd_edge <= '0';
             end if;
             if (data_wr = '1' and (last_data_wr /= '1')) then
                 data_wr_edge <= '1';
+            else
+                data_wr_edge <= '0';
             end if;
         end if;
     end process;
@@ -532,6 +542,8 @@ begin
         if rising_edge(z80_clk) then
             if (data_wr = '1' and code /= 3) then
                 vram_we_a <= '1';
+            else
+                vram_we_a <= '0';
             end if;
         end if;
     end process;
