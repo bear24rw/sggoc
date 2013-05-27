@@ -61,9 +61,21 @@ architecture rtl of io is
         return lp.all;
     end;
 
+    -- ----------------------------------------------------
+    --                GG SPECIFIC REGISTERS
+    -- ----------------------------------------------------
+
+    --    gg_reg(0) <= x"C0";
+    --    gg_reg(1) <= x"7F";
+    --    gg_reg(2) <= x"FF";
+    --    gg_reg(3) <= x"00";
+    --    gg_reg(4) <= x"FF";
+    --    gg_reg(5) <= x"00";
+    --    gg_reg(6) <= x"FF";
+
     -- 8 bits wide, 7 deep
     type gg_reg_lut is array (6 downto 0) of std_logic_vector (7 downto 0);
-    signal gg_reg : gg_reg_lut;
+    signal gg_reg : gg_reg_lut := (x"C0",x"7F",x"FF",x"00",x"FF",x"00",x"FF");
 
     signal mem_control : std_logic_vector (7 downto 0) := x"A4";
 
@@ -72,21 +84,6 @@ architecture rtl of io is
     signal port_io : std_logic_vector (2 downto 0);
 
 begin
-
-    -- ----------------------------------------------------
-    --                GG SPECIFIC REGISTERS
-    -- ----------------------------------------------------
-
-    --process begin
-    --    gg_reg(0) <= x"C0";
-    --    gg_reg(1) <= x"7F";
-    --    gg_reg(2) <= x"FF";
-    --    gg_reg(3) <= x"00";
-    --    gg_reg(4) <= x"FF";
-    --    gg_reg(5) <= x"00";
-    --    gg_reg(6) <= x"FF";
-    --    wait;
-    --end process;
 
     -- ----------------------------------------------------
     --              MEMORY CONTROL REGISTER
