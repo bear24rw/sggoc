@@ -57,17 +57,28 @@ end vdp;
 
 architecture rtl of vdp is
 
+    subtype slv is std_logic_vector;
+
     -- ----------------------------------------------------
     --                      REGISTERS
     -- ----------------------------------------------------
 
-    type reg_lut is array (0 to 10) of std_logic_vector (7 downto 0);
-    signal reg : reg_lut;
+    --    reg(0) <= x"00";    -- mode control 1
+    --    reg(1) <= x"00";    -- mode control 2
+    --    reg(2) <= x"0e";    -- name table base address (0x3800)
+    --    reg(3) <= x"00";    -- color table base address
+    --    reg(4) <= x"00";    -- background pattern generator base address
+    --    reg(5) <= x"7e";    -- sprite attribute table base address (0x3F00)
+    --    reg(6) <= x"00";    -- sprite pattern generator base address
+    --    reg(7) <= x"00";    -- overscan/backdrop color
+    --    reg(8) <= x"00";    -- background X scroll
+    --    reg(9) <= x"00";    -- background Y scroll
+    --    reg(10) <= x"ff";   -- line counter
 
-    subtype slv is std_logic_vector;
+    type reg_lut is array (0 to 10) of std_logic_vector (7 downto 0);
+    signal reg : reg_lut := (x"00",x"00",x"0e",x"00",x"00",x"7e",x"00",x"00",x"00",x"00",x"ff");
 
     -- name table base address
-    --signal nt_base_addr     : std_logic_vector (13 downto 0) := reg(2)(3 downto 1) & std_logic_vector(to_unsigned(0, 11));
     signal nt_base_addr     : std_logic_vector (13 downto 0) := (others => '0');
     signal irq_vsync_en     : std_logic := '0';
     signal irq_line_en      : std_logic := '0';
@@ -81,7 +92,6 @@ architecture rtl of vdp is
     signal m4               : std_logic := '0';
     signal blank            : std_logic := '0';
 
-    --signal mode_4_192 : std_logic := (m4 and (not m2)) or (m4 and m2 and (not m1) and (not m3));
     signal mode_4_192 : std_logic := '0';
 
     -- ----------------------------------------------------
@@ -174,24 +184,8 @@ architecture rtl of vdp is
 
 begin
 
-    --process begin
-    --    reg(0) <= x"00";    -- mode control 1
-    --    reg(1) <= x"00";    -- mode control 2
-    --    reg(2) <= x"0e";    -- name table base address (0x3800)
-    --    reg(3) <= x"00";    -- color table base address
-    --    reg(4) <= x"00";    -- background pattern generator base address
-    --    reg(5) <= x"7e";    -- sprite attribute table base address (0x3F00)
-    --    reg(6) <= x"00";    -- sprite pattern generator base address
-    --    reg(7) <= x"00";    -- overscan/backdrop color
-    --    reg(8) <= x"00";    -- background X scroll
-    --    reg(9) <= x"00";    -- background Y scroll
-    --    reg(10) <= x"ff";   -- line counter
-    --    wait;
-    --end process;
-
     -- name table base address
-    nt_base_addr     <= reg(2)(3 downto 1) & std_logic_vector(to_unsigned(0, 11));
-    --nt_base_addr     <= reg(2)(3 downto 1) & (others => '0');
+    nt_base_addr     <= reg(2)(3 downto 1) & slv(to_unsigned(0, 11));
     irq_vsync_en     <= reg(1)(5);
     irq_line_en      <= reg(0)(4);
     scroll_x         <= reg(8);
@@ -271,8 +265,8 @@ begin
     process(vga_clk) begin
         if rising_edge(vga_clk) then
             -- cropped screen that is actually drawn
-            if ((pixel_x >=  8*8 and pixel_x < (8+20)*8) and
-            (pixel_y >= 3*8 and pixel_y < (3+18)*8)) then
+            if ((pixel_x >= 8*8 and pixel_x < (8+20)*8) and
+                (pixel_y >= 3*8 and pixel_y < (3+18)*8)) then
                 if (blank = '1') then
                     vga_red <= x"0";
                     vga_grn <= x"0";
@@ -396,11 +390,6 @@ begin
     -- ----------------------------------------------------
 
     -- frame interrupt
-
-    --process begin
-    --    status_r <= (others => '0');
-    --    wait;
-    --end process;
 
     -- active area is 192 lines (0-191)
     process (vga_clk) begin
