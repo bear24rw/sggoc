@@ -214,35 +214,10 @@ begin
             --rfsh_n =>
         );
 
-    process(z80_clk) begin
-        if rising_edge(z80_clk) then
-            if ((z80_mreq_n /= '1') and (z80_rd_n /= '1')) then
-                z80_mem_rd <= '1';
-            else
-                z80_mem_rd <= '0';
-            end if;
-            if ((z80_mreq_n /= '1') and (z80_wr_n /= '1')) then
-                z80_mem_wr <= '1';
-            else
-                z80_mem_wr <= '0';
-            end if;
-            if ((z80_iorq_n /= '1') and (z80_rd_n /= '1')) then
-                z80_io_rd <= '1';
-            else
-                z80_io_rd <= '0';
-            end if;
-            if ((z80_iorq_n /= '1') and (z80_wr_n /= '1')) then
-                z80_io_wr <= '1';
-            else
-                z80_io_wr <= '0';
-            end if;
-            if ((z80_iorq_n /= '1') and (z80_m1_n /= '1')) then
-                z80_irq_rd <= '1';
-            else
-                z80_irq_rd <= '0';
-            end if;
-        end if;
-    end process;
+        z80_mem_rd <= '1' when ((z80_mreq_n /= '1') and (z80_rd_n /= '1')) else '0';
+        z80_mem_wr <= '1' when ((z80_mreq_n /= '1') and (z80_wr_n /= '1')) else '0';
+        z80_io_wr  <= '1' when ((z80_iorq_n /= '1') and (z80_wr_n /= '1')) else '0';
+        z80_irq_rd <= '1' when ((z80_iorq_n /= '1') and (z80_m1_n /= '1')) else '0';
 
     -- ----------------------------------------------------
     --                      MMU
@@ -385,19 +360,10 @@ begin
 
     LEDR(7 downto 0) <= z80_debug;
 
-    process(z80_clk, rst) begin
-        if (rst = '1') then
-            seg0 <= x"F";
-            seg1 <= x"E";
-            seg2 <= x"E";
-            seg3 <= x"B";
-        elsif rising_edge(z80_clk) then
-            seg0 <= z80_addr(3 downto 0);
-            seg1 <= z80_addr(7 downto 4);
-            seg2 <= z80_addr(11 downto 8);
-            seg3 <= z80_addr(15 downto 12);
-        end if;
-    end process;
+    seg0 <= x"F" when (rst = '1') else z80_addr(3 downto 0);
+    seg1 <= x"E" when (rst = '1') else z80_addr(7 downto 4);
+    seg2 <= x"E" when (rst = '1') else z80_addr(11 downto 8);
+    seg3 <= x"B" when (rst = '1') else z80_addr(15 downto 12);
 
     s0 : entity work.seven_seg port map(seg0, HEX0);
     s1 : entity work.seven_seg port map(seg1, HEX1);
