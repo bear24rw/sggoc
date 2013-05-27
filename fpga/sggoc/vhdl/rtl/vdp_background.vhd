@@ -107,14 +107,14 @@ begin
             case(x(2 downto 0)) is
                 when "000" => vram_a <= tile_addr;
                 when "001" => vram_a <= slv(unsigned(tile_addr) + 1);
-                when "010" => vram_a <= slv(to_unsigned(0, vram_a'length));
+                when "010" => vram_a <= (others => '0');
                 when "011" => vram_a <= data_addr;
                 when "100" => vram_a <= slv(unsigned(data_addr) + 1);
                 when "101" => vram_a <= slv(unsigned(data_addr) + 2);
                 when "110" => vram_a <= slv(unsigned(data_addr) + 3);
-                when "111" => vram_a <= slv(to_unsigned(0, vram_a'length));
+                when "111" => vram_a <= (others => '0');
                 --when others => vram_a <= x"xxxx";
-                --when others => vram_a <= slv(std_logic('x'));
+                --when others => vram_a <= slv(to_unsigned(x, vram_a'length));
                 when others =>
             end case;
         end if;
