@@ -46,7 +46,6 @@ end vram;
 
 architecture rtl of vram is
 
-    --type ram_lut is array (WIDTH-1 downto 0) of std_logic_vector ((2**ADDR_BITS)-1 downto 0);
     type ram_lut is array ((2**ADDR_BITS)-1 downto 0) of std_logic_vector (WIDTH-1 downto 0);
     signal ram : ram_lut;
 
