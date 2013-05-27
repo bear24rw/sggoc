@@ -123,30 +123,10 @@ begin
     --                VDP CONTROL LINES
     -- ----------------------------------------------------
 
-    process(clk) begin
-        if rising_edge(clk) then
-            if (z80_io_wr = '1' and port_io = 4) then
-                vdp_data_wr <= '1';
-            else
-                vdp_data_wr <= '0';
-            end if;
-            if (z80_io_wr = '1' and port_io = 4) then
-                vdp_data_rd <= '1';
-            else
-                vdp_data_rd <= '0';
-            end if;
-            if (z80_io_wr = '1' and port_io = 5) then
-                vdp_control_wr <= '1';
-            else
-                vdp_control_wr <= '0';
-            end if;
-            if (z80_io_wr = '1' and port_io = 5) then
-                vdp_control_rd <= '1';
-            else
-                vdp_control_rd <= '0';
-            end if;
-        end if;
-    end process;
+    vdp_data_wr     <= '1' when (z80_io_wr = '1' and port_io = 4) else '0';
+    vdp_data_rd     <= '1' when (z80_io_rd = '1' and port_io = 4) else '0';
+    vdp_control_wr  <= '1' when (z80_io_wr = '1' and port_io = 5) else '0';
+    vdp_control_rd  <= '1' when (z80_io_wr = '1' and port_io = 5) else '0';
 
     -- ----------------------------------------------------
     --                  OUTPUT MUX
