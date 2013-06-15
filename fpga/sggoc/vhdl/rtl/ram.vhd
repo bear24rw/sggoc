@@ -42,7 +42,7 @@ end ram;
 
 architecture rtl of ram is
 
-    type ram_lut is array ((2**ADDR_BITS)-1 to 0) of std_logic_vector (WIDTH-1 downto 0);
+    type ram_lut is array (0 to (2**ADDR_BITS)-1) of std_logic_vector (WIDTH-1 downto 0);
     signal ram : ram_lut;
 
     signal addr_reg : std_logic_vector (ADDR_BITS-1 downto 0) := (others => '0');
