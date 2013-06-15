@@ -506,14 +506,17 @@ set_global_assignment -name ENABLE_DRC_SETTINGS ON
 
 
 
-set_global_assignment -name VERILOG_FILE ../../verilog/rtl/tv80/rtl/core/tv80s.v
-set_global_assignment -name VERILOG_FILE ../../verilog/rtl/tv80/rtl/core/tv80_reg.v
-set_global_assignment -name VERILOG_FILE ../../verilog/rtl/tv80/rtl/core/tv80_mcode.v
-set_global_assignment -name VERILOG_FILE ../../verilog/rtl/tv80/rtl/core/tv80_core.v
-set_global_assignment -name VERILOG_FILE ../../verilog/rtl/tv80/rtl/core/tv80_alu.v
 set_global_assignment -name VHDL_FILE ../../verilog/rtl/flash/Altera_UP_Flash_Memory_User_Interface.vhd
 set_global_assignment -name VHDL_FILE ../../verilog/rtl/flash/Altera_UP_Flash_Memory_IP_Core_Standalone.vhd
 set_global_assignment -name VHDL_FILE ../../verilog/rtl/flash/Altera_UP_Flash_Memory_Controller.vhd
+
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80.vhd
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80_Reg.vhd
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80_MCode.vhd
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80s.vhd
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80_ALU.vhd
+set_global_assignment -name VHDL_FILE ../rtl/t80/rtl/vhdl/T80_Pack.vhd
+
 set_global_assignment -name VHDL_FILE ../rtl/seven_seg.vhd
 set_global_assignment -name VHDL_FILE ../rtl/ram.vhd
 set_global_assignment -name VHDL_FILE ../rtl/mmu.vhd
