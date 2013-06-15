@@ -10,13 +10,12 @@ ASSIGNMENT_FILES = top.qpf top.qsf
 SIM_TB = sggoc_tb
 
 SRC = \
-	../../verilog/rtl/tv80/rtl/core/tv80s.v \
-	../../verilog/rtl/tv80/rtl/core/tv80_reg.v \
-	../../verilog/rtl/tv80/rtl/core/tv80_mcode.v \
-	../../verilog/rtl/tv80/rtl/core/tv80_core.v \
-	../../verilog/rtl/tv80/rtl/core/tv80_alu.v \
-	../../verilog/rtl/tv80/env/async_mem.v \
-	../../verilog/rtl/tv80/env/op_decode.v \
+	../rtl/t80/rtl/vhdl/T80s.vhd \
+	../rtl/t80/rtl/vhdl/T80_Pack.vhd \
+	../rtl/t80/rtl/vhdl/T80_Reg.vhd \
+	../rtl/t80/rtl/vhdl/T80_MCode.vhd \
+	../rtl/t80/rtl/vhdl/T80.vhd \
+	../rtl/t80/rtl/vhdl/T80_ALU.vhd \
 	../rtl/mem_mapper.vhd \
 	../rtl/mmu.vhd \
 	../rtl/vdp.vhd \
@@ -25,6 +24,8 @@ SRC = \
 	../rtl/vga_timing.vhd \
 	../rtl/clk_div.vhd \
 	../rtl/io.vhd
+	#../../verilog/rtl/tv80/env/async_mem.v \
+	#../../verilog/rtl/tv80/env/op_decode.v \
 
 SIM_SRC = \
 	../sim/mem_mapper_tb.vhd
