@@ -113,9 +113,7 @@ begin
                 when "101" => vram_a <= slv(unsigned(data_addr) + 2);
                 when "110" => vram_a <= slv(unsigned(data_addr) + 3);
                 when "111" => vram_a <= (others => '0');
-                --when others => vram_a <= x"xxxx";
-                --when others => vram_a <= slv(to_unsigned(x, vram_a'length));
-                when others =>
+                when others => vram_a <= (others => '-');
             end case;
         end if;
     end process;
