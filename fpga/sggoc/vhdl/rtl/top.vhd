@@ -25,6 +25,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_signed.all;
 use std.textio.all;
 use ieee.numeric_std.all;
+use work.T80_Pack.all;
 
 entity top is
     port(
@@ -102,30 +103,30 @@ architecture rtl of top is
     signal z80_io_wr    : std_logic := '0';
     signal z80_irq_rd   : std_logic := '0';
 
-    component tv80s
-        port(
-            clk     : in std_logic;
-            reset_n : in std_logic;
+    --component tv80s
+    --    port(
+    --        clk     : in std_logic;
+    --        reset_n : in std_logic;
 
-            rd_n    : out std_logic;
-            wr_n    : out std_logic;
-            mreq_n  : out std_logic;
-            iorq_n  : out std_logic;
-            wait_n  : in std_logic;
+    --        rd_n    : out std_logic;
+    --        wr_n    : out std_logic;
+    --        mreq_n  : out std_logic;
+    --        iorq_n  : out std_logic;
+    --        wait_n  : in std_logic;
 
-            A       : out std_logic_vector (15 downto 0);
-            di      : in std_logic_vector (7 downto 0);
-            dout    : out std_logic_vector (7 downto 0);
+    --        A       : out std_logic_vector (15 downto 0);
+    --        di      : in std_logic_vector (7 downto 0);
+    --        dout    : out std_logic_vector (7 downto 0);
 
-            m1_n    : out std_logic;
-            halt_n  : out std_logic;
-            int_n   : in std_logic;
-            nmi_n   : in std_logic;
-            busrq_n : in std_logic;
-            busak_n : out std_logic
-            --rfsh_n  :
-        );
-    end component;
+    --        m1_n    : out std_logic;
+    --        halt_n  : out std_logic;
+    --        int_n   : in std_logic;
+    --        nmi_n   : in std_logic;
+    --        busrq_n : in std_logic;
+    --        busak_n : out std_logic
+    --        --rfsh_n  :
+    --    );
+    --end component;
     -- ----------------------------------------------------
     --                      MMU
     -- ----------------------------------------------------
@@ -190,27 +191,27 @@ begin
     --                      Z80
     -- ----------------------------------------------------
 
-    z80 : tv80s
+    z80 : entity work.T80s
         port map(
-            clk => z80_clk,
-            reset_n => (not rst),
+            CLK_n => z80_clk,
+            RESET_n => (not rst),
 
-            rd_n => z80_rd_n,
-            wr_n => z80_wr_n,
-            mreq_n => z80_mreq_n,
-            iorq_n => z80_iorq_n,
-            wait_n => z80_wait_n,
+            RD_n => z80_rd_n,
+            WR_n => z80_wr_n,
+            MREQ_n => z80_mreq_n,
+            IORQ_n => z80_iorq_n,
+            WAIT_n => z80_wait_n,
 
             A => z80_addr,
-            di => z80_di,
-            dout => z80_do,
+            DI => z80_di,
+            DO => z80_do,
 
-            m1_n => z80_m1_n,
-            halt_n => z80_halt_n,
-            int_n => z80_int_n,
-            nmi_n => z80_nmi_n,
-            busrq_n => z80_busrq_n,
-            busak_n => z80_busak_n
+            M1_n => z80_m1_n,
+            HALT_n => z80_halt_n,
+            INT_n => z80_int_n,
+            NMI_n => z80_nmi_n,
+            BUSRQ_n => z80_busrq_n,
+            BUSAK_n => z80_busak_n
             --rfsh_n =>
         );
 
