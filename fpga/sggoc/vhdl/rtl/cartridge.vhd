@@ -26,24 +26,24 @@ use ieee.std_logic_signed.all;
 
 entity cartridge is
     port(
-            clk      : in std_logic;
-            z80_clk  : in std_logic;
-            rst      : in std_logic;
-            rd       : in std_logic;
-            wr       : in std_logic;
-            addr     : in std_logic_vector (15 downto 0);
-            di       : in std_logic_vector (7 downto 0);
-            do       : out std_logic_vector (7 downto 0);
-            wait_n   : out std_logic;
+        clk      : in std_logic;
+        z80_clk  : in std_logic;
+        rst      : in std_logic;
+        rd       : in std_logic;
+        wr       : in std_logic;
+        addr     : in std_logic_vector (15 downto 0);
+        di       : in std_logic_vector (7 downto 0);
+        do       : out std_logic_vector (7 downto 0);
+        wait_n   : out std_logic;
 
-            -- physical flash connections
-            FL_DQ    : inout std_logic_vector (7 downto 0);
-            FL_ADDR  : out std_logic_vector (21 downto 0);
-            FL_OE_N  : out std_logic;
-            FL_CE_N  : out std_logic;
-            FL_WE_N  : out std_logic;
-            FL_RST_N : out std_logic
-        );
+        -- physical flash connections
+        FL_DQ    : inout std_logic_vector (7 downto 0);
+        FL_ADDR  : out std_logic_vector (21 downto 0);
+        FL_OE_N  : out std_logic;
+        FL_CE_N  : out std_logic;
+        FL_WE_N  : out std_logic;
+        FL_RST_N : out std_logic
+    );
 end cartridge;
 
 architecture rtl of cartridge is
@@ -55,7 +55,7 @@ architecture rtl of cartridge is
         S_WAIT_READ_END
     );
 
-    signal state : state_type;
+    signal state : state_type := S_WAIT_READ_START;
 
     signal flash_addr   : std_logic_vector (21 downto 0) := (others => '0');
 
