@@ -75,7 +75,13 @@ architecture rtl of io is
 
     -- 8 bits wide, 7 deep
     type gg_reg_lut is array (6 downto 0) of std_logic_vector (7 downto 0);
-    signal gg_reg : gg_reg_lut := (x"C0",x"7F",x"FF",x"00",x"FF",x"00",x"FF");
+    signal gg_reg : gg_reg_lut := (x"C0",
+                                   x"7F",
+                                   x"FF",
+                                   x"00",
+                                   x"FF",
+                                   x"00",
+                                   x"FF");
 
     signal mem_control : std_logic_vector (7 downto 0) := x"A4";
 
@@ -107,8 +113,6 @@ begin
         elsif rising_edge(clk) then
             if (z80_io_wr = '1' and port_io = 0) then
                 mem_control <= z80_do;
-            else
-                mem_control <= x"A4";
             end if;
         end if;
     end process;
@@ -142,14 +146,14 @@ begin
             elsif (z80_addr = x"0004") then io_do <= gg_reg(4);
             elsif (z80_addr = x"0005") then io_do <= gg_reg(5);
             elsif (z80_addr = x"0006") then io_do <= gg_reg(6);
-            elsif (port_io  = "000") then io_do <= mem_control;        -- 0x3E - memory control
-            elsif (port_io  = "001") then io_do <= x"FF";              -- 0x3F - io port control
-            elsif (port_io  = "010") then io_do <= vdp_v_counter;      -- 0x7E - v counter
-            elsif (port_io  = "011") then io_do <= vdp_h_counter;      -- 0x7F - h counter
-            elsif (port_io  = "100") then io_do <= vdp_data_o;         -- 0xBE - vdp data
-            elsif (port_io  = "101") then io_do <= vdp_status;         -- 0xBF - vdp control
-            elsif (port_io  = "110") then io_do <= x"FF";              -- 0xDC - io port a/b
-            elsif (port_io  = "111") then io_do <= x"FF";              -- 0xDD - io port b/misc
+            elsif (port_io  = "000"  ) then io_do <= mem_control;        -- 0x3E - memory control
+            elsif (port_io  = "001"  ) then io_do <= x"FF";              -- 0x3F - io port control
+            elsif (port_io  = "010"  ) then io_do <= vdp_v_counter;      -- 0x7E - v counter
+            elsif (port_io  = "011"  ) then io_do <= vdp_h_counter;      -- 0x7F - h counter
+            elsif (port_io  = "100"  ) then io_do <= vdp_data_o;         -- 0xBE - vdp data
+            elsif (port_io  = "101"  ) then io_do <= vdp_status;         -- 0xBF - vdp control
+            elsif (port_io  = "110"  ) then io_do <= x"FF";              -- 0xDC - io port a/b
+            elsif (port_io  = "111"  ) then io_do <= x"FF";              -- 0xDD - io port b/misc
             else io_do <= x"FF";
             end if;
         end if;
