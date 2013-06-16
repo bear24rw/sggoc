@@ -76,7 +76,18 @@ architecture rtl of vdp is
     --    reg(10) <= x"ff";   -- line counter
 
     type reg_lut is array (0 to 10) of std_logic_vector (7 downto 0);
-    signal reg : reg_lut := (x"00",x"00",x"0e",x"00",x"00",x"7e",x"00",x"00",x"00",x"00",x"ff");
+
+    signal reg : reg_lut := (x"00",
+                             x"00",
+                             x"0e",
+                             x"00",
+                             x"00",
+                             x"7e",
+                             x"00",
+                             x"00",
+                             x"00",
+                             x"00",
+                             x"ff");
 
     -- name table base address
     signal nt_base_addr     : std_logic_vector (13 downto 0) := (others => '0');
@@ -100,10 +111,10 @@ architecture rtl of vdp is
 
     signal vram_addr_a  : std_logic_vector (13 downto 0) := (others => '0');
     signal vram_addr_b  : std_logic_vector (13 downto 0) := (others => '0');
-    signal vram_do_a    : std_logic_vector (7 downto 0) := (others => '0');
-    signal vram_do_b    : std_logic_vector (7 downto 0) := (others => '0');
-    signal vram_di_a    : std_logic_vector (7 downto 0) := (others => '0');
-    signal vram_di_b    : std_logic_vector (7 downto 0) := (others => '0');
+    signal vram_do_a    : std_logic_vector ( 7 downto 0) := (others => '0');
+    signal vram_do_b    : std_logic_vector ( 7 downto 0) := (others => '0');
+    signal vram_di_a    : std_logic_vector ( 7 downto 0) := (others => '0');
+    signal vram_di_b    : std_logic_vector ( 7 downto 0) := (others => '0');
     signal vram_we_a    : std_logic := '0';
     signal vram_we_b    : std_logic := '0';
 
@@ -179,12 +190,12 @@ architecture rtl of vdp is
     -- vram address is set by two writes to the control port
     -- every other port just increments the address
     signal next_vram_addr_a : std_logic_vector (13 downto 0) := (others => '0');
-    signal addr_hold        : std_logic_vector (7 downto 0)  := (others => '0');
+    signal addr_hold        : std_logic_vector ( 7 downto 0) := (others => '0');
 
 begin
 
     -- name table base address
-    nt_base_addr     <= reg(2)(3 downto 1) & slv(to_unsigned(0, 11));
+    nt_base_addr     <= reg(2)(3 downto 1) & (10 downto 0 => '0');
     irq_vsync_en     <= reg(1)(5);
     irq_line_en      <= reg(0)(4);
     scroll_x         <= reg(8);
@@ -195,7 +206,7 @@ begin
     m2               <= reg(0)(1);
     m3               <= reg(1)(3);
     m4               <= reg(0)(2);
-    blank            <= not reg(1)(6);
+    blank            <= not (reg(1)(6));
 
     -- m4: 1 = use mode 4, 0 = use tms modes (selected with m1 m2 m3)
     -- m2: 1 = m1/m3 change screen height in mode 4
@@ -401,16 +412,17 @@ begin
             if (line_complete = '1') then
                 if (pixel_y >= 193) then
                     line_counter <= reg(10);
-                --elsif
                 else
                     if (line_counter = x"00") then
                         line_counter <= reg(10);
                         line_irq <= '1';
                     else
-                        line_counter <= line_counter - 1;
+                        line_counter <= line_counter - '1';
                     end if;
                 end if;
             end if;
+        elsif (control_rd = '1') then
+            line_irq <= '0';
         end if;
     end process;
 
