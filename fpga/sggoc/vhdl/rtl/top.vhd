@@ -35,7 +35,7 @@ entity top is
         KEY         : in std_logic_vector (3 downto 0);
 
         LEDR        : out std_logic_vector (9 downto 0);
-        LEDG        : out std_logic_vector (9 downto 0);
+        LEDG        : out std_logic_vector (7 downto 0);
 
         HEX0        : out std_logic_vector (6 downto 0);
         HEX1        : out std_logic_vector (6 downto 0);
@@ -127,17 +127,18 @@ architecture rtl of top is
     --        --rfsh_n  :
     --    );
     --end component;
+
     -- ----------------------------------------------------
     --                      MMU
     -- ----------------------------------------------------
 
     signal ram_we       : std_logic := '0';
-    signal ram_di       : std_logic_vector (7 downto 0) := (others => '0');
-    signal ram_do       : std_logic_vector (7 downto 0) := (others => '0');
+    signal ram_di       : std_logic_vector ( 7 downto 0) := (others => '0');
+    signal ram_do       : std_logic_vector ( 7 downto 0) := (others => '0');
     signal ram_addr     : std_logic_vector (12 downto 0) := (others => '0');
 
-    signal cart_di      : std_logic_vector (7 downto 0) := (others => '0');
-    signal cart_do      : std_logic_vector (7 downto 0) := (others => '0');
+    signal cart_di      : std_logic_vector ( 7 downto 0) := (others => '0');
+    signal cart_do      : std_logic_vector ( 7 downto 0) := (others => '0');
     signal cart_addr    : std_logic_vector (15 downto 0) := (others => '0');
 
     -- ----------------------------------------------------
@@ -217,8 +218,8 @@ begin
 
         z80_mem_rd <= '1' when ((z80_mreq_n /= '1') and (z80_rd_n /= '1')) else '0';
         z80_mem_wr <= '1' when ((z80_mreq_n /= '1') and (z80_wr_n /= '1')) else '0';
+        z80_io_rd  <= '1' when ((z80_iorq_n /= '1') and (z80_rd_n /= '1')) else '0';
         z80_io_wr  <= '1' when ((z80_iorq_n /= '1') and (z80_wr_n /= '1')) else '0';
-        z80_irq_rd <= '1' when ((z80_iorq_n /= '1') and (z80_m1_n /= '1')) else '0';
 
     -- ----------------------------------------------------
     --                      MMU
