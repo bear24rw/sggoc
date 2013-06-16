@@ -65,7 +65,7 @@ architecture rtl of debug is
         S_UART_TX_WAIT_LOW      -- wait for uart to finish
     );
 
-    signal state : state_type;
+    signal state : state_type := S_CLK_LOW;
 
     signal old_z80_addr : std_logic_vector (15 downto 0) := (others => '0');
 
