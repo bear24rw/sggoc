@@ -287,12 +287,12 @@ begin
                     vga_blu <= CRAM(to_integer(unsigned((bg_color+1))))(3 downto 0);
                 end if;
             -- gray out screen outside the crop area
-            elsif (pixel_x < 256 and pixel_y < 192) then
+            elsif (pixel_x >= 0 and pixel_x < 256 and pixel_y < 192) then
                 vga_red <= slv(shift_right(unsigned(CRAM(to_integer(unsigned(bg_color)))(3 downto 0)), 3));
                 vga_grn <= slv(shift_right(unsigned(CRAM(to_integer(unsigned(bg_color)))(7 downto 4)), 3));
                 vga_blu <= slv(shift_right(unsigned(CRAM(to_integer(unsigned((bg_color+1))))(3 downto 0)), 3));
             -- palette
-            elsif (pixel_y >= 262 and pixel_x < 256) then
+            elsif (pixel_y >= 262 and pixel_x >= 0 and pixel_x < 256) then
                 vga_red <= CRAM(to_integer(unsigned(pixel_x(7 downto 3)))*2)(3 downto 0);
                 vga_grn <= CRAM(to_integer(unsigned(pixel_x(7 downto 3)))*2)(7 downto 4);
                 vga_blu <= CRAM(to_integer(unsigned(pixel_x(7 downto 3)))*2+1)(3 downto 0);
