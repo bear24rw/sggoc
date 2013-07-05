@@ -220,6 +220,7 @@ begin
         z80_mem_wr <= '1' when ((z80_mreq_n /= '1') and (z80_wr_n /= '1')) else '0';
         z80_io_rd  <= '1' when ((z80_iorq_n /= '1') and (z80_rd_n /= '1')) else '0';
         z80_io_wr  <= '1' when ((z80_iorq_n /= '1') and (z80_wr_n /= '1')) else '0';
+        z80_irq_rd <= '1' when ((z80_iorq_n /= '1') and (z80_m1_n /= '1')) else '0';
 
     -- ----------------------------------------------------
     --                      MMU
