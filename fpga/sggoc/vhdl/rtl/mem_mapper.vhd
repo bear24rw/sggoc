@@ -31,26 +31,23 @@ use ieee.numeric_std.all;
 entity mem_mapper is
     generic(
         -- each bank is 16KB (2**14 = 16384 = 0x4000)
-        constant BANK_SIZE : integer := 2**14;
+        constant BANK_SIZE : natural := 2**14;
 
         -- if the addr falls into slot 1 or 2 we need
         -- to rezero it so we can index into the bank
         -- correctly. easiest way to do this is to just
         -- mask off anything bigger than the bank size
-
-        --constant BANK_SIZE_MASK : integer := 2**14 - 1
-
-        constant BANK_SIZE_MASK : integer := 2**14 - 1
+        constant BANK_SIZE_MASK : natural := 2**14 - 1
     );
     port(
         clk         : in std_logic;
         rst         : in std_logic;
         wr          : in std_logic;
-        di          : in std_logic_vector (7 downto 0);
-        addr        : in std_logic_vector (15 downto 0);
+        di          : in std_logic_vector(7 downto 0);
+        addr        : in std_logic_vector(15 downto 0);
 
         -- biggest flash addr = 255 * 0x4000 + 0x3FFF = 4 194 303
-        flash_addr  : out std_logic_vector (21 downto 0)
+        flash_addr  : out std_logic_vector(21 downto 0)
     );
 end mem_mapper;
 
@@ -102,15 +99,8 @@ begin
 
     -- calculate the flash address in flash
     -- memory based on the mapping registers
-    process(clk) begin
-        if rising_edge(clk) then
-            if   (addr <= x"03FF") then flash_addr (15 downto 0) <= addr;
-            --elsif(addr <= x"3FFF") then flash_addr <= (rom_bank_0 * BANK_SIZE + addr);
-            elsif(addr <= x"3FFF") then flash_addr (15 downto 0) <= slv(unsigned(rom_bank_0) * (BANK_SIZE) + (unsigned(addr)) and (to_unsigned(BANK_SIZE_MASK, 16)));
-            elsif(addr <= x"7FFF") then flash_addr (15 downto 0) <= slv(unsigned(rom_bank_1) * (BANK_SIZE) + (unsigned(addr)) and (to_unsigned(BANK_SIZE_MASK, 16)));
-            elsif(addr <= x"BFFF") then flash_addr (15 downto 0) <= slv(unsigned(rom_bank_2) * (BANK_SIZE) + (unsigned(addr)) and (to_unsigned(BANK_SIZE_MASK, 16)));
-            else flash_addr (15 downto 0) <= x"DEAD";
-            end if;
-        end if;
-    end process;
+    flash_addr(15 downto 0) <= addr when (addr <= x"03FF") else
+                               slv(unsigned(rom_bank_0) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, flash_addr'length)))) when (addr <= x"3FFF") else
+                               slv(unsigned(rom_bank_1) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, flash_addr'length)))) when (addr <= x"7FFF") else
+                               slv(unsigned(rom_bank_2) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, flash_addr'length)))) when (addr <= x"BFFF");
 end rtl;
