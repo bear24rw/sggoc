@@ -74,7 +74,7 @@ architecture rtl of io is
     --    gg_reg(6) <= x"FF";
 
     -- 8 bits wide, 7 deep
-    type gg_reg_lut is array (6 downto 0) of std_logic_vector (7 downto 0);
+    type gg_reg_lut is array (0 to 6) of std_logic_vector (7 downto 0);
     signal gg_reg : gg_reg_lut := (x"C0",
                                    x"7F",
                                    x"FF",
