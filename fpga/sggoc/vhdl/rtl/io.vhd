@@ -136,28 +136,22 @@ begin
     --                  OUTPUT MUX
     -- ----------------------------------------------------
 
-    -- new vhdl (vhdl-2008) i believe supports "??" as conditional operators
-    process(clk) begin
-        if rising_edge(clk) then
-            if    (z80_addr = x"0000") then io_do <= gg_reg(0);
-            elsif (z80_addr = x"0001") then io_do <= gg_reg(1);
-            elsif (z80_addr = x"0002") then io_do <= gg_reg(2);
-            elsif (z80_addr = x"0003") then io_do <= gg_reg(3);
-            elsif (z80_addr = x"0004") then io_do <= gg_reg(4);
-            elsif (z80_addr = x"0005") then io_do <= gg_reg(5);
-            elsif (z80_addr = x"0006") then io_do <= gg_reg(6);
-            elsif (port_io  = "000"  ) then io_do <= mem_control;        -- 0x3E - memory control
-            elsif (port_io  = "001"  ) then io_do <= x"FF";              -- 0x3F - io port control
-            elsif (port_io  = "010"  ) then io_do <= vdp_v_counter;      -- 0x7E - v counter
-            elsif (port_io  = "011"  ) then io_do <= vdp_h_counter;      -- 0x7F - h counter
-            elsif (port_io  = "100"  ) then io_do <= vdp_data_o;         -- 0xBE - vdp data
-            elsif (port_io  = "101"  ) then io_do <= vdp_status;         -- 0xBF - vdp control
-            elsif (port_io  = "110"  ) then io_do <= x"FF";              -- 0xDC - io port a/b
-            elsif (port_io  = "111"  ) then io_do <= x"FF";              -- 0xDD - io port b/misc
-            else io_do <= x"FF";
-            end if;
-        end if;
-    end process;
+    io_do <= gg_reg(0) when (z80_addr = x"0000") else
+             gg_reg(1) when (z80_addr = x"0001") else
+             gg_reg(2) when (z80_addr = x"0002") else
+             gg_reg(3) when (z80_addr = x"0003") else
+             gg_reg(4) when (z80_addr = x"0004") else
+             gg_reg(5) when (z80_addr = x"0005") else
+             gg_reg(6) when (z80_addr = x"0006") else
+             mem_control    when (port_io  = "000") else    -- 0x3E - memory control
+             x"FF"          when (port_io  = "001") else    -- 0x3F - io port control
+             vdp_v_counter  when (port_io  = "010") else    -- 0x7E - v counter
+             vdp_h_counter  when (port_io  = "011") else    -- 0x7F - h counter
+             vdp_data_o     when (port_io  = "100") else    -- 0xBE - vdp data
+             vdp_status     when (port_io  = "101") else    -- 0xBF - vdp control
+             x"FF"          when (port_io  = "110") else    -- 0xDC - io port a/b
+             x"FF"          when (port_io  = "111") else    -- 0xDD - io port b/misc
+             x"FF";
 
     -- ----------------------------------------------------
     --                  SIMULATION
@@ -165,7 +159,7 @@ begin
 
     -- http://www.velocityreviews.com/forums/t582675-how-to-write-text-in-vhdl.html
     process(z80_io_rd) begin
-        if (z80_io_rd = '1') then
+        if rising_edge(z80_io_rd) then
             case (port_io) is
                 when "000" => report("[IO READ] mem control");
                 when "001" => report("[IO READ] io port control");
@@ -181,7 +175,7 @@ begin
     end process;
 
     process (z80_io_wr) begin
-        if (z80_io_wr = '1') then
+        if rising_edge(z80_io_wr) then
             case (port_io) is
                 -- remember to make a note here in verilog version, values were not printed...
                 when "000" => report("[IO WRITE] mem control");
