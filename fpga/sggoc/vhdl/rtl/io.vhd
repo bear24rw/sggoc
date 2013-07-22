@@ -130,7 +130,7 @@ begin
     vdp_data_wr     <= '1' when (z80_io_wr = '1' and port_io = 4) else '0';
     vdp_data_rd     <= '1' when (z80_io_rd = '1' and port_io = 4) else '0';
     vdp_control_wr  <= '1' when (z80_io_wr = '1' and port_io = 5) else '0';
-    vdp_control_rd  <= '1' when (z80_io_wr = '1' and port_io = 5) else '0';
+    vdp_control_rd  <= '1' when (z80_io_rd = '1' and port_io = 5) else '0';
 
     -- ----------------------------------------------------
     --                  OUTPUT MUX
