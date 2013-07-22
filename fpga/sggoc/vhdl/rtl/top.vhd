@@ -228,9 +228,6 @@ begin
 
     mmu : entity work.mmu
         port map(
-
-            clk => CLOCK_50,
-
             z80_di => z80_di,
             z80_do => z80_do,
             z80_addr => z80_addr,
