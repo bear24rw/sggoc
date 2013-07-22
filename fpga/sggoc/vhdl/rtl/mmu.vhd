@@ -27,8 +27,6 @@ use ieee.numeric_std.all;
 
 entity mmu is
     port(
-        clk         : in std_logic;
-
         z80_di      : out std_logic_vector (7 downto 0);
         z80_do      : in std_logic_vector (7 downto 0);
         z80_addr    : in std_logic_vector (15 downto 0);
@@ -100,14 +98,9 @@ begin
     --                      OUTPUT MUX
     -- ----------------------------------------------------
 
-    process(clk) begin
-        if rising_edge(clk) then
-            if    (z80_irq_rd = '1') then z80_di <= x"FF";
-            elsif (z80_io_rd = '1') then z80_di <= io_do;
-            elsif (z80_mem_rd = '1' and cart_en = '1') then z80_di <= cart_do;
-            elsif (z80_mem_rd = '1' and ram_en = '1') then z80_di <= ram_do;
-            else z80_di <= x"FF";
-            end if;
-        end if;
-    end process;
+    z80_di <= x"FF" when (z80_irq_rd = '1') else
+              io_do when (z80_io_rd  = '1') else
+              cart_do when (z80_mem_rd = '1' and cart_en = '1') else
+              ram_do when (z80_mem_rd = '1' and ram_en = '1') else
+              x"FF";
 end rtl;
