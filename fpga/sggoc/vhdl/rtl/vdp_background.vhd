@@ -53,7 +53,7 @@ architecture rtl of vdp_background is
     signal palette_latch    : std_logic := '0';                                     -- hold it until we start outputting that tile
     signal priority_latch   : std_logic := '0';                                     -- tile priority (behind or infront of sprite)
     signal line_t           : std_logic_vector (2 downto 0) := (others => '0');     -- line within the tile
-    signal tile_idx         : std_logic_vector (8 downto 0) := (others => '0');     -- which tile (0-512)
+    signal tile_idx         : std_logic_vector (8 downto 0) := (others => '0');     -- which tile (0-511)
 
     -- bitplanes (4th one comes directly from vram_d)
     signal data0 : std_logic_vector (7 downto 0) := (others => '0');
@@ -77,33 +77,21 @@ architecture rtl of vdp_background is
 
 begin
 
+    -- x scroll: increasing value moves screen left
+    -- y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
+
+    x <= pixel_x when ((disable_x_scroll = '1') and (y(7 downto 3) <  2)) else slv(unsigned(pixel_x - scroll_x));
+    y <= pixel_y when ((disable_y_scroll = '1') and (x(7 downto 3) < 24)) else slv(unsigned(pixel_y + scroll_y) mod integer(224));
+
+    -- x(7 downto 3) = current tile on x
+    -- y(7 downto 3) = current tile on y
+    -- y(2 downto 0) = current line within line
+
+    tile_addr <= slv(resize(unsigned(name_table_addr) + unsigned(x(7 downto 3))*natural(2) + unsigned(y(7 downto 3))*natural(32*2), tile_addr'length));
+    data_addr <= slv(resize(unsigned(tile_idx)*natural(32) + unsigned(line_t)*natural(4), data_addr'length));
+
     process(clk) begin
         if rising_edge(clk) then
-
-            -- x scroll: increasing value moves screen left
-            -- y scroll: increasing value moves screen up, wraps at row 28 (28 rows-- 8 lines / row = 224)
-            if ((disable_x_scroll = '1') and (y(7 downto 3) <  2)) then
-                x <= pixel_x;
-            else
-                x <= slv(unsigned(pixel_x) - unsigned(scroll_x));
-            end if;
-
-            -- y <= (disable_y_scroll and x(7 downto 3) < 24) ? pixel_y : ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) srl 35)*224));
-            if ((disable_y_scroll = '1') and (x(7 downto 3) < 24)) then
-                y <= pixel_y;
-            else
-                y <= slv(unsigned(pixel_y) + unsigned(scroll_y) mod integer(224));
-            end if;
-
-            -- x(7 downto 3) = current tile on x
-            -- y(7 downto 3) = current tile on y
-            -- y(2 downto 0) = current line within line
-
-            tile_addr <= slv(unsigned(name_table_addr) + unsigned(x(7 downto 3))*integer(2) + unsigned(y(7 downto 3))*integer(32*2));
-            -- hmm, data_addr is 14 bits wide, but we're assigning it to something which is 15 bits wide?...
-            --data_addr <= slv(unsigned(tile_idx)*"100000" + unsigned(line_t)*"100");
-            data_addr <= slv(unsigned(tile_idx)*"10000" + unsigned(line_t)*"100");
-
             case(x(2 downto 0)) is
                 when "000" => vram_a <= tile_addr;
                 when "001" => vram_a <= slv(unsigned(tile_addr) + 1);
@@ -121,8 +109,8 @@ begin
     process(clk) begin
         if rising_edge(clk) then
             case (x(2 downto 0)) is
-                when "000" => tile_idx(7 downto 0) <= vram_d;
-                when "001" =>
+                when "001" => tile_idx(7 downto 0) <= vram_d;
+                when "010" =>
                     tile_idx(8)     <= vram_d(0);
                     flip_x          <= vram_d(1);
                     line_t(0)       <= y(0) xor vram_d(2);
