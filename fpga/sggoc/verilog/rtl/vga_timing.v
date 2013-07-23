@@ -41,7 +41,7 @@ module vga_timing (
             end else
                 scan_x <= scan_x + 1;
 
-            if (scan_y == `v_fram_cnt-1)
+            if (scan_y == `v_fram_cnt)
                 scan_y <= 0;
 
         end
