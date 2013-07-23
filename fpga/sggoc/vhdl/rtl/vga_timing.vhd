@@ -79,7 +79,6 @@ begin
                 scan_y <= slv(unsigned(scan_y) + 1);
             else
                 scan_x <= slv(unsigned(scan_x) + 1);
-                scan_x <= slv(unsigned(scan_x) + 1);
             end if;
 
             if (scan_y = v_fram_cnt) then
