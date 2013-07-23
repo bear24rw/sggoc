@@ -141,7 +141,7 @@ architecture rtl of vdp is
     --                    COUNTERS
     -- ----------------------------------------------------
 
-    signal v_counter : std_logic_vector (8 downto 0) := (others => '0');
+    signal v_counter : std_logic_vector (7 downto 0) := (others => '0');
     signal h_counter : std_logic_vector (8 downto 0) := (others => '0');
 
     signal line_complete : std_logic := '0';
@@ -371,9 +371,9 @@ begin
         if rising_edge(vga_clk) then
             if (line_complete = '1') then
                 if (pixel_y <= x"DA") then
-                    v_counter(7 downto 0) <= pixel_y(7 downto 0);
+                    v_counter <= pixel_y(7 downto 0);
                 elsif (pixel_y < 262) then
-                    v_counter <= x"D5" + (pixel_y(8 downto 0) - x"DB");
+                    v_counter <= slv(resize(x"D5" + (unsigned(pixel_y(8 downto 0)) - x"DB"), v_counter'length));
                 else
                     v_counter(7 downto 0) <= x"FF";
                 end if;
@@ -381,7 +381,7 @@ begin
         end if;
     end process;
 
-    vdp_v_counter <= v_counter(7 downto 0);
+    vdp_v_counter <= v_counter;
     vdp_h_counter <= h_counter(8 downto 1);
 
     -- ----------------------------------------------------
