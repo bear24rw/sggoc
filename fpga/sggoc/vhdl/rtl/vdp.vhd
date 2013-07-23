@@ -360,7 +360,6 @@ begin
             if (pixel_x < 342) then
                 h_counter <= pixel_x(8 downto 0);
             else
-                -- 342
                 h_counter <= slv(to_unsigned(342, h_counter'length));
             end if;
         end if;
@@ -373,7 +372,7 @@ begin
                 if (pixel_y <= x"DA") then
                     v_counter <= pixel_y(7 downto 0);
                 elsif (pixel_y < 262) then
-                    v_counter <= slv(resize(x"D5" + (unsigned(pixel_y(8 downto 0)) - x"DB"), v_counter'length));
+                    v_counter <= slv(resize(x"D5" + (unsigned(pixel_y) - x"DB"), v_counter'length));
                 else
                     v_counter(7 downto 0) <= x"FF";
                 end if;
