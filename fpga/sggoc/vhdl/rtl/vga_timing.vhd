@@ -81,7 +81,7 @@ begin
                 scan_x <= slv(unsigned(scan_x) + 1);
             end if;
 
-            if (scan_y = v_fram_cnt-1) then
+            if (scan_y = v_fram_cnt) then
                 scan_y <= (others => '0');
             end if;
         end if;
