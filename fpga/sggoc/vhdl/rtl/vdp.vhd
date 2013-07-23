@@ -417,7 +417,7 @@ begin
                         line_counter <= reg(10);
                         line_irq <= '1';
                     else
-                        line_counter <= line_counter - '1';
+                        line_counter <= line_counter - 1;
                     end if;
                 end if;
             end if;
