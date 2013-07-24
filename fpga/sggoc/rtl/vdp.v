@@ -246,7 +246,7 @@ module vdp(
     reg [8:0] h_counter = 0;
     reg [7:0] z80_clk_count = 0;
 
-    always @(posedge z80_clk) begin
+    always @(posedge z80_clk, posedge rst) begin
         if (rst) begin
             z80_clk_count <= 0;
         end else begin
