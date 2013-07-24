@@ -357,7 +357,7 @@ begin
     -- h counter
     process(vga_clk) begin
         if rising_edge(vga_clk) then
-            if (pixel_x < 342) then
+            if (pixel_x >= 0 and pixel_x < 342) then
                 h_counter <= pixel_x(8 downto 0);
             else
                 h_counter <= slv(to_unsigned(342, h_counter'length));
@@ -369,9 +369,9 @@ begin
     process(vga_clk) begin
         if rising_edge(vga_clk) then
             if (line_complete = '1') then
-                if (pixel_y <= x"DA") then
+                if (pixel_y >= 0 and pixel_y <= x"DA") then
                     v_counter <= pixel_y(7 downto 0);
-                elsif (pixel_y < 262) then
+                elsif (pixel_y > x"DA" and pixel_y < 262) then
                     v_counter <= slv(resize(x"D5" + (unsigned(pixel_y) - x"DB"), v_counter'length));
                 else
                     v_counter(7 downto 0) <= x"FF";
@@ -397,6 +397,8 @@ begin
                 status_r(7) <= '1';
             elsif (control_rd = '1') then
                 status_r(7) <= '0';
+            else
+                status_r(7) <= '0';
             end if;
         end if;
     end process;
@@ -409,7 +411,7 @@ begin
     process(vga_clk) begin
         if rising_edge(vga_clk) then
             if (line_complete = '1') then
-                if (pixel_y >= 193) then
+                if (pixel_y >= 0 and pixel_y >= 193) then
                     line_counter <= reg(10);
                 else
                     if (line_counter = x"00") then
