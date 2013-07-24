@@ -397,8 +397,6 @@ begin
                 status_r(7) <= '1';
             elsif (control_rd = '1') then
                 status_r(7) <= '0';
-            else
-                status_r(7) <= '0';
             end if;
         end if;
     end process;
