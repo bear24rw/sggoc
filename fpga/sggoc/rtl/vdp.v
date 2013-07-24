@@ -244,8 +244,17 @@ module vdp(
 
     reg [7:0] v_counter = 0;
     reg [8:0] h_counter = 0;
+    reg [7:0] z80_clk_count = 0;
 
-    wire line_complete = (pixel_x == 342);
+    always @(posedge z80_clk) begin
+        if (rst) begin
+            z80_clk_count <= 0;
+        end else begin
+            z80_clk_count <= z80_clk_count + 1;
+        end
+    end
+
+    wire line_complete = (z80_clk_count == 228);
 
     // h counter
     always @(posedge vga_clk) begin
@@ -268,7 +277,7 @@ module vdp(
     end
 
     assign vdp_v_counter = v_counter;
-    assign vdp_h_counter = h_counter[8:1];
+    assign vdp_h_counter = 8'hFF; // not implemented in Osmose
 
     // ----------------------------------------------------
     //                       IRQ
