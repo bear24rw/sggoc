@@ -113,6 +113,8 @@ begin
         elsif rising_edge(clk) then
             if (z80_io_wr = '1' and port_io = 0) then
                 mem_control <= z80_do;
+            else
+                mem_control <= x"A4";
             end if;
         end if;
     end process;
