@@ -102,5 +102,6 @@ begin
     flash_addr(15 downto 0) <= addr when (addr >= x"0000" and addr <= x"03FF") else
                                slv(unsigned(rom_bank_0) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, 16)))) when (addr > x"03FF" and addr <= x"3FFF") else
                                slv(unsigned(rom_bank_1) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, 16)))) when (addr > x"3FFF" and addr <= x"7FFF") else
-                               slv(unsigned(rom_bank_2) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, 16)))) when (addr > x"7FFF" and addr <= x"BFFF");
+                               slv(unsigned(rom_bank_2) * (BANK_SIZE) + (unsigned(addr) and (to_unsigned(BANK_SIZE_MASK, 16)))) when (addr > x"7FFF" and addr <= x"BFFF") else
+                               x"BEEF";
 end rtl;
