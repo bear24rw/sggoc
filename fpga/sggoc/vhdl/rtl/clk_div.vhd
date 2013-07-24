@@ -30,7 +30,7 @@ entity clk_div is
         -- default the clock divider to 1Hz
         -- the DE1 has a 50MHz oscillator so
         -- toggle every 25 million clocks
-        COUNT : integer := 25000000
+        constant COUNT : integer := 25000000
     );
     port(
         clk_in  : in std_logic;
