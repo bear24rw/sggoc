@@ -30,6 +30,7 @@ static uint8_t pixels[512][512][3];
 
 uint64_t ticks = 0;
 uint16_t ticks_delay_us = 0;
+double timestamp = 0;
 double clock_mhz = 50.0;
 
 inline double ticks_to_ms(uint64_t _ticks)
@@ -37,8 +38,6 @@ inline double ticks_to_ms(uint64_t _ticks)
     return (1.0 / (clock_mhz * 1e3)) * _ticks;
 }
 
-double timestamp = 0;
-double sc_time_stamp() { return timestamp; }
 
 void tick(uint64_t amount = 1)
 {
@@ -211,7 +210,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "SGGOC", NULL, NULL);
     assert(window);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
