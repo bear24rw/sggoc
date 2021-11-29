@@ -1,0 +1,6 @@
+[submodule "fpga/sggoc/verilog/sim/gui/glfw"]
+	path = fpga/sggoc/verilog/sim/gui/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "fpga/sggoc/verilog/sim/gui/imgui"]
+	path = fpga/sggoc/verilog/sim/gui/imgui
+	url = https://github.com/ocornut/imgui.git

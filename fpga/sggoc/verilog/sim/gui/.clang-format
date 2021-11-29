@@ -1,0 +1,17 @@
+---
+BasedOnStyle: WebKit
+#AlignConsecutiveAssignments: true
+AlignEscapedNewlines: true
+AlignTrailingComments: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+BreakBeforeInheritanceComma: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterFunction: true
+BreakConstructorInitializers: BeforeComma
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+NamespaceIndentation: All
+SpaceAfterTemplateKeyword: false
+SpacesInContainerLiterals: false
+AlignAfterOpenBracket: Align

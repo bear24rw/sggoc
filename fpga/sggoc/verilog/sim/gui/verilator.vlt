@@ -1,0 +1,2 @@
+`verilator_config
+lint_off -file "../../rtl/tv80/*.v"
