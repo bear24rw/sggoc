@@ -113,9 +113,10 @@ module io(
     //                  SIMULATION
     // ----------------------------------------------------
 
+    /*
     always @(posedge z80_io_rd) begin
         case (port)
-            0: $display("[IO READ] mem control");
+            0: $display("[IO READ] mem control %x", mem_control);
             1: $display("[IO READ] io port control");
             2: $display("[IO READ] vdp v counter: %d", vdp_v_counter);
             3: $display("[IO READ] vdp h counter: %d", vdp_h_counter);
@@ -129,10 +130,10 @@ module io(
 
     always @(posedge z80_io_wr) begin
         case (port)
-            0: $display("[IO WRITE] mem control");
+            0: $display("[IO WRITE] mem control %x", mem_control);
             1: $display("[IO WRITE] io port control");
-            2: $display("[IO WRITE] vdp v counter: %d");
-            3: $display("[IO WRITE] vdp h counter: %d");
+            2: $display("[IO WRITE] vdp v counter: %d", vdp_v_counter);
+            3: $display("[IO WRITE] vdp h counter: %d", vdp_h_counter);
             4: $display("[IO WRITE] vdp data");
             5: $display("[IO WRITE] vdp control");
             6: $display("[IO WRITE] port a/b");
@@ -140,5 +141,6 @@ module io(
             default: $display("[IO WRITE] port %d", port);
         endcase
     end
+    */
 
 endmodule

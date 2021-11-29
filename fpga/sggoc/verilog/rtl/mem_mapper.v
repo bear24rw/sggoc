@@ -30,8 +30,8 @@ module mem_mapper(
     input [7:0] di,
     input [15:0] addr,
 
-    // biggest flash addr = 255 * 0x4000 + 0x3FFF = 4 194 303
-    output [21:0] flash_addr
+    // biggest rom addr = 255 * 0x4000 + 0x3FFF = 4 194 303
+    output [21:0] rom_addr
 );
 
     // Z80 Address Mapping
@@ -61,6 +61,7 @@ module mem_mapper(
     // bank to use for the given slot
     // ex. if 'rom_bank_0' = 5 then
     // slot 0 will point to bank 5
+    reg [7:0] bank_control = 0;
     reg [7:0] rom_bank_0 = 'h0;
     reg [7:0] rom_bank_1 = 'h1;
     reg [7:0] rom_bank_2 = 'h2;
@@ -69,21 +70,32 @@ module mem_mapper(
     // mapping registers
     always @(posedge clk) begin
         if (rst) begin
+            bank_control <= 0;
             rom_bank_0 <= 'h0;
             rom_bank_1 <= 'h1;
             rom_bank_2 <= 'h2;
         end else if (wr) begin
             case (addr)
-                'hFFFD: begin rom_bank_0 <= di; $display("[mem] Bank 0 set to %02x", di); end
-                'hFFFE: begin rom_bank_1 <= di; $display("[mem] Bank 1 set to %02x", di); end
-                'hFFFF: begin rom_bank_2 <= di; $display("[mem] Bank 2 set to %02x", di); end
+                'hFFFC: begin bank_control <= di; $display("bank_control: %x", bank_control); end
+                'hFFFD: begin rom_bank_0 <= di; end
+                'hFFFE: begin rom_bank_1 <= di; end
+                'hFFFF: begin rom_bank_2 <= di; end
             endcase
         end
     end
 
-    // calculate the flash address in flash
-    // memory based on the mapping registers
-    assign flash_addr =
+    //always @(posedge clk) begin
+    //    if (wr) begin
+    //        case (addr)
+    //            'hFFFD: begin $display("[mem] bank 0 set to %d", di); end
+    //            'hFFFE: begin $display("[mem] bank 1 set to %d", di); end
+    //            'hFFFF: begin $display("[mem] bank 2 set to %d", di); end
+    //        endcase
+    //    end
+    //end
+
+    // calculate the rom address based on the mapping registers
+    assign rom_addr =
         (addr <= 'h03FF) ? addr :
         (addr <= 'h3FFF) ? (rom_bank_0 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
         (addr <= 'h7FFF) ? (rom_bank_1 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :

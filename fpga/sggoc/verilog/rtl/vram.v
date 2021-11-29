@@ -36,7 +36,7 @@ module vram(
     parameter WIDTH     = 8;
     parameter ADDR_BITS = 14;
 
-    reg [WIDTH-1:0] ram[(2**ADDR_BITS)-1:0];
+    reg [WIDTH-1:0] ram[(2**ADDR_BITS)-1:0] /* verilator public */;
 
     always @(posedge clk_a) begin
         if (we_a) begin

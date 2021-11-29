@@ -40,9 +40,9 @@ module vdp(
     output [7:0]        vdp_v_counter,
     output [7:0]        vdp_h_counter,
 
-    output [3:0]        VGA_R,
-    output [3:0]        VGA_G,
-    output [3:0]        VGA_B,
+    output reg [3:0]    VGA_R,
+    output reg [3:0]    VGA_G,
+    output reg [3:0]    VGA_B,
 
     output              VGA_HS,
     output              VGA_VS
@@ -55,17 +55,17 @@ module vdp(
     reg [7:0] register [0:10];
 
     initial begin
-        register[0] <= 'h00;    // mode control 1
-        register[1] <= 'h00;    // mode control 2
-        register[2] <= 'h0e;    // name table base address (0x3800)
-        register[3] <= 'h00;    // color table base address
-        register[4] <= 'h00;    // background pattern generator base address
-        register[5] <= 'h7e;    // sprite attribute table base address (0x3F00)
-        register[6] <= 'h00;    // sprite pattern generator base address
-        register[7] <= 'h00;    // overscan/backdrop color
-        register[8] <= 'h00;    // background X scroll
-        register[9] <= 'h00;    // background Y scroll
-        register[10] <= 'hff;   // line counter
+        register[0] = 'h00;    // mode control 1
+        register[1] = 'h00;    // mode control 2
+        register[2] = 'h0e;    // name table base address (0x3800)
+        register[3] = 'h00;    // color table base address
+        register[4] = 'h00;    // background pattern generator base address
+        register[5] = 'h7e;    // sprite attribute table base address (0x3F00)
+        register[6] = 'h00;    // sprite pattern generator base address
+        register[7] = 'h00;    // overscan/backdrop color
+        register[8] = 'h00;    // background X scroll
+        register[9] = 'h00;    // background Y scroll
+        register[10] = 'hff;   // line counter
     end
 
     // name table base address
@@ -98,9 +98,7 @@ module vdp(
     wire [ 7:0] vram_do_a;
     wire [ 7:0] vram_do_b;
     reg  [ 7:0] vram_di_a;
-    reg  [ 7:0] vram_di_b;
     wire        vram_we_a;
-    reg         vram_we_b;
 
     vram vram(
         // port a = cpu side
@@ -115,7 +113,7 @@ module vdp(
         .we_b(1'b0),
         .addr_b(vram_addr_b),
         .do_b(vram_do_b),
-        .di_b(vram_di_b)
+        .di_b(8'b0)
     );
 
     // ----------------------------------------------------
@@ -129,7 +127,6 @@ module vdp(
     // ----------------------------------------------------
 
     wire [5:0] bg_color;
-    wire priority;
 
     vdp_background vdp_background(
         .clk(vga_clk),
@@ -143,15 +140,15 @@ module vdp(
         .vram_a(vram_addr_b),
         .vram_d(vram_do_b),
         .color(bg_color),
-        .priority(priority)
+        .priority_()
     );
 
     // ----------------------------------------------------
     //                      VGA TIMING
     // ----------------------------------------------------
 
-    wire [9:0] pixel_x;
-    wire [9:0] pixel_y;
+    wire [9:0] pixel_x /* verilator public */;
+    wire [9:0] pixel_y /* verilator public */;
     wire in_display_area;
     wire vga_clk;
 
@@ -166,73 +163,11 @@ module vdp(
         .vga_clk(vga_clk)
     );
 
-    reg [3:0] vga_r = 0;
-    reg [3:0] vga_g = 0;
-    reg [3:0] vga_b = 0;
-
     always @(posedge vga_clk) begin
-        // cropped screen that is actually drawn
-        if ((pixel_x >=  8*8 && pixel_x < (8+20)*8) &&
-            (pixel_y >= 3*8 && pixel_y < (3+18)*8)) begin
-            vga_r <= blank ? 4'h0 : CRAM[bg_color][3:0];
-            vga_g <= blank ? 4'h0 : CRAM[bg_color][7:4];
-            vga_b <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
-        // gray out screen outside the crop area
-        end else if (pixel_x < 256 && pixel_y < 192) begin
-            vga_r <= CRAM[bg_color][3:0] >> 3;
-            vga_g <= CRAM[bg_color][7:4] >> 3;
-            vga_b <= CRAM[bg_color+1][3:0] >> 3;
-        // palette
-        end else if (pixel_y >= 256 && pixel_x < 256) begin
-            vga_r <= CRAM[pixel_x[7:3]*2][3:0];
-            vga_g <= CRAM[pixel_x[7:3]*2][7:4];
-            vga_b <= CRAM[pixel_x[7:3]*2+1][3:0];
-        end else if (data_wr && (code != 2'd3)) begin
-            vga_r <= 4'h0;
-            vga_g <= 4'hF;
-            vga_b <= 4'h0;
-        end else if (data_wr && (code == 2'd3)) begin
-            vga_r <= 4'hF;
-            vga_g <= 4'h0;
-            vga_b <= 4'h0;
-        end else if (control_rd) begin
-            vga_r <= 4'h0;
-            vga_g <= 4'h0;
-            vga_b <= 4'hF;
-        end else if (control_wr) begin
-            vga_r <= 4'hF;  // yellow
-            vga_g <= 4'hF;
-            vga_b <= 4'h0;
-        end else if (data_rd) begin
-            vga_r <= 4'hF;  // purple
-            vga_g <= 4'h0;
-            vga_b <= 4'hF;
-        // ntsc size outline
-        end else if (pixel_y == 262 || pixel_x == 342) begin
-            vga_r <= 4'h8;
-            vga_g <= 4'h8;
-            vga_b <= 4'h8;
-        // grid
-        end else if (pixel_x[2:0] == 3'b111 || pixel_y[2:0] == 3'b111) begin
-            vga_g <= 4'h1;
-            vga_r <= 4'h1;
-            vga_b <= 4'h1;
-        // we only support mode 4 with 192 lines
-        // indicate an error if we're in a different mode
-        end else if (!mode_4_192) begin
-            vga_r <= 4'h3;
-            vga_g <= 4'h0;
-            vga_b <= 4'h0;
-        end else begin
-            vga_g <= 4'h0;
-            vga_r <= 4'h0;
-            vga_b <= 4'h0;
-        end
+        VGA_R <= blank ? 4'h0 : CRAM[bg_color][3:0];
+        VGA_G <= blank ? 4'h0 : CRAM[bg_color][7:4];
+        VGA_B <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
     end
-
-    assign VGA_R = in_display_area ? vga_r : 4'd0;
-    assign VGA_G = in_display_area ? vga_g : 4'd0;
-    assign VGA_B = in_display_area ? vga_b : 4'd0;
 
     // ----------------------------------------------------
     //                    COUNTERS
@@ -242,7 +177,7 @@ module vdp(
     // each scanline = 342 pixels
     // each frame    = 262 scanlines
 
-    reg [7:0] v_counter = 0;
+    reg [8:0] v_counter = 0;
     reg [8:0] h_counter = 0;
 
     wire line_complete = (pixel_x == 342);
@@ -267,7 +202,7 @@ module vdp(
         end
     end
 
-    assign vdp_v_counter = v_counter;
+    assign vdp_v_counter = v_counter[7:0];
     assign vdp_h_counter = h_counter[8:1];
 
     // ----------------------------------------------------
@@ -281,7 +216,7 @@ module vdp(
     // active area is 192 lines (0-191)
     always @(posedge vga_clk) begin
         if (pixel_y == 192 && pixel_x == 0) begin
-            $display("[vdp] Vsync IRQ");
+            //$display("[vdp] Vsync IRQ");
             status[7] <= 1;
         end else if (control_rd) begin
             status[7] <= 0;
@@ -293,7 +228,7 @@ module vdp(
     // line interrupt
 
     reg [7:0] line_counter = 0;
-    reg       line_irq = 0;
+    //reg       line_irq = 0;
 
     always @(posedge vga_clk) begin
         if (line_complete) begin
@@ -302,13 +237,13 @@ module vdp(
             end else begin
                 if (line_counter == 'h00) begin
                     line_counter <= register[10];
-                    line_irq <= 1;
+                    //line_irq <= 1;
                 end else begin
                     line_counter <= line_counter - 1;
                 end
             end
         end else if (control_rd) begin
-            line_irq <= 0;
+            //line_irq <= 0;
         end
     end
 
@@ -436,22 +371,22 @@ module vdp(
                     // check for register write instead
                     if (control_i[7:6] == 2'h2) begin
                         register[control_i[3:0]] <= addr_hold;
-                        $display("[VDP] reg %d set to %x", control_i[3:0], addr_hold);
+                        //$display("[VDP] reg %d set to %x", control_i[3:0], addr_hold);
                     end else begin
-                        #1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
+                        //#1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
                     end
                 end
 
             end else if (control_rd_edge) begin
 
                 read_buffer <= vram_do_a;
-                $display("[VDP] reading control");
+                //$display("[VDP] reading control");
 
             end else if (data_rd_edge) begin
 
                 data_o <= read_buffer;
                 read_buffer <= vram_do_a;
-                $display("[VDP] reading data");
+                //$display("[VDP] reading data");
 
             end else if (data_wr_edge) begin
 
@@ -459,12 +394,12 @@ module vdp(
                     if (vram_addr_a[0] == 0) begin
                         cram_latch <= data_i;
                     end else begin
-                        $display("[VDP] Writing cram addr %x with %x%x", vram_addr_a[5:0]-1, data_i, cram_latch);
+                        //$display("[VDP] Writing cram addr %x with %x%x", vram_addr_a[5:0]-1, data_i, cram_latch);
                         CRAM[vram_addr_a[5:0]-1] <= cram_latch;
                         CRAM[vram_addr_a[5:0]]   <= data_i;
                     end
                 end else begin
-                    $display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
+                    //$display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
                     vram_di_a <= data_i;
                     read_buffer <= data_i;
                 end

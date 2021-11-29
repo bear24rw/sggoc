@@ -10,7 +10,7 @@ module vdp_background (
     input       [7:0]   vram_d,
     output reg  [13:0]  vram_a,
     output      [5:0]   color,
-    output reg          priority
+    output reg          priority_
 
 );
 
@@ -49,8 +49,8 @@ module vdp_background (
         /*
         y <= (disable_y_scroll && x[7:3] < 24) ? pixel_y : ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) >> 35)*224));
         */
-        x <= (disable_x_scroll && y[7:3] <  2) ?  pixel_x : (pixel_x - scroll_x);
-        y <= (disable_y_scroll && x[7:3] < 24) ?  pixel_y : (pixel_y + scroll_y) % 224;
+        x <= (disable_x_scroll && y[7:3] <  2) ?  pixel_x : (pixel_x - {2'b0, scroll_x});
+        y <= (disable_y_scroll && x[7:3] < 24) ?  pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
 
         // x[7:3] = current tile on x
         // y[7:3] = current tile on y
@@ -104,7 +104,7 @@ module vdp_background (
                 shift3 <= {vram_d[0], vram_d[1], vram_d[2], vram_d[3], vram_d[4], vram_d[5], vram_d[6], vram_d[7]};
             end
             palette <= palette_latch;
-            priority <= priority_latch;
+            priority_ <= priority_latch;
         end else begin
             shift0[7:1] <= shift0[6:0];
             shift1[7:1] <= shift1[6:0];
