@@ -47,24 +47,16 @@ module io(
 
     reg [7:0] gg_reg [0:6];
 
-    initial begin
-        gg_reg[0] <= 8'hC0;
-        gg_reg[1] <= 8'h7F;
-        gg_reg[2] <= 8'hFF;
-        gg_reg[3] <= 8'h00;
-        gg_reg[4] <= 8'hFF;
-        gg_reg[5] <= 8'h00;
-        gg_reg[6] <= 8'hFF;
-    end
-
-    always @(posedge rst) begin
-        gg_reg[0] <= 8'hC0;
-        gg_reg[1] <= 8'h7F;
-        gg_reg[2] <= 8'hFF;
-        gg_reg[3] <= 8'h00;
-        gg_reg[4] <= 8'hFF;
-        gg_reg[5] <= 8'h00;
-        gg_reg[6] <= 8'hFF;
+    always @(posedge clk) begin
+        if (rst) begin
+            gg_reg[0] <= 8'hC0;
+            gg_reg[1] <= 8'h7F;
+            gg_reg[2] <= 8'hFF;
+            gg_reg[3] <= 8'h00;
+            gg_reg[4] <= 8'hFF;
+            gg_reg[5] <= 8'h00;
+            gg_reg[6] <= 8'hFF;
+        end
     end
 
     // ----------------------------------------------------
@@ -73,7 +65,7 @@ module io(
 
     reg [7:0] mem_control = 8'hA4;
 
-    always @(posedge clk, posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             mem_control <= 8'hA4;
         end else if (z80_io_wr && port == 0) begin

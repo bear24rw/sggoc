@@ -67,7 +67,7 @@ module mem_mapper(
 
     // check if this memory write was to the
     // mapping registers
-    always @(posedge clk, posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             rom_bank_0 <= 'h0;
             rom_bank_1 <= 'h1;

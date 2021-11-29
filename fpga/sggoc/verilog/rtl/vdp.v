@@ -337,7 +337,7 @@ module vdp(
     reg last_data_rd = 0;
     reg last_data_wr = 0;
 
-    always @(posedge z80_clk, posedge rst) begin
+    always @(posedge z80_clk) begin
         if (rst) begin
             last_control_rd <= 0;
             last_control_wr <= 0;
@@ -367,7 +367,7 @@ module vdp(
 
     reg second_byte = 0;
 
-    always @(posedge z80_clk, posedge rst) begin
+    always @(posedge z80_clk) begin
         if (rst) begin
             second_byte <= 0;
         end else begin
@@ -412,7 +412,7 @@ module vdp(
     assign vram_we_a = data_wr && (code != 2'h3);
 
 
-    always @(posedge z80_clk, posedge rst) begin
+    always @(posedge z80_clk) begin
 
         if (rst) begin
             register[0] <= 'h00;    // mode control 1
