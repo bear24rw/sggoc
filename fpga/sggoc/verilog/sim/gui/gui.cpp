@@ -2,32 +2,22 @@
 
 #include "v_sggoc.h"
 #include "v_sggoc___024root.h"
+#include "v_sggoc_sggoc.h"
 #include "v_sggoc_vdp.h"
 #include "v_sggoc_vram.h"
-#include "v_sggoc_sggoc.h"
 #include "verilated.h"
 #include <GLFW/glfw3.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <fcntl.h>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
-#include <map>
-#include <mutex>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <stdio.h>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <thread>
 #include <vector>
 
-bool socket_connected = false;
 bool paused = false;
 
 v_sggoc* tb;
@@ -78,7 +68,6 @@ void reset()
     tick(1);
     tb->rst = 0;
     tick(1);
-    printf("reset complete\n");
 }
 
 void sim_loop()
@@ -112,8 +101,6 @@ void sim_loop()
 void draw_vga()
 {
     ImGui::Begin("vga");
-    //ImGui::LabelText("pixel_x", "%d", root->sggoc__DOT__vdp__DOT____Vtogcov__pixel_x);
-    //ImGui::LabelText("pixel_y", "%d", root->sggoc__DOT__vdp__DOT____Vtogcov__pixel_y);
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
     for (int x = 0; x < 512; x++) {
         for (int y = 0; y < 512; y++) {
@@ -127,17 +114,6 @@ void draw_vga()
         }
     }
     ImGui::End();
-}
-
-void draw_mem_mapper()
-{
-    /*
-    ImGui::Begin("mem_mapper");
-    ImGui::LabelText("rom_bank_0", "%d", root->sggoc__DOT__mem_mapper__DOT__rom_bank_0);
-    ImGui::LabelText("rom_bank_1", "%d", root->sggoc__DOT__mem_mapper__DOT__rom_bank_1);
-    ImGui::LabelText("rom_bank_2", "%d", root->sggoc__DOT__mem_mapper__DOT__rom_bank_2);
-    ImGui::End();
-    */
 }
 
 void draw_ram()
@@ -165,8 +141,6 @@ void draw_ram()
 void draw_vram()
 {
     ImGui::Begin("vram");
-    // ImGui::LabelText("addr_a (cpu)", "0x%X", root->sggoc__DOT__vdp__DOT__vram_addr_a);
-    // ImGui::LabelText("addr_b (vdp)", "0x%X", root->sggoc__DOT__vdp__DOT__vram_addr_b);
     float size = 4.0;
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
     for (int x = 0; x < 128; x++) {
@@ -181,39 +155,6 @@ void draw_vram()
         }
     }
     ImGui::End();
-}
-
-void draw_vdp()
-{
-    /*
-    ImGui::Begin("vdp");
-    for (int i = 0; i < 11; i++)
-        ImGui::LabelText("reg", "0x%X", root->sggoc__DOT__vdp__DOT__register[i]);
-    ImGui::End();
-    */
-}
-
-void draw_z80()
-{
-/*
-    ImGui::Begin("z80");
-    ImGui::LabelText("z80_addr", "0x%X", root->sggoc__DOT____Vtogcov__z80_addr);
-    ImGui::LabelText("z80_di", "0x%X", root->sggoc__DOT____Vtogcov__z80_di);
-    ImGui::LabelText("z80_do", "0x%X", root->sggoc__DOT____Vtogcov__z80_do);
-    ImGui::LabelText("z80_rd_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_rd_n);
-    ImGui::LabelText("z80_wr_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_wr_n);
-    ImGui::LabelText("z80_mreq_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_mreq_n);
-    ImGui::LabelText("z80_iorq_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_iorq_n);
-    //ImGui::LabelText("z80_wait_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_wait_n);
-    ImGui::LabelText("z80_m1_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_m1_n);
-    //ImGui::LabelText("z80_halt_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_halt_n);
-    ImGui::LabelText("z80_int_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_int_n);
-    // ImGui::LabelText("z80_nmi_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_nmi_n);
-    // ImGui::LabelText("z80_busak_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_busak_n);
-    // ImGui::LabelText("z80_busrq_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_busrq_n);
-    // ImGui::LabelText("z80_rfsh_n", "0x%X", root->sggoc__DOT____Vtogcov__z80_rfsh_n);
-    ImGui::End();
-*/
 }
 
 void draw_rom()
@@ -239,8 +180,22 @@ void draw_rom()
     ImGui::End();
 }
 
+void draw_time()
+{
+    ImGui::Begin("Time");
+    if (ImGui::Button(paused ? "Continue" : "Pause")) {
+        paused = !paused;
+    }
+    ImGui::Text("Ticks: %llu (%fms)", ticks, ticks_to_ms(ticks));
+    int delay = ticks_delay_us;
+    ImGui::SliderInt("Tick delay (us)", &delay, 0, 10000);
+    ticks_delay_us = delay;
+    ImGui::End();
+}
+
 int main(int argc, char** argv)
 {
+    assert(argc == 2);
     std::ifstream instream(argv[1], std::ios::in | std::ios::binary);
     g_rom = std::vector<uint8_t>((std::istreambuf_iterator<char>(instream)), std::istreambuf_iterator<char>());
     g_ram.resize(1 << 13);
@@ -257,7 +212,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 
     GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
-    if (window == NULL) return 1;
+    assert(window);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
@@ -265,15 +220,6 @@ int main(int argc, char** argv)
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
-
-    ImGui::StyleColorsDark();
-    ImGuiIO& io = ImGui::GetIO();
-    io.MouseDragThreshold = 1.0;
-    io.Fonts->AddFontFromFileTTF("/Library/Fonts/Arial Unicode.ttf", 16.0f * 2);
-    io.FontGlobalScale = 0.5;
-
-    bool show_demo_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     tb = new v_sggoc;
     root = tb->rootp;
@@ -287,25 +233,10 @@ int main(int argc, char** argv)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        ImGui::Begin("SGGOC");
-        if (ImGui::Button(paused ? "Continue" : "Pause")) {
-            paused = !paused;
-        }
-        ImGui::Text("Ticks: %llu (%fms)", ticks, ticks_to_ms(ticks));
-        int delay = ticks_delay_us;
-        ImGui::SliderInt("Tick delay (us)", &delay, 0, 10000);
-        ticks_delay_us = delay;
-        ImGui::End();
-
+        draw_time();
         draw_rom();
-        draw_z80();
-        draw_vdp();
         draw_vram();
         draw_vga();
-        draw_mem_mapper();
         draw_ram();
 
         ImGui::Render();
@@ -313,7 +244,7 @@ int main(int argc, char** argv)
         glfwMakeContextCurrent(window);
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
