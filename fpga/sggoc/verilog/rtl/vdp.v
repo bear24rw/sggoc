@@ -28,7 +28,7 @@ module vdp(
     input               control_wr,
     input               control_rd,
     input      [7:0]    control_i,
-    output reg [7:0]    status,
+    output reg [7:0]    control_o,
 
     input               data_wr,
     input               data_rd,
@@ -211,19 +211,19 @@ module vdp(
 
     // frame interrupt
 
-    initial status = 0;
+    reg interrupt_flag = 0;
 
     // active area is 192 lines (0-191)
     always @(posedge vga_clk) begin
         if (pixel_y == 192 && pixel_x == 0) begin
             //$display("[vdp] Vsync IRQ");
-            status[7] <= 1;
+            interrupt_flag <= 1;
         end else if (control_rd) begin
-            status[7] <= 0;
+            interrupt_flag <= 0;
         end
     end
 
-    wire irq_vsync_pending = (status[7] && irq_vsync_en);
+    wire irq_vsync_pending = (interrupt_flag && irq_vsync_en);
 
     // line interrupt
 
@@ -338,6 +338,7 @@ module vdp(
                     first_byte <= control_i;
                 end
             end else if (control_rd_edge) begin
+                control_o <= { interrupt_flag, 1'b0, 1'b0, 5'b0 };
             end else if (data_rd_edge) begin
                 data_o <= vram_do_a;
                 ram_addr <= ram_addr + 1;

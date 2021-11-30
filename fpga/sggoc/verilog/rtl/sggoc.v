@@ -135,11 +135,12 @@ module sggoc(
 
         .vdp_data_rd(vdp_data_rd),
         .vdp_data_wr(vdp_data_wr),
+        .vdp_data_o(vdp_data_o),
+
         .vdp_control_rd(vdp_control_rd),
         .vdp_control_wr(vdp_control_wr),
+        .vdp_control_o(vdp_control_o),
 
-        .vdp_data_o(vdp_data_o),
-        .vdp_status(vdp_status),
         .vdp_v_counter(vdp_v_counter),
         .vdp_h_counter(vdp_h_counter),
 
@@ -161,7 +162,7 @@ module sggoc(
     wire [7:0] vdp_h_counter;
     wire       vdp_control_wr;
     wire       vdp_control_rd;
-    wire [7:0] vdp_status;
+    wire [7:0] vdp_control_o;
     wire       vdp_data_wr;
     wire       vdp_data_rd;
     wire [7:0] vdp_data_o;
@@ -173,7 +174,7 @@ module sggoc(
 
         .control_wr(vdp_control_wr),
         .control_rd(vdp_control_rd),
-        .status(vdp_status),
+        .control_o(vdp_control_o),
         .control_i(z80_do),
 
         .data_wr(vdp_data_wr),

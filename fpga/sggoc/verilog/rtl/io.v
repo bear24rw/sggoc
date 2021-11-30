@@ -36,7 +36,7 @@ module io(
     output          vdp_control_wr,
 
     input   [7:0]   vdp_data_o,
-    input   [7:0]   vdp_status,
+    input   [7:0]   vdp_control_o,
     input   [7:0]   vdp_v_counter,
     input   [7:0]   vdp_h_counter,
 
@@ -114,7 +114,7 @@ module io(
                    (port == 2) ? vdp_v_counter :        // 0x7E - v counter
                    (port == 3) ? vdp_h_counter :        // 0x7F - h counter
                    (port == 4) ? vdp_data_o :           // 0xBE - vdp data
-                   (port == 5) ? vdp_status :           // 0xBF - vdp control
+                   (port == 5) ? vdp_control_o :        // 0xBF - vdp control
                    (port == 6) ? { 2'b11, ~joypad_b, ~joypad_a, ~joypad_right, ~joypad_left, ~joypad_down, ~joypad_up} :                // 0xDC - io port a/b
                    (port == 7) ? 8'hFF :                // 0xDD - io port b/misc
                    8'hFF;
