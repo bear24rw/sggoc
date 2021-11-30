@@ -258,8 +258,13 @@ module vdp(
     //                  CONTROL LOGIC
     // ----------------------------------------------------
 
+    `define CODE_VRAM_READ 2'b00
+    `define CODE_REG_WRITE 2'b10
+    `define CODE_CRAM_WRITE 2'b11
+
     reg [1:0] code = 0;
     reg [7:0] read_buffer = 0;
+    reg [5:0] cram_addr = 0;
     reg [7:0] cram_latch = 0;
 
     //
@@ -300,16 +305,16 @@ module vdp(
     // is set. After second byte is recieved or any other port
     // is read/write the flag is cleared
 
-    reg second_byte = 0;
+    reg is_second_byte = 0;
 
     always @(posedge z80_clk) begin
         if (rst) begin
-            second_byte <= 0;
+            is_second_byte <= 0;
         end else begin
             if (control_wr_edge) begin
-                second_byte <= !second_byte;
+                is_second_byte <= !is_second_byte;
             end else if (control_rd_edge || data_wr_edge || data_rd_edge) begin
-                second_byte <= 0;
+                is_second_byte <= 0;
             end
         end
     end
@@ -322,19 +327,16 @@ module vdp(
     // every other port just increments the address
 
     reg [13:0] next_vram_addr_a = 0;
-    reg [ 7:0] addr_hold = 0;
+    reg [ 7:0] first_byte = 0;
 
     always @(posedge z80_clk) begin
         vram_addr_a <= next_vram_addr_a;
-
         if (control_wr_edge) begin
-            if (second_byte == 0) begin
-                addr_hold <= control_i;
-            end else begin
-                if (control_i[7:6] == 0) begin
-                    next_vram_addr_a <= {control_i[5:0], addr_hold} + 1;
+            if (is_second_byte) begin
+                if (control_i[7:6] == `CODE_VRAM_READ) begin
+                    next_vram_addr_a <= {control_i[5:0], first_byte} + 1;
                 end else begin
-                    next_vram_addr_a[7:0] <= addr_hold;
+                    next_vram_addr_a[7:0] <= first_byte;
                     next_vram_addr_a[13:8] <= control_i[5:0];
                 end
             end
@@ -348,7 +350,6 @@ module vdp(
 
 
     always @(posedge z80_clk) begin
-
         if (rst) begin
             register[0] <= 'h00;    // mode control 1
             register[1] <= 'h00;    // mode control 2
@@ -363,50 +364,38 @@ module vdp(
             register[10] <= 'hff;   // line counter
             data_o <= 8'h0;
         end else begin
-
             if (control_wr_edge) begin
-
-                if (second_byte) begin
+                if (is_second_byte) begin
                     code <= control_i[7:6];
-                    // check for register write instead
-                    if (control_i[7:6] == 2'h2) begin
-                        register[control_i[3:0]] <= addr_hold;
-                        //$display("[VDP] reg %d set to %x", control_i[3:0], addr_hold);
-                    end else begin
-                        //#1 $display("[VDP] setting vram addr to %x code %d", next_vram_addr_a, code);
-                    end
+                    case (control_i[7:6])
+                        `CODE_REG_WRITE: register[control_i[3:0]] <= first_byte;
+                        `CODE_CRAM_WRITE: cram_addr <= first_byte[5:0];
+                        default: begin end
+                    endcase
+                end else begin
+                    first_byte <= control_i;
                 end
-
             end else if (control_rd_edge) begin
-
                 read_buffer <= vram_do_a;
-                //$display("[VDP] reading control");
-
             end else if (data_rd_edge) begin
-
                 data_o <= read_buffer;
                 read_buffer <= vram_do_a;
-                //$display("[VDP] reading data");
-
             end else if (data_wr_edge) begin
-
-                if (code == 3) begin
-                    if (vram_addr_a[0] == 0) begin
+                if (code == `CODE_CRAM_WRITE) begin
+                    cram_addr <= cram_addr + 1;
+                    // actual write only takes place on the odd address
+                    if (cram_addr[0] == 0) begin
                         cram_latch <= data_i;
                     end else begin
-                        //$display("[VDP] Writing cram addr %x with %x%x", vram_addr_a[5:0]-1, data_i, cram_latch);
                         CRAM[vram_addr_a[5:0]-1] <= cram_latch;
-                        CRAM[vram_addr_a[5:0]]   <= data_i;
+                        CRAM[vram_addr_a[5:0]  ] <= data_i;
                     end
                 end else begin
-                    //$display("[VDP] Writing vram addr %x with %x", vram_addr_a, data_i);
                     vram_di_a <= data_i;
                     read_buffer <= data_i;
                 end
-
             end
         end
-
     end
 
 endmodule
