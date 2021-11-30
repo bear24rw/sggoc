@@ -6,9 +6,9 @@ module vdp_background (
     input       [7:0]   scroll_y,
     input               disable_x_scroll,
     input               disable_y_scroll,
-    input       [13:0]  name_table_addr,
-    input       [7:0]   vram_d,
-    output reg  [13:0]  vram_a,
+    input       [2:0]   name_table_base,
+    input       [7:0]   vram_dataata,
+    output reg  [13:0]  vram_addr,
     output      [5:0]   color,
     output reg          priority_
 );
@@ -20,7 +20,7 @@ module vdp_background (
     reg [2:0] line;         // line within the tile
     reg [8:0] tile_idx;     // which tile (0-512)
 
-    // bitplanes (4th one comes directly from vram_d)
+    // bitplanes (4th one comes directly from vram_dataata)
     reg [7:0] data0;
     reg [7:0] data1;
     reg [7:0] data2;
@@ -31,8 +31,8 @@ module vdp_background (
     reg [7:0] shift2;
     reg [7:0] shift3;
 
-    reg [13:0] tile_addr = 0;
-    reg [13:0] data_addr = 0;
+    reg [13:0] name_addr = 0;
+    reg [13:0] pattern_addr = 0;
 
     // pixel location with scroll applied
     reg [7:0] x = 0;
@@ -46,7 +46,6 @@ module vdp_background (
     wire [2:0] tile_column = x[2:0];
 
     always @(posedge clk) begin
-
         // x scroll: increasing value moves screen left
         // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
 
@@ -55,52 +54,48 @@ module vdp_background (
         y <= (disable_y_scroll && tile_x < 6) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
 
         // each tile is 2 bytes and there are 32 tiles per row
-        tile_addr <= name_table_addr + (tile_x * 2) + (tile_y * 32 * 2);
-        data_addr <= (tile_idx * 32) + (line * 4);
+        name_addr <= {2'b00, name_table_base, tile_y, tile_x, 1'b0};
+        pattern_addr <= {tile_idx, line, 2'b0};
 
         case(tile_column)
-            0: vram_a <= tile_addr;
-            1: vram_a <= tile_addr + 1;
-            2: vram_a <= 'h0;
-            3: vram_a <= data_addr;
-            4: vram_a <= data_addr + 1;
-            5: vram_a <= data_addr + 2;
-            6: vram_a <= data_addr + 3;
-            7: vram_a <= 'h0;
-            default: vram_a <= 'hxxxx;
+            0: vram_addr <= name_addr;
+            1: vram_addr <= name_addr + 1;
+            2: vram_addr <= 'h0;
+            3: vram_addr <= pattern_addr;
+            4: vram_addr <= pattern_addr + 1;
+            5: vram_addr <= pattern_addr + 2;
+            6: vram_addr <= pattern_addr + 3;
+            7: vram_addr <= 'h0;
+            default: vram_addr <= 'hxxxx;
         endcase
-    end
 
-    always @(posedge clk) begin
         case (tile_column)
-            1: tile_idx[7:0] <= vram_d;
+            1: tile_idx[7:0] <= vram_data;
             2: begin
-                tile_idx[8]    <= vram_d[0];
-                flip_x         <= vram_d[1];
-                line[0]        <= y[0]^vram_d[2];
-                line[1]        <= y[1]^vram_d[2];
-                line[2]        <= y[2]^vram_d[2];
-                palette_latch  <= vram_d[3];
-                priority_latch <= vram_d[4];
+                tile_idx[8]    <= vram_data[0];
+                flip_x         <= vram_data[1];
+                line[0]        <= y[0]^vram_data[2];
+                line[1]        <= y[1]^vram_data[2];
+                line[2]        <= y[2]^vram_data[2];
+                palette_latch  <= vram_data[3];
+                priority_latch <= vram_data[4];
             end
-            4: data0 <= vram_d;
-            5: data1 <= vram_d;
-            6: data2 <= vram_d;
+            4: data0 <= vram_data;
+            5: data1 <= vram_data;
+            6: data2 <= vram_data;
         endcase
-    end
 
-    always @(posedge clk) begin
         if (tile_column == 3'd7) begin
             if (flip_x == 1'b0) begin
                 shift0 <= data0;
                 shift1 <= data1;
                 shift2 <= data2;
-                shift3 <= vram_d;
+                shift3 <= vram_data;
             end else begin
                 shift0 <= {data0[0], data0[1], data0[2], data0[3], data0[4], data0[5], data0[6], data0[7]};
                 shift1 <= {data1[0], data1[1], data1[2], data1[3], data1[4], data1[5], data1[6], data1[7]};
                 shift2 <= {data2[0], data2[1], data2[2], data2[3], data2[4], data2[5], data2[6], data2[7]};
-                shift3 <= {vram_d[0], vram_d[1], vram_d[2], vram_d[3], vram_d[4], vram_d[5], vram_d[6], vram_d[7]};
+                shift3 <= {vram_data[0], vram_data[1], vram_data[2], vram_data[3], vram_data[4], vram_data[5], vram_data[6], vram_data[7]};
             end
             palette <= palette_latch;
             priority_ <= priority_latch;

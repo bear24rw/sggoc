@@ -139,9 +139,9 @@ module vdp(
         .scroll_y(scroll_y),
         .disable_x_scroll(disable_x_scroll),
         .disable_y_scroll(disable_y_scroll),
-        .name_table_addr(name_table_base_addr),
-        .vram_a(vram_addr_b),
-        .vram_d(vram_do_b),
+        .name_table_base(register[2][3:1]),
+        .vram_addr(vram_addr_b),
+        .vram_data(vram_do_b),
         .color(bg_color),
         .priority_()
     );
