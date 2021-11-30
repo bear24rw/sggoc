@@ -11,7 +11,6 @@ module vdp_background (
     output reg  [13:0]  vram_a,
     output      [5:0]   color,
     output reg          priority_
-
 );
 
     reg flip_x;             // flip tile horizontally
@@ -35,31 +34,31 @@ module vdp_background (
     reg [13:0] tile_addr = 0;
     reg [13:0] data_addr = 0;
 
+    // pixel location with scroll applied
     reg [7:0] x = 0;
     reg [7:0] y = 0;
 
-    // reciprocal: |_2**35 / 224_| + 1
-    // parameter rec = 153391689 + 1;
+    // tile indices
+    wire [4:0] tile_x = x[7:3];
+    wire [4:0] tile_y = y[7:3];
+
+    // current column index
+    wire [2:0] tile_column = x[2:0];
 
     always @(posedge clk) begin
 
         // x scroll: increasing value moves screen left
         // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
 
-        /*
-        y <= (disable_y_scroll && x[7:3] < 24) ? pixel_y : ((pixel_y + scroll_y) - ((((pixel_y + scroll_y)*rec) >> 35)*224));
-        */
-        x <= (disable_x_scroll && y[7:3] <  2) ?  pixel_x : (pixel_x - {2'b0, scroll_x});
-        y <= (disable_y_scroll && x[7:3] < 24) ?  pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
+        // lcd display area starts at tile position (3, 6)
+        x <= (disable_x_scroll && tile_y < 3) ? pixel_x : (pixel_x - {2'b0, scroll_x});
+        y <= (disable_y_scroll && tile_x < 6) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
 
-        // x[7:3] = current tile on x
-        // y[7:3] = current tile on y
-        // y[2:0] = current line within line
+        // each tile is 2 bytes and there are 32 tiles per row
+        tile_addr <= name_table_addr + (tile_x * 2) + (tile_y * 32 * 2);
+        data_addr <= (tile_idx * 32) + (line * 4);
 
-        tile_addr <= name_table_addr + (x[7:3]*2) + (y[7:3]*32*2);
-        data_addr <= (tile_idx*32) + (line*4);
-
-        case(x[2:0])
+        case(tile_column)
             0: vram_a <= tile_addr;
             1: vram_a <= tile_addr + 1;
             2: vram_a <= 'h0;
@@ -73,7 +72,7 @@ module vdp_background (
     end
 
     always @(posedge clk) begin
-        case (x[2:0])
+        case (tile_column)
             1: tile_idx[7:0] <= vram_d;
             2: begin
                 tile_idx[8]    <= vram_d[0];
@@ -91,7 +90,7 @@ module vdp_background (
     end
 
     always @(posedge clk) begin
-        if (x[2:0] == 3'b111) begin
+        if (tile_column == 3'd7) begin
             if (flip_x == 1'b0) begin
                 shift0 <= data0;
                 shift1 <= data1;

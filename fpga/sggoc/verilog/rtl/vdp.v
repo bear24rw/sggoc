@@ -68,8 +68,10 @@ module vdp(
         register[10] = 'hff;   // line counter
     end
 
-    // name table base address
-    wire [13:0] nt_base_addr     = {register[2][3:1], 11'd0};
+    wire [13:0] name_table_base_addr                 = {register[2][3:1], 11'd0};
+    wire [13:0] sprite_attribute_table_base_addr     = {register[5][6:1],  8'd0};
+    wire [13:0] sprite_pattern_table_table_base_addr = {register[6][2  ], 12'd0};
+
     wire        irq_vsync_en     = register[1][5];
     wire        irq_line_en      = register[0][4];
     wire [7:0]  scroll_x         = register[8];
@@ -81,6 +83,7 @@ module vdp(
     wire        m3               = register[1][3];
     wire        m4               = register[0][2];
     wire        blank            = !register[1][6];
+    wire [3:0]  overscan_color   = register[7][3:0];
 
     // m4: 1 = use mode 4, 0 = use tms modes (selected with m1 m2 m3)
     // m2: 1 = m1/m3 change screen height in mode 4
@@ -136,7 +139,7 @@ module vdp(
         .scroll_y(scroll_y),
         .disable_x_scroll(disable_x_scroll),
         .disable_y_scroll(disable_y_scroll),
-        .name_table_addr(nt_base_addr),
+        .name_table_addr(name_table_base_addr),
         .vram_a(vram_addr_b),
         .vram_d(vram_do_b),
         .color(bg_color),
