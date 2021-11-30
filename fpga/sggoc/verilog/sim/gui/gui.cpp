@@ -31,7 +31,7 @@ static uint8_t pixels[512][512][3];
 uint64_t ticks = 0;
 uint16_t ticks_delay_us = 0;
 double timestamp = 0;
-double clock_mhz = 50.0;
+double clock_mhz = 3.579545;
 
 inline double ticks_to_ms(uint64_t _ticks)
 {
@@ -96,6 +96,27 @@ void sim_loop()
         }
     }
 }
+
+void draw_joypad()
+{
+    ImGui::Begin("buttons");
+    root->start_button = ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Enter]);
+    root->joypad_left = ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_LeftArrow]);
+    root->joypad_right = ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_RightArrow]);
+    root->joypad_up = ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_UpArrow]);
+    root->joypad_down = ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_DownArrow]);
+    root->joypad_a = ImGui::IsKeyDown('A');
+    root->joypad_b = ImGui::IsKeyDown('B');
+    ImGui::Checkbox("Start", (bool*)&root->start_button);
+    ImGui::Checkbox("Left", (bool*)&root->joypad_left);
+    ImGui::Checkbox("Right", (bool*)&root->joypad_right);
+    ImGui::Checkbox("Up", (bool*)&root->joypad_up);
+    ImGui::Checkbox("Down", (bool*)&root->joypad_down);
+    ImGui::Checkbox("A", (bool*)&root->joypad_a);
+    ImGui::Checkbox("B", (bool*)&root->joypad_b);
+    ImGui::End();
+}
+
 
 void draw_vga()
 {
@@ -237,6 +258,7 @@ int main(int argc, char** argv)
         draw_vram();
         draw_vga();
         draw_ram();
+        draw_joypad();
 
         ImGui::Render();
         int display_w, display_h;

@@ -38,7 +38,16 @@ module io(
     input   [7:0]   vdp_data_o,
     input   [7:0]   vdp_status,
     input   [7:0]   vdp_v_counter,
-    input   [7:0]   vdp_h_counter
+    input   [7:0]   vdp_h_counter,
+
+    input start_button,
+
+    input joypad_up,
+    input joypad_down,
+    input joypad_left,
+    input joypad_right,
+    input joypad_a,
+    input joypad_b
 );
 
     // ----------------------------------------------------
@@ -47,16 +56,17 @@ module io(
 
     reg [7:0] gg_reg [0:6];
 
+    wire njap = 1; // overseas mode
+    wire nnts = 0; // ntsc mode
+
     always @(posedge clk) begin
-        if (rst) begin
-            gg_reg[0] <= 8'hC0;
-            gg_reg[1] <= 8'h7F;
-            gg_reg[2] <= 8'hFF;
-            gg_reg[3] <= 8'h00;
-            gg_reg[4] <= 8'hFF;
-            gg_reg[5] <= 8'h00;
-            gg_reg[6] <= 8'hFF;
-        end
+        gg_reg[0] <= { ~start_button, njap, nnts, 5'b0 };
+        gg_reg[1] <= 8'h7F;
+        gg_reg[2] <= 8'hFF;
+        gg_reg[3] <= 8'h00;
+        gg_reg[4] <= 8'hFF;
+        gg_reg[5] <= 8'h00; // serial communications mode setting
+        gg_reg[6] <= 8'hFF; // left-right distribution of sound
     end
 
     // ----------------------------------------------------
@@ -105,7 +115,7 @@ module io(
                    (port == 3) ? vdp_h_counter :        // 0x7F - h counter
                    (port == 4) ? vdp_data_o :           // 0xBE - vdp data
                    (port == 5) ? vdp_status :           // 0xBF - vdp control
-                   (port == 6) ? 8'hFF :                // 0xDC - io port a/b
+                   (port == 6) ? { 2'b11, ~joypad_b, ~joypad_a, ~joypad_right, ~joypad_left, ~joypad_down, ~joypad_up} :                // 0xDC - io port a/b
                    (port == 7) ? 8'hFF :                // 0xDD - io port b/misc
                    8'hFF;
 
@@ -115,6 +125,9 @@ module io(
 
     /*
     always @(posedge z80_io_rd) begin
+        if (z80_addr == 0) begin
+            $display("[IO READ] port 0 %x", gg_reg[0]);
+        end else begin
         case (port)
             0: $display("[IO READ] mem control %x", mem_control);
             1: $display("[IO READ] io port control");
@@ -126,6 +139,7 @@ module io(
             7: $display("[IO READ] port b/misc");
             default: $display("[IO READ] port %d", port);
         endcase
+        end
     end
 
     always @(posedge z80_io_wr) begin

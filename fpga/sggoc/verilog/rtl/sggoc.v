@@ -10,6 +10,15 @@ module sggoc(
     output [21:0] rom_addr,
     input  [ 7:0] rom_do,
 
+    input start_button,
+
+    input joypad_up,
+    input joypad_down,
+    input joypad_left,
+    input joypad_right,
+    input joypad_a,
+    input joypad_b,
+
     output [3:0] VGA_R,
     output [3:0] VGA_G,
     output [3:0] VGA_B,
@@ -132,7 +141,16 @@ module sggoc(
         .vdp_data_o(vdp_data_o),
         .vdp_status(vdp_status),
         .vdp_v_counter(vdp_v_counter),
-        .vdp_h_counter(vdp_h_counter)
+        .vdp_h_counter(vdp_h_counter),
+
+        .start_button(start_button),
+
+        .joypad_up(joypad_up),
+        .joypad_down(joypad_down),
+        .joypad_left(joypad_left),
+        .joypad_right(joypad_right),
+        .joypad_a(joypad_a),
+        .joypad_b(joypad_b)
     );
 
     // ----------------------------------------------------
