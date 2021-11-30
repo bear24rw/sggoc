@@ -7,7 +7,7 @@ module vdp_background (
     input               disable_x_scroll,
     input               disable_y_scroll,
     input       [2:0]   name_table_base,
-    input       [7:0]   vram_dataata,
+    input       [7:0]   vram_data,
     output reg  [13:0]  vram_addr,
     output      [5:0]   color,
     output reg          priority_
@@ -20,7 +20,7 @@ module vdp_background (
     reg [2:0] line;         // line within the tile
     reg [8:0] tile_idx;     // which tile (0-512)
 
-    // bitplanes (4th one comes directly from vram_dataata)
+    // bitplanes (4th one comes directly from vram_data)
     reg [7:0] data0;
     reg [7:0] data1;
     reg [7:0] data2;
@@ -48,10 +48,10 @@ module vdp_background (
     always @(posedge clk) begin
         // x scroll: increasing value moves screen left
         // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
-
-        // lcd display area starts at tile position (3, 6)
-        x <= (disable_x_scroll && tile_y < 3) ? pixel_x : (pixel_x - {2'b0, scroll_x});
-        y <= (disable_y_scroll && tile_x < 6) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
+        // scroll_lock_x locks the top 2 rows
+        // scroll_lock_y locks the last 8 columns (32 total columns - 8 = 24)
+        x <= (disable_x_scroll && tile_y < 2 ) ? pixel_x : (pixel_x - {2'b0, scroll_x});
+        y <= (disable_y_scroll && tile_x < 24) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
 
         // each tile is 2 bytes and there are 32 tiles per row
         name_addr <= {2'b00, name_table_base, tile_y, tile_x, 1'b0};
