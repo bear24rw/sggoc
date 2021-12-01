@@ -8,7 +8,6 @@ project(sggoc)
 find_package(verilator)
 
 add_compile_options(
-    -march=native
     -ffast-math
     -Wall
     -Wextra
