@@ -31,12 +31,13 @@ module vdp_background (
     reg [7:0] shift2;
     reg [7:0] shift3;
 
-    reg [13:0] name_addr = 0;
-    reg [13:0] pattern_addr = 0;
-
     // pixel location with scroll applied
-    reg [7:0] x = 0;
-    reg [7:0] y = 0;
+    // x scroll: increasing value moves screen left
+    // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
+    // scroll_lock_x locks the top 2 rows = 16 pixels
+    // scroll_lock_y locks the last 8 columns (32 total columns - 8 = 24 = 192 pixels)
+    wire [7:0] x = (disable_x_scroll && pixel_y < 16 ) ? pixel_x : (pixel_x - {2'b0, scroll_x});
+    wire [7:0] y = (disable_y_scroll && pixel_x > 192) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
 
     // tile indices
     wire [4:0] tile_x = x[7:3];
@@ -45,17 +46,10 @@ module vdp_background (
     // current column index
     wire [2:0] tile_column = x[2:0];
 
-    always @(posedge clk) begin
-        // x scroll: increasing value moves screen left
-        // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
-        // scroll_lock_x locks the top 2 rows
-        // scroll_lock_y locks the last 8 columns (32 total columns - 8 = 24)
-        x <= (disable_x_scroll && tile_y < 2 ) ? pixel_x : (pixel_x - {2'b0, scroll_x});
-        y <= (disable_y_scroll && tile_x < 24) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
+    wire [13:0] name_addr = {2'b00, name_table_base, tile_y, tile_x, 1'b0};
+    wire [13:0] pattern_addr = {tile_idx, line, 2'b0};
 
-        // each tile is 2 bytes and there are 32 tiles per row
-        name_addr <= {2'b00, name_table_base, tile_y, tile_x, 1'b0};
-        pattern_addr <= {tile_idx, line, 2'b0};
+    always @(posedge clk) begin
 
         case(tile_column)
             0: vram_addr <= name_addr;
@@ -66,7 +60,6 @@ module vdp_background (
             5: vram_addr <= pattern_addr + 2;
             6: vram_addr <= pattern_addr + 3;
             7: vram_addr <= 'h0;
-            default: vram_addr <= 'hxxxx;
         endcase
 
         case (tile_column)

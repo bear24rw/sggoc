@@ -42,9 +42,9 @@ module vdp(
     output reg [8:0]    pixel_x,
     output reg [8:0]    pixel_y,
 
-    output reg [3:0]    color_r,
-    output reg [3:0]    color_g,
-    output reg [3:0]    color_b
+    output [3:0]        color_r,
+    output [3:0]        color_g,
+    output [3:0]        color_b
 );
 
     // ----------------------------------------------------
@@ -145,11 +145,9 @@ module vdp(
         .priority_()
     );
 
-    always @(posedge clk) begin
-        color_r <= blank ? 4'h0 : CRAM[bg_color][3:0];
-        color_g <= blank ? 4'h0 : CRAM[bg_color][7:4];
-        color_b <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
-    end
+    assign color_r = blank ? 4'h0 : CRAM[bg_color][3:0];
+    assign color_g = blank ? 4'h0 : CRAM[bg_color][7:4];
+    assign color_b = blank ? 4'h0 : CRAM[bg_color+1][3:0];
 
     // ----------------------------------------------------
     //                    COUNTERS

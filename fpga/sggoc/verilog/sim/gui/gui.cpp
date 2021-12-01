@@ -117,7 +117,7 @@ void draw_vga()
     static bool crop = true;
     ImGui::Checkbox("Crop", &crop);
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-    size_t x_offset = crop ? 8 * 8 : 0;
+    size_t x_offset = crop ? 7 * 8 : 0;
     size_t y_offset = crop ? 3 * 8 : 0;
     size_t x_size = crop ? 20 * 8 : X_PIXELS;
     size_t y_size = crop ? 18 * 8 : Y_PIXELS;
