@@ -5,9 +5,11 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 project(sggoc)
 
-find_package(verilator HINTS $ENV{VERILATOR_ROOT})
+find_package(verilator)
 
 add_compile_options(
+    -march=native
+    -ffast-math
     -Wall
     -Wextra
     -O3
@@ -24,16 +26,17 @@ add_executable(sggoc
     imgui/backends/imgui_impl_glfw.cpp
 )
 
-target_compile_features(sggoc
-    PUBLIC
-        cxx_std_20
+target_compile_features(sggoc PUBLIC
+    cxx_std_20
 )
 
-target_include_directories(sggoc
-    PUBLIC
-        imgui
-        imgui/backends
-        /opt/homebrew/opt/glfw/include
+target_compile_definitions(sggoc PUBLIC
+    -DGL_SILENCE_DEPRECATION
+)
+
+target_include_directories(sggoc PUBLIC
+    imgui
+    imgui/backends
 )
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -41,13 +44,12 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(glfw)
 
-target_link_libraries(sggoc
-    PUBLIC
-        glfw
-        "-framework OpenGL"
-        "-framework Cocoa"
-        "-framework IOKit"
-        "-framework CoreVideo"
+target_link_libraries(sggoc PUBLIC
+    glfw
+    "-framework OpenGL"
+    "-framework Cocoa"
+    "-framework IOKit"
+    "-framework CoreVideo"
 )
 
 verilate(sggoc
@@ -72,10 +74,4 @@ verilate(sggoc
         -Wno-pinconnectempty
         -Wno-unused
         -Wno-width
-)
-
-set_source_files_properties(
-  ${list_of_your_files}
-  PROPERTIES
-  COMPILE_FLAGS "..."
 )

@@ -104,7 +104,7 @@ module vdp(
 
     vram vram(
         // port a = cpu side
-        .clk_a(~z80_clk),
+        .clk_a(~clk),
         .we_a(vram_we_a),
         .addr_a(vram_addr_a),
         .do_a(vram_do_a),
@@ -224,7 +224,7 @@ module vdp(
     reg last_data_rd = 0;
     reg last_data_wr = 0;
 
-    always @(posedge z80_clk) begin
+    always @(posedge clk) begin
         if (rst) begin
             last_control_rd <= 0;
             last_control_wr <= 0;
@@ -246,7 +246,7 @@ module vdp(
     // vram write enable when we're not writing to cram
     assign vram_we_a = data_wr && (code != `CODE_CRAM_WRITE);
 
-    always @(posedge z80_clk) begin
+    always @(posedge clk) begin
         if (rst) begin
             register[0] <= 'h00;    // mode control 1
             register[1] <= 'h00;    // mode control 2
