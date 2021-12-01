@@ -26,7 +26,9 @@ v_sggoc___024root* root;
 std::vector<uint8_t> g_rom;
 std::vector<uint8_t> g_ram;
 
-static uint8_t pixels[512][512][3];
+static const size_t X_PIXELS = 342;
+static const size_t Y_PIXELS = 262;
+static uint8_t pixels[Y_PIXELS][X_PIXELS][3];
 
 uint64_t ticks = 0;
 uint16_t ticks_delay_us = 0;
@@ -37,7 +39,6 @@ inline double ticks_to_ms(uint64_t _ticks)
 {
     return (1.0 / (clock_mhz * 1e3)) * _ticks;
 }
-
 
 void tick(uint64_t amount = 1)
 {
@@ -62,11 +63,11 @@ void reset()
 {
     tb->clk = 0;
     tb->rst = 0;
-    tick(1);
+    tick();
     tb->rst = 1;
-    tick(1);
+    tick();
     tb->rst = 0;
-    tick(1);
+    tick();
 }
 
 void sim_loop()
@@ -76,24 +77,17 @@ void sim_loop()
     while (true) {
         if (paused) continue;
         tick();
-        // printf("RAM: %x ROM: %x\n", tb->ram_addr, tb->rom_addr);
-        // if (tb->sggoc__DOT__mmu__DOT____Vtogcov__cart_en)
-        // assert(tb->rom_addr < g_rom.size());
-        // if (root->sggoc__DOT__mmu__DOT____Vtogcov__ram_en)
-        //    assert(root->ram_addr < g_ram.size());
         if (root->ram_we)
             g_ram[root->ram_addr] = root->ram_di;
-        // if (root->sggoc__DOT__z80_mem_rd)
-        //     printf("mem_rd %x = %x\n", root->rom_addr, g_rom[root->rom_addr]);
         root->ram_do = g_ram[root->ram_addr];
         root->rom_do = g_rom[root->rom_addr];
-        int x = root->sggoc->vdp->pixel_x;
-        int y = root->sggoc->vdp->pixel_y;
-        if (x < 512 && y < 512) {
-            pixels[y][x][0] = root->VGA_R;
-            pixels[y][x][1] = root->VGA_G;
-            pixels[y][x][2] = root->VGA_B;
-        }
+        const int x = root->pixel_x;
+        const int y = root->pixel_y;
+        assert(x < X_PIXELS);
+        assert(y < Y_PIXELS);
+        pixels[y][x][0] = root->color_r;
+        pixels[y][x][1] = root->color_g;
+        pixels[y][x][2] = root->color_b;
     }
 }
 
@@ -117,19 +111,30 @@ void draw_joypad()
     ImGui::End();
 }
 
-
 void draw_vga()
 {
     ImGui::Begin("vga");
+    static bool crop = true;
+    ImGui::Checkbox("Crop", &crop);
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-    for (int x = 0; x < 512; x++) {
-        for (int y = 0; y < 512; y++) {
-            ImVec2 a { cursor_pos.x + x, cursor_pos.y + y };
-            ImVec2 b { cursor_pos.x + x + 1, cursor_pos.y + y + 1 };
+    size_t x_offset = crop ? 8 * 8 : 0;
+    size_t y_offset = crop ? 3 * 8 : 0;
+    size_t x_size = crop ? 20 * 8 : X_PIXELS;
+    size_t y_size = crop ? 18 * 8 : Y_PIXELS;
+    auto content_size = ImVec2(x_size, y_size);
+    auto draw_size = ImMax(ImGui::GetContentRegionAvail(), content_size);
+    auto scale = draw_size.x / content_size.x;
+    ImGui::InvisibleButton("screen", { (float)x_size, (float)y_size });
+    for (size_t x = 0; x < x_size; x++) {
+        for (size_t y = 0; y < y_size; y++) {
+            auto a = ImVec2(x, y);
+            auto b = ImVec2(x, y) + ImVec2(1, 1);
+            a = cursor_pos + a * scale;
+            b = cursor_pos + b * scale;
             auto color = ImColor(
-                pixels[y][x][0] * 15,
-                pixels[y][x][1] * 15,
-                pixels[y][x][2] * 15);
+                (float)pixels[y + y_offset][x + x_offset][0] / 16.0f,
+                (float)pixels[y + y_offset][x + x_offset][1] / 16.0f,
+                (float)pixels[y + y_offset][x + x_offset][2] / 16.0f);
             ImGui::GetWindowDrawList()->AddRectFilled(a, b, color);
         }
     }
@@ -206,7 +211,11 @@ void draw_time()
     if (ImGui::Button(paused ? "Continue" : "Pause")) {
         paused = !paused;
     }
-    ImGui::Text("Ticks: %llu (%fms)", ticks, ticks_to_ms(ticks));
+    auto simulation_ms = ticks_to_ms(ticks);
+    static double last_simulation_ms = 0;
+    ImGui::Text("Ticks: %llu (%fms) (%.3fx realtime)", ticks, simulation_ms, (simulation_ms - last_simulation_ms) / (ImGui::GetIO().DeltaTime * 1000.0f));
+    last_simulation_ms = simulation_ms;
+
     int delay = ticks_delay_us;
     ImGui::SliderInt("Tick delay (us)", &delay, 0, 10000);
     ticks_delay_us = delay;

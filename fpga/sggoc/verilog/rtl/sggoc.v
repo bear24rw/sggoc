@@ -19,11 +19,12 @@ module sggoc(
     input joypad_a,
     input joypad_b,
 
-    output [3:0] VGA_R,
-    output [3:0] VGA_G,
-    output [3:0] VGA_B,
-    output VGA_HS,
-    output VGA_VS
+    output [8:0] pixel_x,
+    output [8:0] pixel_y,
+
+    output [3:0] color_r,
+    output [3:0] color_g,
+    output [3:0] color_b
 );
 
     // ----------------------------------------------------
@@ -168,8 +169,7 @@ module sggoc(
     wire [7:0] vdp_data_o;
 
     vdp vdp(
-        .clk_50(clk),
-        .z80_clk(clk),
+        .clk(clk),
         .rst(rst),
 
         .control_wr(vdp_control_wr),
@@ -183,14 +183,15 @@ module sggoc(
         .data_i(z80_do),
 
         .irq_n(z80_int_n),
-        .vdp_v_counter(vdp_v_counter),
-        .vdp_h_counter(vdp_h_counter),
+        .v_counter(vdp_v_counter),
+        .h_counter(vdp_h_counter),
 
-        .VGA_R(VGA_R),
-        .VGA_G(VGA_G),
-        .VGA_B(VGA_B),
-        .VGA_HS(VGA_HS),
-        .VGA_VS(VGA_VS)
+        .pixel_x(pixel_x),
+        .pixel_y(pixel_y),
+
+        .color_r(color_r),
+        .color_g(color_g),
+        .color_b(color_b)
     );
 
     /*

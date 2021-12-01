@@ -21,8 +21,7 @@
  ***************************************************************************/
 
 module vdp(
-    input clk_50,
-    input z80_clk,
+    input clk,
     input rst,
 
     input               control_wr,
@@ -37,15 +36,15 @@ module vdp(
 
     output              irq_n,
 
-    output [7:0]        vdp_v_counter,
-    output [7:0]        vdp_h_counter,
+    output [7:0]        v_counter,
+    output [7:0]        h_counter,
 
-    output reg [3:0]    VGA_R,
-    output reg [3:0]    VGA_G,
-    output reg [3:0]    VGA_B,
+    output reg [8:0]    pixel_x,
+    output reg [8:0]    pixel_y,
 
-    output              VGA_HS,
-    output              VGA_VS
+    output reg [3:0]    color_r,
+    output reg [3:0]    color_g,
+    output reg [3:0]    color_b
 );
 
     // ----------------------------------------------------
@@ -112,7 +111,7 @@ module vdp(
         .di_a(vram_di_a),
 
         // port b = vdp side
-        .clk_b(~vga_clk),
+        .clk_b(~clk),
         .we_b(1'b0),
         .addr_b(vram_addr_b),
         .do_b(vram_do_b),
@@ -132,7 +131,7 @@ module vdp(
     wire [5:0] bg_color;
 
     vdp_background vdp_background(
-        .clk(vga_clk),
+        .clk(clk),
         .pixel_x(pixel_x),
         .pixel_y(pixel_y),
         .scroll_x(scroll_x),
@@ -146,30 +145,10 @@ module vdp(
         .priority_()
     );
 
-    // ----------------------------------------------------
-    //                      VGA TIMING
-    // ----------------------------------------------------
-
-    wire [9:0] pixel_x /* verilator public */;
-    wire [9:0] pixel_y /* verilator public */;
-    wire in_display_area;
-    wire vga_clk;
-
-    vga_timing vga_timing (
-        .clk_50(clk_50),
-        .rst(rst),
-        .vga_hs(VGA_HS),
-        .vga_vs(VGA_VS),
-        .pixel_y(pixel_y),
-        .pixel_x(pixel_x),
-        .in_display_area(in_display_area),
-        .vga_clk(vga_clk)
-    );
-
-    always @(posedge vga_clk) begin
-        VGA_R <= blank ? 4'h0 : CRAM[bg_color][3:0];
-        VGA_G <= blank ? 4'h0 : CRAM[bg_color][7:4];
-        VGA_B <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
+    always @(posedge clk) begin
+        color_r <= blank ? 4'h0 : CRAM[bg_color][3:0];
+        color_g <= blank ? 4'h0 : CRAM[bg_color][7:4];
+        color_b <= blank ? 4'h0 : CRAM[bg_color+1][3:0];
     end
 
     // ----------------------------------------------------
@@ -180,33 +159,24 @@ module vdp(
     // each scanline = 342 pixels
     // each frame    = 262 scanlines
 
-    reg [8:0] v_counter = 0;
-    reg [8:0] h_counter = 0;
+    // counters read by the cpu have weird jumps:
+    // v: 00-DA, D5-FF
+    // h: 00-93, E9-FF
 
-    wire line_complete = (pixel_x == 342);
+    assign v_counter = pixel_y <= 9'hda ? pixel_y
+                     : pixel_y - 6;
 
-    // h counter
-    always @(posedge vga_clk) begin
-        if (pixel_x < 342)
-            h_counter <= pixel_x[8:0];
-        else
-            h_counter <= 342;
-    end
+    assign h_counter = pixel_x[8:1] <= 8'h93 ? pixel_x[8:1]
+                     : pixel_x[8:1] + 85;
 
-    // v counter
-    always @(posedge vga_clk) begin
-        if (line_complete) begin
-            if (pixel_y <= 'hDA)
-                v_counter <= pixel_y;
-            else if (pixel_y < 'd262)
-                v_counter <= 'hD5 + (pixel_y - 'hDB);
-            else
-                v_counter <= 'hFF;
+    always @(posedge clk) begin
+        if (pixel_x == 341) begin
+            pixel_x <= 0;
+            pixel_y <= pixel_y == 261 ? 0 : pixel_y + 1;
+        end else begin
+            pixel_x <= pixel_x + 1;
         end
     end
-
-    assign vdp_v_counter = v_counter[7:0];
-    assign vdp_h_counter = h_counter[8:1];
 
     // ----------------------------------------------------
     //                       IRQ
@@ -217,9 +187,8 @@ module vdp(
     reg interrupt_flag = 0;
 
     // active area is 192 lines (0-191)
-    always @(posedge vga_clk) begin
+    always @(posedge clk) begin
         if (pixel_y == 192 && pixel_x == 0) begin
-            //$display("[vdp] Vsync IRQ");
             interrupt_flag <= 1;
         end else if (control_rd) begin
             interrupt_flag <= 0;
@@ -228,34 +197,7 @@ module vdp(
 
     wire irq_vsync_pending = (interrupt_flag && irq_vsync_en);
 
-    // line interrupt
-
-    reg [7:0] line_counter = 0;
-    //reg       line_irq = 0;
-
-    always @(posedge vga_clk) begin
-        if (line_complete) begin
-            if (pixel_y >= 193) begin
-                line_counter <= register[10];
-            end else begin
-                if (line_counter == 'h00) begin
-                    line_counter <= register[10];
-                    //line_irq <= 1;
-                end else begin
-                    line_counter <= line_counter - 1;
-                end
-            end
-        end else if (control_rd) begin
-            //line_irq <= 0;
-        end
-    end
-
-    // disable line counter irq for now since it causes corruption
-    // disabling it in osmose too seems to have no effect
-    //wire irq_line_pending = (line_irq && irq_line_en);
-    wire irq_line_pending = 0;
-
-    assign irq_n = (irq_vsync_pending || irq_line_pending) ? 0 : 1;
+    assign irq_n = !irq_vsync_pending;
 
     // ----------------------------------------------------
     //                  CONTROL LOGIC
