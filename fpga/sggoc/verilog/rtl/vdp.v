@@ -67,9 +67,9 @@ module vdp(
         register[10] = 'hff;   // line counter
     end
 
-    wire [13:0] name_table_base_addr                 = {register[2][3:1], 11'd0};
-    wire [13:0] sprite_attribute_table_base_addr     = {register[5][6:1],  8'd0};
-    wire [13:0] sprite_pattern_table_table_base_addr = {register[6][2  ], 12'd0};
+    wire [2:0] name_table             = register[2][3:1];
+    wire [5:0] sprite_attribute_table = register[5][6:1];
+    wire       sprite_pattern_table   = register[6][2];
 
     wire        irq_vsync_en     = register[1][5];
     wire        irq_line_en      = register[0][4];
@@ -96,11 +96,12 @@ module vdp(
     // ----------------------------------------------------
 
     reg  [13:0] vram_addr_a;
-    wire [13:0] vram_addr_b;
     wire [ 7:0] vram_do_a;
-    wire [ 7:0] vram_do_b;
     reg  [ 7:0] vram_di_a;
     wire        vram_we_a;
+
+    wire [13:0] vram_addr_b = (pixel_x >= 256) ? sprite_vram_addr : background_vram_addr;
+    wire [ 7:0] vram_do_b;
 
     vram vram(
         // port a = cpu side
@@ -125,10 +126,11 @@ module vdp(
     reg [7:0] CRAM [0:63];
 
     // ----------------------------------------------------
-    //                      VDP BACKGROUND
+    //                      BACKGROUND
     // ----------------------------------------------------
 
-    wire [5:0] bg_color;
+    wire [ 5:0] background_color;
+    wire [13:0] background_vram_addr;
 
     vdp_background vdp_background(
         .clk(clk),
@@ -138,16 +140,40 @@ module vdp(
         .scroll_y(scroll_y),
         .disable_x_scroll(disable_x_scroll),
         .disable_y_scroll(disable_y_scroll),
-        .name_table_base(register[2][3:1]),
-        .vram_addr(vram_addr_b),
+        .name_table(name_table),
+        .vram_addr(background_vram_addr),
         .vram_data(vram_do_b),
-        .color(bg_color),
+        .color(background_color),
         .priority_()
     );
 
-    assign color_r = blank ? 4'h0 : CRAM[bg_color][3:0];
-    assign color_g = blank ? 4'h0 : CRAM[bg_color][7:4];
-    assign color_b = blank ? 4'h0 : CRAM[bg_color+1][3:0];
+    // ----------------------------------------------------
+    //                      SPRITES
+    // ----------------------------------------------------
+
+    wire [ 5:0] sprite_color;
+    wire [13:0] sprite_vram_addr;
+
+    vdp_sprites vdp_sprites(
+        .clk(clk),
+        .pixel_x(pixel_x),
+        .pixel_y(pixel_y),
+        .vram_addr(sprite_vram_addr),
+        .vram_data(vram_do_b),
+        .attribute_table(sprite_attribute_table),
+        .pattern_table(sprite_pattern_table),
+        .color(sprite_color)
+    );
+
+    // ----------------------------------------------------
+    //                    OUTPUT COLOR
+    // ----------------------------------------------------
+
+    wire [5:0] color = (sprite_color != 0) ? sprite_color : background_color;
+
+    assign color_r = blank ? 4'h0 : CRAM[color][3:0];
+    assign color_g = blank ? 4'h0 : CRAM[color][7:4];
+    assign color_b = blank ? 4'h0 : CRAM[color+1][3:0];
 
     // ----------------------------------------------------
     //                    COUNTERS

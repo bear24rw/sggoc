@@ -6,7 +6,7 @@ module vdp_background (
     input       [7:0]   scroll_y,
     input               disable_x_scroll,
     input               disable_y_scroll,
-    input       [2:0]   name_table_base,
+    input       [2:0]   name_table,
     input       [7:0]   vram_data,
     output reg  [13:0]  vram_addr,
     output      [5:0]   color,
@@ -18,7 +18,7 @@ module vdp_background (
     reg palette_latch;      // hold it until we start outputting that tile
     reg priority_latch;     // tile priority (behind or infront of sprite)
     reg [2:0] line;         // line within the tile
-    reg [8:0] tile_idx;     // which tile (0-512)
+    reg [8:0] pattern_index;// which tile (0-512)
 
     // bitplanes (4th one comes directly from vram_data)
     reg [7:0] data0;
@@ -46,8 +46,8 @@ module vdp_background (
     // current column index
     wire [2:0] tile_column = x[2:0];
 
-    wire [13:0] name_addr = {2'b00, name_table_base, tile_y, tile_x, 1'b0};
-    wire [13:0] pattern_addr = {tile_idx, line, 2'b0};
+    wire [13:0] name_addr = {2'b00, name_table, tile_y, tile_x, 1'b0};
+    wire [13:0] pattern_addr = {pattern_index, line, 2'b0};
 
     always @(posedge clk) begin
 
@@ -63,9 +63,9 @@ module vdp_background (
         endcase
 
         case (tile_column)
-            1: tile_idx[7:0] <= vram_data;
+            1: pattern_index[7:0] <= vram_data;
             2: begin
-                tile_idx[8]    <= vram_data[0];
+                pattern_index[8]<= vram_data[0];
                 flip_x         <= vram_data[1];
                 line[0]        <= y[0]^vram_data[2];
                 line[1]        <= y[1]^vram_data[2];
