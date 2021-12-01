@@ -168,14 +168,15 @@ void draw_vram()
     ImGui::Begin("vram");
     float size = 4.0;
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-    for (int x = 0; x < 128; x++) {
-        for (int y = 0; y < 128; y++) {
+    ImGui::InvisibleButton("screen", { 32*size, 512*size });
+    for (int x = 0; x < 32; x++) {
+        for (int y = 0; y < 512; y++) {
             ImVec2 a { cursor_pos.x + x * size, cursor_pos.y + y * size };
             ImVec2 b { cursor_pos.x + x * size + size, cursor_pos.y + y * size + size };
             auto color = ImColor(
-                root->sggoc->vdp->vram->ram[y * 128 + x],
-                root->sggoc->vdp->vram->ram[y * 128 + x],
-                root->sggoc->vdp->vram->ram[y * 128 + x]);
+                root->sggoc->vdp->vram->ram[y * 32 + x],
+                root->sggoc->vdp->vram->ram[y * 32 + x],
+                root->sggoc->vdp->vram->ram[y * 32 + x]);
             ImGui::GetWindowDrawList()->AddRectFilled(a, b, color);
         }
     }
