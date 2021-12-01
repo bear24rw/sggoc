@@ -6,10 +6,12 @@ module vdp_sprites (
     output reg [13:0] vram_addr,
     input      [ 5:0] attribute_table,
     input             pattern_table,
+    output reg        overflow,
     output reg [ 5:0] color
 );
     // special y value which indicates that no more sprites are active
-    `define INACTIVE 208
+    `define LAST_SPRITE   8'hD0
+    `define HIDDEN_SPRITE 8'hE0
 
     `define WAIT             0
     `define FIND_ACTIVE      1
@@ -46,18 +48,23 @@ module vdp_sprites (
                 end
             end
             `FIND_ACTIVE: begin
-                if (sprite == 63 || active_count == 8 || vram_data == `INACTIVE) begin
-                    active_index <= 0;
-                    fetch_step <= 0;
-                    state <= `FETCH_ACTIVE;
-                end else begin
-                    if (pixel_y >= vram_data && pixel_y < vram_data + 8) begin
+                if (pixel_y >= vram_data && pixel_y < vram_data + 8 && vram_data != `HIDDEN_SPRITE && vram_data != `LAST_SPRITE) begin
+                    if (active_count == 8) begin
+                        overflow <= 1;
+                    end else begin
+                        overflow <= 0;
                         active_sprites[active_count] <= sprite;
                         active_lines[active_count] <= pixel_y - vram_data;
                         active_count <= active_count + 1;
                     end
+                end
+                if (sprite == 63 || active_count == 8 || vram_data == `LAST_SPRITE) begin
+                    active_index <= 0;
+                    fetch_step <= 0;
+                    state <= `FETCH_ACTIVE;
+                end else begin
                     sprite <= sprite + 1;
-                    vram_addr <= {attribute_table, 2'b0, sprite + 6'd1};
+                    vram_addr <= vram_addr + 1;
                 end
             end
             `FETCH_ACTIVE: begin

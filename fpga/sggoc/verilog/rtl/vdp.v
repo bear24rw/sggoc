@@ -154,6 +154,8 @@ module vdp(
 
     wire [ 5:0] sprite_color;
     wire [13:0] sprite_vram_addr;
+    wire        sprite_overflow;
+    reg         sprite_overflow_flag;
 
     vdp_sprites vdp_sprites(
         .clk(clk),
@@ -163,8 +165,17 @@ module vdp(
         .vram_data(vram_do_b),
         .attribute_table(sprite_attribute_table),
         .pattern_table(sprite_pattern_table),
+        .overflow(sprite_overflow),
         .color(sprite_color)
     );
+
+    always @(posedge clk) begin
+        if (sprite_overflow) begin
+            sprite_overflow_flag <= 1;
+        end else if (control_rd) begin
+            sprite_overflow_flag <= 0;
+        end
+    end
 
     // ----------------------------------------------------
     //                    OUTPUT COLOR
@@ -308,7 +319,7 @@ module vdp(
                     first_byte <= control_i;
                 end
             end else if (control_rd_edge) begin
-                control_o <= { interrupt_flag, 1'b0, 1'b0, 5'b0 };
+                control_o <= { interrupt_flag, sprite_overflow_flag, 1'b0, 5'b0 };
             end else if (data_rd_edge) begin
                 data_o <= vram_do_a;
                 ram_addr <= ram_addr + 1;
