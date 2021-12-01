@@ -130,6 +130,7 @@ module vdp(
     // ----------------------------------------------------
 
     wire [ 5:0] background_color;
+    wire        background_priority;
     wire [13:0] background_vram_addr;
 
     vdp_background vdp_background(
@@ -144,7 +145,7 @@ module vdp(
         .vram_addr(background_vram_addr),
         .vram_data(vram_do_b),
         .color(background_color),
-        .priority_()
+        .priority_(background_priority)
     );
 
     // ----------------------------------------------------
@@ -169,7 +170,7 @@ module vdp(
     //                    OUTPUT COLOR
     // ----------------------------------------------------
 
-    wire [5:0] color = (sprite_color != 0) ? sprite_color : background_color;
+    wire [5:0] color = (sprite_color[4:1] != 0 && !background_priority) ? sprite_color : background_color;
 
     assign color_r = blank ? 4'h0 : CRAM[color][3:0];
     assign color_g = blank ? 4'h0 : CRAM[color][7:4];
