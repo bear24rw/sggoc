@@ -6,7 +6,8 @@ module vdp_sprites (
     output reg [13:0] vram_addr,
     input      [ 5:0] attribute_table,
     input             pattern_table,
-    input             shift_x,
+    input             shift,
+    input             size,
     output reg        overflow,
     output reg [ 5:0] color
 );
@@ -30,7 +31,7 @@ module vdp_sprites (
     reg [5:0] active_count = 0;
 
     reg [5:0] active_sprites     [0:7];
-    reg [2:0] active_lines       [0:7];
+    reg [3:0] active_lines       [0:7];
     reg [7:0] active_x_positions [0:7];
     reg [7:0] active_patterns    [0:7];
     reg [7:0] active_bitplanes_0 [0:7];
@@ -49,7 +50,7 @@ module vdp_sprites (
                 end
             end
             `FIND_ACTIVE: begin
-                if (pixel_y >= vram_data && pixel_y < vram_data + 8 && vram_data != `HIDDEN_SPRITE && vram_data != `LAST_SPRITE) begin
+                if (pixel_y >= vram_data && pixel_y < vram_data + (size ? 16 : 8) && vram_data != `HIDDEN_SPRITE && vram_data != `LAST_SPRITE) begin
                     if (active_count == 8) begin
                         overflow <= 1;
                     end else begin
@@ -75,20 +76,22 @@ module vdp_sprites (
                     case (fetch_step)
                         0: vram_addr <= {attribute_table, 1'b1, active_sprites[active_index], 1'b0}; // x position
                         1: vram_addr <= {attribute_table, 1'b1, active_sprites[active_index], 1'b1}; // pattern
-                        2: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index], 2'd0}; // bitplane 0
-                        3: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index], 2'd1}; // bitplane 1
-                        4: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index], 2'd2}; // bitplane 2
-                        5: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index], 2'd3}; // bitplane 3
+                        2: begin end
+                        3: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index][2:0], 2'd0}; // bitplane 0
+                        4: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index][2:0], 2'd1}; // bitplane 1
+                        5: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index][2:0], 2'd2}; // bitplane 2
+                        6: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index][2:0], 2'd3}; // bitplane 3
                     endcase
                     case (fetch_step)
-                        1: active_x_positions[active_index] <= vram_data - shift_x ? 8 : 0;
-                        2: active_patterns[active_index]    <= vram_data;
-                        3: active_bitplanes_0[active_index] <= vram_data;
-                        4: active_bitplanes_1[active_index] <= vram_data;
-                        5: active_bitplanes_2[active_index] <= vram_data;
-                        6: active_bitplanes_3[active_index] <= vram_data;
+                        1: active_x_positions[active_index] <= vram_data - (shift ? 8 : 0);
+                        2: active_patterns[active_index]    <= size ? {vram_data[7:1], active_lines[active_index][3]} : vram_data;
+                        3: begin end
+                        4: active_bitplanes_0[active_index] <= vram_data;
+                        5: active_bitplanes_1[active_index] <= vram_data;
+                        6: active_bitplanes_2[active_index] <= vram_data;
+                        7: active_bitplanes_3[active_index] <= vram_data;
                     endcase
-                    if (fetch_step == 6) begin
+                    if (fetch_step == 7) begin
                         fetch_step <= 0;
                         active_index <= active_index + 1;
                     end else begin
