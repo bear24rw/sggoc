@@ -36,6 +36,7 @@ target_compile_definitions(sggoc PUBLIC
 target_include_directories(sggoc PUBLIC
     imgui
     imgui/backends
+    imgui_club/imgui_memory_editor
 )
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -72,5 +73,4 @@ verilate(sggoc
         -Wall
         -Wno-pinconnectempty
         -Wno-unused
-        #-Wno-width
 )

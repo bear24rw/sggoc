@@ -204,10 +204,10 @@ module vdp(
     // h: 00-93, E9-FF
 
     assign v_counter = pixel_y <= 9'hda ? pixel_y[7:0]
-                     : pixel_y[7:0] - 8'd6;
+                                        : pixel_y[7:0] - 8'd6;
 
     assign h_counter = pixel_x[8:1] <= 8'h93 ? pixel_x[8:1]
-                     : pixel_x[8:1] + 8'd85;
+                                             : pixel_x[8:1] + 8'd85;
 
     always @(posedge clk) begin
         if (pixel_x == 341) begin

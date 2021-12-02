@@ -25,11 +25,11 @@ module vdp_sprites (
 
     reg [7:0] fetch_step = 0;
 
-    reg [5:0] sprite /* verilator public */ = 0;
+    reg [5:0] sprite = 0;
 
-    reg [3:0] active_total = 0;
-    reg [3:0] active_count = 0;
-    wire [2:0] active_index = active_count[2:0];
+    reg  [3:0] active_total = 0;                 // total number of active sprites (1-8)
+    reg  [3:0] active_count = 0;                 // counter to use while iterating active sprites (0-8)
+    wire [2:0] active_index = active_count[2:0]; // bit-width-correct indexer to use while iterating (0-7)
 
     reg [5:0] active_sprites     [0:7];
     reg [3:0] active_lines       [0:7];

@@ -15,6 +15,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
+#include <imgui_memory_editor.h>
 #include <thread>
 #include <vector>
 
@@ -75,7 +76,10 @@ void sim_loop()
     reset();
 
     while (true) {
-        if (paused) continue;
+        if (paused) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
         tick();
         if (root->ram_we)
             g_ram[root->ram_addr] = root->ram_di;
@@ -166,20 +170,9 @@ void draw_ram()
 void draw_vram()
 {
     ImGui::Begin("vram");
-    float size = 4.0;
-    ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-    ImGui::InvisibleButton("screen", { 32*size, 512*size });
-    for (int x = 0; x < 32; x++) {
-        for (int y = 0; y < 512; y++) {
-            ImVec2 a { cursor_pos.x + x * size, cursor_pos.y + y * size };
-            ImVec2 b { cursor_pos.x + x * size + size, cursor_pos.y + y * size + size };
-            auto color = ImColor(
-                root->sggoc->vdp->vram->ram[y * 32 + x],
-                root->sggoc->vdp->vram->ram[y * 32 + x],
-                root->sggoc->vdp->vram->ram[y * 32 + x]);
-            ImGui::GetWindowDrawList()->AddRectFilled(a, b, color);
-        }
-    }
+    static MemoryEditor memory;
+    memory.OptShowAscii = false;
+    memory.DrawContents((uint8_t*)&root->sggoc->vdp->vram->ram[0], 16384);
     ImGui::End();
 }
 
@@ -257,7 +250,10 @@ int main(int argc, char** argv)
     std::thread sim_thread = std::thread(sim_loop);
 
     while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+        if (paused)
+            glfwWaitEvents();
+        else
+            glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

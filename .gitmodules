@@ -4,3 +4,6 @@
 [submodule "fpga/sggoc/verilog/sim/gui/imgui"]
 	path = fpga/sggoc/verilog/sim/gui/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "fpga/sggoc/verilog/sim/gui/imgui_club"]
+	path = fpga/sggoc/verilog/sim/gui/imgui_club
+	url = https://github.com/ocornut/imgui_club.git
