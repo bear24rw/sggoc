@@ -83,6 +83,7 @@ module vdp(
     wire        m4               = register[0][2];
     wire        blank            = !register[1][6];
     wire [3:0]  overscan_color   = register[7][3:0];
+    wire        sprite_shift_x   = register[0][3];
 
     // m4: 1 = use mode 4, 0 = use tms modes (selected with m1 m2 m3)
     // m2: 1 = m1/m3 change screen height in mode 4
@@ -166,6 +167,7 @@ module vdp(
         .attribute_table(sprite_attribute_table),
         .pattern_table(sprite_pattern_table),
         .overflow(sprite_overflow),
+        .shift_x(sprite_shift_x),
         .color(sprite_color)
     );
 

@@ -6,6 +6,7 @@ module vdp_sprites (
     output reg [13:0] vram_addr,
     input      [ 5:0] attribute_table,
     input             pattern_table,
+    input             shift_x,
     output reg        overflow,
     output reg [ 5:0] color
 );
@@ -80,7 +81,7 @@ module vdp_sprites (
                         5: vram_addr <= {pattern_table, active_patterns[active_index], active_lines[active_index], 2'd3}; // bitplane 3
                     endcase
                     case (fetch_step)
-                        1: active_x_positions[active_index] <= vram_data + 8; // HACK +8 is hack
+                        1: active_x_positions[active_index] <= vram_data - shift_x ? 8 : 0;
                         2: active_patterns[active_index]    <= vram_data;
                         3: active_bitplanes_0[active_index] <= vram_data;
                         4: active_bitplanes_1[active_index] <= vram_data;
