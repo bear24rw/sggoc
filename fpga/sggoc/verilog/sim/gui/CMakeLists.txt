@@ -72,5 +72,5 @@ verilate(sggoc
         -Wall
         -Wno-pinconnectempty
         -Wno-unused
-        -Wno-width
+        #-Wno-width
 )

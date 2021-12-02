@@ -1,7 +1,7 @@
 module vdp_sprites (
     input             clk,
-    input      [ 9:0] pixel_x,
-    input      [ 9:0] pixel_y,
+    input      [ 8:0] pixel_x,
+    input      [ 8:0] pixel_y,
     input      [ 7:0] vram_data,
     output reg [13:0] vram_addr,
     input      [ 5:0] attribute_table,
@@ -25,10 +25,11 @@ module vdp_sprites (
 
     reg [7:0] fetch_step = 0;
 
-    reg [5:0] sprite = 0;
+    reg [5:0] sprite /* verilator public */ = 0;
 
-    reg [5:0] active_index = 0;
-    reg [5:0] active_count = 0;
+    reg [3:0] active_total = 0;
+    reg [3:0] active_count = 0;
+    wire [2:0] active_index = active_count[2:0];
 
     reg [5:0] active_sprites     [0:7];
     reg [3:0] active_lines       [0:7];
@@ -45,23 +46,25 @@ module vdp_sprites (
                 if (pixel_x == 256) begin
                     sprite <= 0;
                     vram_addr <= {attribute_table, 2'b0, /*sprite*/ 6'd0};
+                    active_total <= 0;
                     active_count <= 0;
                     state <= `FIND_ACTIVE;
                 end
             end
             `FIND_ACTIVE: begin
-                if (pixel_y >= vram_data && pixel_y < vram_data + (size ? 16 : 8) && vram_data != `HIDDEN_SPRITE && vram_data != `LAST_SPRITE) begin
-                    if (active_count == 8) begin
+                if (pixel_y >= {1'b0, vram_data} && pixel_y < {1'b0, vram_data} + (size ? 16 : 8) && vram_data != `HIDDEN_SPRITE && vram_data != `LAST_SPRITE) begin
+                    if (active_total == 8) begin
                         overflow <= 1;
                     end else begin
                         overflow <= 0;
-                        active_sprites[active_count] <= sprite;
-                        active_lines[active_count] <= pixel_y - vram_data;
+                        active_sprites[active_index] <= sprite;
+                        active_lines[active_index] <= pixel_y[3:0] - vram_data[3:0];
                         active_count <= active_count + 1;
+                        active_total <= active_total + 1;
                     end
                 end
-                if (sprite == 63 || active_count == 8 || vram_data == `LAST_SPRITE) begin
-                    active_index <= 0;
+                if (sprite == 63 || active_total == 8 || vram_data == `LAST_SPRITE) begin
+                    active_count <= 0;
                     fetch_step <= 0;
                     state <= `FETCH_ACTIVE;
                 end else begin
@@ -70,7 +73,7 @@ module vdp_sprites (
                 end
             end
             `FETCH_ACTIVE: begin
-                if (active_index == active_count) begin
+                if (active_count == active_total) begin
                     state <= `WAIT_TO_DRAW;
                 end else begin
                     case (fetch_step)
@@ -93,7 +96,7 @@ module vdp_sprites (
                     endcase
                     if (fetch_step == 7) begin
                         fetch_step <= 0;
-                        active_index <= active_index + 1;
+                        active_count <= active_count + 1;
                     end else begin
                         fetch_step <= fetch_step + 1;
                     end
@@ -114,53 +117,53 @@ module vdp_sprites (
                 active_x_positions[6] <= active_x_positions[6] - 1;
                 active_x_positions[7] <= active_x_positions[7] - 1;
 
-                if (active_count > 0 && active_x_positions[0] < 8) begin
-                    color[1] <= active_bitplanes_0[0][active_x_positions[0]];
-                    color[2] <= active_bitplanes_1[0][active_x_positions[0]];
-                    color[3] <= active_bitplanes_2[0][active_x_positions[0]];
-                    color[4] <= active_bitplanes_3[0][active_x_positions[0]];
+                if (active_total > 0 && active_x_positions[0] < 8) begin
+                    color[1] <= active_bitplanes_0[0][active_x_positions[0][2:0]];
+                    color[2] <= active_bitplanes_1[0][active_x_positions[0][2:0]];
+                    color[3] <= active_bitplanes_2[0][active_x_positions[0][2:0]];
+                    color[4] <= active_bitplanes_3[0][active_x_positions[0][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 1 && active_x_positions[1] < 8) begin
-                    color[1] <= active_bitplanes_0[1][active_x_positions[1]];
-                    color[2] <= active_bitplanes_1[1][active_x_positions[1]];
-                    color[3] <= active_bitplanes_2[1][active_x_positions[1]];
-                    color[4] <= active_bitplanes_3[1][active_x_positions[1]];
+                end else if (active_total > 1 && active_x_positions[1] < 8) begin
+                    color[1] <= active_bitplanes_0[1][active_x_positions[1][2:0]];
+                    color[2] <= active_bitplanes_1[1][active_x_positions[1][2:0]];
+                    color[3] <= active_bitplanes_2[1][active_x_positions[1][2:0]];
+                    color[4] <= active_bitplanes_3[1][active_x_positions[1][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 2 && active_x_positions[2] < 8) begin
-                    color[1] <= active_bitplanes_0[2][active_x_positions[2]];
-                    color[2] <= active_bitplanes_1[2][active_x_positions[2]];
-                    color[3] <= active_bitplanes_2[2][active_x_positions[2]];
-                    color[4] <= active_bitplanes_3[2][active_x_positions[2]];
+                end else if (active_total > 2 && active_x_positions[2] < 8) begin
+                    color[1] <= active_bitplanes_0[2][active_x_positions[2][2:0]];
+                    color[2] <= active_bitplanes_1[2][active_x_positions[2][2:0]];
+                    color[3] <= active_bitplanes_2[2][active_x_positions[2][2:0]];
+                    color[4] <= active_bitplanes_3[2][active_x_positions[2][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 3 && active_x_positions[3] < 8) begin
-                    color[1] <= active_bitplanes_0[3][active_x_positions[3]];
-                    color[2] <= active_bitplanes_1[3][active_x_positions[3]];
-                    color[3] <= active_bitplanes_2[3][active_x_positions[3]];
-                    color[4] <= active_bitplanes_3[3][active_x_positions[3]];
+                end else if (active_total > 3 && active_x_positions[3] < 8) begin
+                    color[1] <= active_bitplanes_0[3][active_x_positions[3][2:0]];
+                    color[2] <= active_bitplanes_1[3][active_x_positions[3][2:0]];
+                    color[3] <= active_bitplanes_2[3][active_x_positions[3][2:0]];
+                    color[4] <= active_bitplanes_3[3][active_x_positions[3][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 4 && active_x_positions[4] < 8) begin
-                    color[1] <= active_bitplanes_0[4][active_x_positions[4]];
-                    color[2] <= active_bitplanes_1[4][active_x_positions[4]];
-                    color[3] <= active_bitplanes_2[4][active_x_positions[4]];
-                    color[4] <= active_bitplanes_3[4][active_x_positions[4]];
+                end else if (active_total > 4 && active_x_positions[4] < 8) begin
+                    color[1] <= active_bitplanes_0[4][active_x_positions[4][2:0]];
+                    color[2] <= active_bitplanes_1[4][active_x_positions[4][2:0]];
+                    color[3] <= active_bitplanes_2[4][active_x_positions[4][2:0]];
+                    color[4] <= active_bitplanes_3[4][active_x_positions[4][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 5 && active_x_positions[5] < 8) begin
-                    color[1] <= active_bitplanes_0[5][active_x_positions[5]];
-                    color[2] <= active_bitplanes_1[5][active_x_positions[5]];
-                    color[3] <= active_bitplanes_2[5][active_x_positions[5]];
-                    color[4] <= active_bitplanes_3[5][active_x_positions[5]];
+                end else if (active_total > 5 && active_x_positions[5] < 8) begin
+                    color[1] <= active_bitplanes_0[5][active_x_positions[5][2:0]];
+                    color[2] <= active_bitplanes_1[5][active_x_positions[5][2:0]];
+                    color[3] <= active_bitplanes_2[5][active_x_positions[5][2:0]];
+                    color[4] <= active_bitplanes_3[5][active_x_positions[5][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 6 && active_x_positions[6] < 8) begin
-                    color[1] <= active_bitplanes_0[6][active_x_positions[6]];
-                    color[2] <= active_bitplanes_1[6][active_x_positions[6]];
-                    color[3] <= active_bitplanes_2[6][active_x_positions[6]];
-                    color[4] <= active_bitplanes_3[6][active_x_positions[6]];
+                end else if (active_total > 6 && active_x_positions[6] < 8) begin
+                    color[1] <= active_bitplanes_0[6][active_x_positions[6][2:0]];
+                    color[2] <= active_bitplanes_1[6][active_x_positions[6][2:0]];
+                    color[3] <= active_bitplanes_2[6][active_x_positions[6][2:0]];
+                    color[4] <= active_bitplanes_3[6][active_x_positions[6][2:0]];
                     color[5] <= 1;
-                end else if (active_count > 7 && active_x_positions[7] < 8) begin
-                    color[1] <= active_bitplanes_0[7][active_x_positions[7]];
-                    color[2] <= active_bitplanes_1[7][active_x_positions[7]];
-                    color[3] <= active_bitplanes_2[7][active_x_positions[7]];
-                    color[4] <= active_bitplanes_3[7][active_x_positions[7]];
+                end else if (active_total > 7 && active_x_positions[7] < 8) begin
+                    color[1] <= active_bitplanes_0[7][active_x_positions[7][2:0]];
+                    color[2] <= active_bitplanes_1[7][active_x_positions[7][2:0]];
+                    color[3] <= active_bitplanes_2[7][active_x_positions[7][2:0]];
+                    color[4] <= active_bitplanes_3[7][active_x_positions[7][2:0]];
                     color[5] <= 1;
                 end else begin
                     color <= 0;

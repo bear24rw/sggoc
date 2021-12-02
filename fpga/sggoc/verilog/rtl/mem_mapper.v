@@ -96,10 +96,10 @@ module mem_mapper(
 
     // calculate the rom address based on the mapping registers
     assign rom_addr =
-        (addr <= 'h03FF) ? addr :
-        (addr <= 'h3FFF) ? (rom_bank_0 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
-        (addr <= 'h7FFF) ? (rom_bank_1 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
-        (addr <= 'hBFFF) ? (rom_bank_2 * BANK_SIZE + (addr & BANK_SIZE_MASK)) :
+        (addr <= 'h03FF) ? {6'b0, addr} :
+        (addr <= 'h3FFF) ? (rom_bank_0 * BANK_SIZE + {6'b0, addr & BANK_SIZE_MASK}) :
+        (addr <= 'h7FFF) ? (rom_bank_1 * BANK_SIZE + {6'b0, addr & BANK_SIZE_MASK}) :
+        (addr <= 'hBFFF) ? (rom_bank_2 * BANK_SIZE + {6'b0, addr & BANK_SIZE_MASK}) :
         22'hDEAD;
 
 endmodule

@@ -1,7 +1,7 @@
 module vdp_background (
     input               clk,
-    input       [9:0]   pixel_x,
-    input       [9:0]   pixel_y,
+    input       [8:0]   pixel_x,
+    input       [8:0]   pixel_y,
     input       [7:0]   scroll_x,
     input       [7:0]   scroll_y,
     input               disable_x_scroll,
@@ -36,8 +36,8 @@ module vdp_background (
     // y scroll: increasing value moves screen up, wraps at row 28 (28 rows * 8 lines / row = 224)
     // scroll_lock_x locks the top 2 rows = 16 pixels
     // scroll_lock_y locks the last 8 columns (32 total columns - 8 = 24 = 192 pixels)
-    wire [7:0] x = (disable_x_scroll && pixel_y < 16 ) ? pixel_x : (pixel_x - {2'b0, scroll_x});
-    wire [7:0] y = (disable_y_scroll && pixel_x > 192) ? pixel_y : (pixel_y + {2'b0, scroll_y}) % 224;
+    wire [8:0] x = (disable_x_scroll && pixel_y < 9'd16 ) ? pixel_x : (pixel_x - {1'b0, scroll_x});
+    wire [8:0] y = (disable_y_scroll && pixel_x > 9'd192) ? pixel_y : (pixel_y + {1'b0, scroll_y}) % 9'd224;
 
     // tile indices
     wire [4:0] tile_x = x[7:3];
@@ -46,7 +46,7 @@ module vdp_background (
     // current column index
     wire [2:0] tile_column = x[2:0];
 
-    wire [13:0] name_addr = {2'b00, name_table, tile_y, tile_x, 1'b0};
+    wire [13:0] name_addr = {name_table, tile_y, tile_x, 1'b0};
     wire [13:0] pattern_addr = {pattern_index, line, 2'b0};
 
     always @(posedge clk) begin
