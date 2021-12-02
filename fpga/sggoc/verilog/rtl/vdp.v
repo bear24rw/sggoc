@@ -209,10 +209,20 @@ module vdp(
     assign h_counter = pixel_x[8:1] <= 8'h93 ? pixel_x[8:1]
                                              : pixel_x[8:1] + 8'd85;
 
+    // we need extra time at the end of the scanline for the sprite engine to
+    // finish building the sprite buffers for the next line. 32 is just an
+    // estimate, we should figure out the actual number of figure out what the
+    // actually proper timing is for all this stuff.
+    reg [7:0] scanline_delay = 0;
     always @(posedge clk) begin
         if (pixel_x == 341) begin
-            pixel_x <= 0;
-            pixel_y <= pixel_y == 261 ? 0 : pixel_y + 1;
+            if (scanline_delay == 32) begin
+                scanline_delay <= 0;
+                pixel_x <= 0;
+                pixel_y <= pixel_y == 261 ? 0 : pixel_y + 1;
+            end else begin
+                scanline_delay <= scanline_delay + 1;
+            end
         end else begin
             pixel_x <= pixel_x + 1;
         end
